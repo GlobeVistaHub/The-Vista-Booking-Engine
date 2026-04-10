@@ -1,0 +1,73 @@
+"use client";
+
+import Link from "next/link";
+import { Globe } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+
+export default function Header() {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+  const { lang, t, toggleLanguage } = useLanguage();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Check on mount
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isSolid = !isHome || scrolled;
+
+  return (
+    <header className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${
+      isSolid
+        ? "bg-white/95 backdrop-blur-md border-b border-navy/5 shadow-sm"
+        : "bg-transparent border-b border-transparent"
+    }`}>
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+
+        {/* LOGO — always English, never translated */}
+        <Link href="/" className="flex items-center gap-2">
+          <span className={`text-2xl font-heading font-bold tracking-tight transition-colors duration-500 ${isSolid ? "text-navy" : "text-white drop-shadow-md"}`}>
+            THE VISTA
+          </span>
+        </Link>
+
+        {/* ACTIONS */}
+        <div className="flex items-center gap-4">
+          <nav className="hidden md:flex items-center gap-8">
+            <Link
+              href="/search"
+              className={`text-sm font-medium transition-colors duration-300 ${isSolid ? "text-navy hover:text-primary" : "text-white/90 hover:text-white drop-shadow"}`}
+            >
+              {t('properties')}
+            </Link>
+            <Link
+              href="/about"
+              className={`text-sm font-medium transition-colors duration-300 ${isSolid ? "text-navy hover:text-primary" : "text-white/90 hover:text-white drop-shadow"}`}
+            >
+              {t('ourStory')}
+            </Link>
+          </nav>
+
+          {/* LANGUAGE TOGGLE */}
+          <button
+            onClick={toggleLanguage}
+            className={`flex items-center gap-1.5 text-sm font-medium transition-colors duration-300 ${isSolid ? "text-navy/60 hover:text-primary" : "text-white/70 hover:text-white drop-shadow"}`}
+            aria-label="Toggle language"
+          >
+            <Globe className="w-4 h-4" />
+            <span>{lang === "en" ? "العربية" : "English"}</span>
+          </button>
+
+          <button className="px-6 py-2.5 bg-primary text-white rounded-full text-sm font-bold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all outline-none">
+            {t('signIn')}
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
