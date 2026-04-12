@@ -9,6 +9,8 @@ import { usePathname } from "next/navigation";
 export default function Header() {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isProperty = pathname.startsWith("/property/");
+  const isTransparentBase = isHome || isProperty;
   const { lang, t, toggleLanguage } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
 
@@ -19,7 +21,7 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isSolid = !isHome || scrolled;
+  const isSolid = !isTransparentBase || scrolled;
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ${

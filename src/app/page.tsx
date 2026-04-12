@@ -6,40 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import BookingWidget from "@/components/BookingWidget";
 import { useLanguage } from "@/context/LanguageContext";
-
-// Placeholder data for the architectural layout
-const FEATURED_PROPERTIES = [
-  {
-    id: 1,
-    title: "Villa Serenity",
-    title_ar: "فيلا سيرينيتي",
-    location: "El Gouna",
-    location_ar: "الجونة",
-    price: 450,
-    rating: 4.9,
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
-  },
-  {
-    id: 2,
-    title: "The Azure Penthouse",
-    title_ar: "البنتهاوس الأزرق",
-    location: "Sahl Hasheesh",
-    location_ar: "سهل حشيش",
-    price: 320,
-    rating: 5.0,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
-  },
-  {
-    id: 3,
-    title: "Sea Breeze Estate",
-    title_ar: "عقار النسيم البحري",
-    location: "Soma Bay",
-    location_ar: "صوما باي",
-    price: 850,
-    rating: 4.8,
-    image: "https://images.unsplash.com/photo-1494526585095-c41746248156?w=800&q=80",
-  },
-];
+import { PROPERTIES } from "@/data/properties";
 
 export default function Home() {
   const { t, lang } = useLanguage();
@@ -100,52 +67,53 @@ export default function Home() {
 
         {/* CSS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {FEATURED_PROPERTIES.map((property) => (
-            <article 
-              key={property.id} 
-              className="group bg-surface rounded-2xl overflow-hidden cursor-pointer"
-              style={{ boxShadow: "var(--shadow-soft)" }}
-            >
-              {/* IMAGE WRAPPER */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden">
-                <img 
-                  src={property.image} 
-                  alt={property.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
-                />
-                <button 
-                  onClick={(e) => { e.stopPropagation(); toggleLike(property.id); }}
-                  className={`absolute top-4 right-4 p-2.5 bg-white/90 hover:bg-white backdrop-blur-md rounded-full shadow-sm transition-colors ${
-                    likedIds.has(property.id) ? 'text-red-500' : 'text-muted hover:text-red-500'
-                  }`}
-                >
-                  <Heart className={`w-5 h-5 transition-all ${likedIds.has(property.id) ? 'fill-red-500' : ''}`} />
-                </button>
-              </div>
+          {PROPERTIES.map((property) => (
+            <Link href={`/property/${property.id}`} key={property.id}>
+              <article 
+                className="group bg-surface rounded-2xl overflow-hidden cursor-pointer h-full"
+                style={{ boxShadow: "var(--shadow-soft)" }}
+              >
+                {/* IMAGE WRAPPER */}
+                <div className="relative aspect-[4/3] w-full overflow-hidden">
+                  <img 
+                    src={property.images[0]} 
+                    alt={property.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
+                  />
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); toggleLike(property.id); }}
+                    className={`absolute top-4 right-4 p-2.5 bg-white/90 hover:bg-white backdrop-blur-md rounded-full shadow-sm transition-colors ${
+                      likedIds.has(property.id) ? 'text-red-500' : 'text-muted hover:text-red-500'
+                    }`}
+                  >
+                    <Heart className={`w-5 h-5 transition-all ${likedIds.has(property.id) ? 'fill-red-500' : ''}`} />
+                  </button>
+                </div>
 
-              {/* CARD DETAILS (The "No-Line" Rule adhered to) */}
-              <div className="p-6 pb-8">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-heading text-xl text-navy font-medium group-hover:text-primary transition-colors">
-                    {lang === "ar" ? property.title_ar : property.title}
-                  </h3>
-                  <div className="flex items-center gap-1 text-sm font-medium text-navy">
-                    <Star className="w-4 h-4 fill-primary text-primary" />
-                    <span>{property.rating}</span>
+                {/* CARD DETAILS (The "No-Line" Rule adhered to) */}
+                <div className="p-6 pb-8">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-heading text-xl text-navy font-medium group-hover:text-primary transition-colors">
+                      {lang === "ar" ? property.title_ar : property.title}
+                    </h3>
+                    <div className="flex items-center gap-1 text-sm font-medium text-navy">
+                      <Star className="w-4 h-4 fill-primary text-primary" />
+                      <span>{property.rating}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-1 text-muted text-sm mb-4">
+                    <MapPin className="w-4 h-4" />
+                    <span>{lang === "ar" ? property.location_ar : property.location}</span>
+                  </div>
+
+                  <div className="flex items-end gap-1">
+                    <span className="font-bold text-lg text-navy">${property.price}</span>
+                    <span className="text-sm text-muted mb-0.5">{t('perNight')}</span>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-1 text-muted text-sm mb-4">
-                  <MapPin className="w-4 h-4" />
-                  <span>{lang === "ar" ? property.location_ar : property.location}</span>
-                </div>
-
-                <div className="flex items-end gap-1">
-                  <span className="font-bold text-lg text-navy">${property.price}</span>
-                  <span className="text-sm text-muted mb-0.5">{t('perNight')}</span>
-                </div>
-              </div>
-            </article>
+              </article>
+            </Link>
           ))}
         </div>
       </section>

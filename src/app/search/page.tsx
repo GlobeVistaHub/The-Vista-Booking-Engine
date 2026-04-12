@@ -5,65 +5,7 @@ import { SlidersHorizontal, Map, X } from "lucide-react";
 import PropertyCard from "@/components/PropertyCard";
 import { useLanguage } from "@/context/LanguageContext";
 
-const SEARCH_RESULTS = [
-  {
-    id: 1,
-    title: "Villa Serenity",
-    title_ar: "فيلا سيرينيتي",
-    type: "entireVilla",
-    guests: "8",
-    bedrooms: "4",
-    location: "El Gouna",
-    location_ar: "الجونة",
-    price: 450,
-    rating: 4.9,
-    reviews: 124,
-    images: [
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
-    ],
-    tags: ["tagPrivatePool", "tagRedSeaView", "tagButlerService"],
-  },
-  {
-    id: 2,
-    title: "The Azure Penthouse",
-    title_ar: "البنتهاوس الأزرق",
-    type: "luxuryApartment",
-    guests: "4",
-    bedrooms: "2",
-    location: "Sahl Hasheesh",
-    location_ar: "سهل حشيش",
-    price: 320,
-    rating: 5.0,
-    reviews: 89,
-    images: [
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
-      "https://images.unsplash.com/photo-1494526585095-c41746248156?w=800&q=80",
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
-    ],
-    tags: ["tagPanoramicViews", "tagBeachAccess"],
-  },
-  {
-    id: 3,
-    title: "Sea Breeze Estate",
-    title_ar: "عقار النسيم البحري",
-    type: "entireEstate",
-    guests: "12",
-    bedrooms: "6",
-    location: "Soma Bay",
-    location_ar: "صوما باي",
-    price: 850,
-    rating: 4.8,
-    reviews: 42,
-    images: [
-      "https://images.unsplash.com/photo-1494526585095-c41746248156?w=800&q=80",
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
-    ],
-    tags: ["tagGolfCourseView", "tagChefIncluded"],
-  },
-];
+import { PROPERTIES } from "@/data/properties";
 
 export default function SearchResultsPage() {
   const { t } = useLanguage();
@@ -111,7 +53,7 @@ export default function SearchResultsPage() {
 
         {/* RESULTS FEED — full width cards on mobile */}
         <div className="px-4 sm:px-6 lg:px-12 py-8 flex flex-col gap-4">
-          {SEARCH_RESULTS.map((property) => (
+          {PROPERTIES.map((property) => (
             <PropertyCard key={property.id} property={property} />
           ))}
         </div>

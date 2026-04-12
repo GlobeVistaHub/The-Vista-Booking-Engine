@@ -80,4 +80,20 @@ export const dictionaries: Dictionary = {
   footerTerms: { en: "Terms", ar: "الشروط" },
   footerContact: { en: "Contact", ar: "اتصل بنا" },
   footerCopyright: { en: "© 2026 THE VISTA. All rights reserved.", ar: "© 2026 ذا فيستا. جميع الحقوق محفوظة." },
+
+  // Property Details Page (General Labels)
+  hostedBy: { en: "Hosted by The Vista Concierge", ar: "بإدارة ذا فيستا كونسيرج" },
+  aboutThisHome: { en: "About this home", ar: "عن هذا المنزل" },
+  descriptionBody: { 
+    en: "Experience luxury Riviera living at its finest.", 
+    ar: "اختبر أرقى معايير المعيشة الفاخرة في ريفييرا البحر الأحمر." 
+  },
+  offers: { en: "What this place offers", ar: "ما يقدمه هذا المكان" },
+  reserve: { en: "Reserve Now", ar: "احجز الآن" },
+  night: { en: "night", ar: "ليلة" },
+  cleaningFee: { en: "Cleaning fee", ar: "رسوم التنظيف" },
+  serviceFee: { en: "Service fee", ar: "رسوم الخدمة" },
+  totalLabel: { en: "Total", ar: "الإجمالي" },
+  rareFind: { en: "This is a rare find", ar: "هذا اكتشاف نادر" },
+  rareFindDetail: { en: "Vista's homes in El Gouna are usually fully booked.", ar: "منازل فيستا في الجونة عادة ما تكون محجوزة بالكامل." },
 };
