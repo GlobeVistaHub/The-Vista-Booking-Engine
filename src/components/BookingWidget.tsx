@@ -66,7 +66,7 @@ export default function BookingWidget() {
         >
           <CalendarIcon className={`w-5 h-5 flex-shrink-0 transition-colors ${activeTab === 'dates' ? 'text-primary' : 'text-primary/70'}`} />
           <div className="flex flex-col text-start">
-            <span className="text-xs font-bold uppercase tracking-widest text-navy">{t('checkIn')} - {t('checkOut')}</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-navy">{t('dates')}</span>
             <span className={`text-sm font-medium transition-colors ${dateRange.from ? 'text-navy' : 'text-muted'}`}>
               {dateRange.from ? (
                 dateRange.to ? `${format(dateRange.from, "MMM d")} - ${format(dateRange.to, "MMM d")}` : format(dateRange.from, "MMM d")

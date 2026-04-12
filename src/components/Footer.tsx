@@ -56,7 +56,6 @@ export default function Footer() {
             {t('footerCopyright')}
           </div>
         </div>
-
       </div>
     </footer>
   );

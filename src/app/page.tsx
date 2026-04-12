@@ -1,24 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { MapPin, Heart, Star } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import BookingWidget from "@/components/BookingWidget";
 import { useLanguage } from "@/context/LanguageContext";
+import { useUser } from "@/context/UserContext";
 import { PROPERTIES } from "@/data/properties";
 
 export default function Home() {
   const { t, lang } = useLanguage();
-  const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
-
-  const toggleLike = (id: number) => {
-    setLikedIds(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
+  const { toggleWishlist, isInWishlist } = useUser();
 
   return (
     <main className="w-full min-h-screen pb-24">
@@ -81,12 +72,16 @@ export default function Home() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
                   />
                   <button 
-                    onClick={(e) => { e.stopPropagation(); toggleLike(property.id); }}
-                    className={`absolute top-4 right-4 p-2.5 bg-white/90 hover:bg-white backdrop-blur-md rounded-full shadow-sm transition-colors ${
-                      likedIds.has(property.id) ? 'text-red-500' : 'text-muted hover:text-red-500'
+                    onClick={(e) => { 
+                      e.preventDefault();
+                      e.stopPropagation(); 
+                      toggleWishlist(property.id); 
+                    }}
+                    className={`absolute top-4 right-4 p-2.5 bg-white/95 hover:bg-white backdrop-blur-md rounded-full shadow-lg transition-all z-20 hover:scale-110 active:scale-95 ${
+                      isInWishlist(property.id) ? 'text-red-500' : 'text-muted hover:text-red-500'
                     }`}
                   >
-                    <Heart className={`w-5 h-5 transition-all ${likedIds.has(property.id) ? 'fill-red-500' : ''}`} />
+                    <Heart className={`w-5 h-5 transition-all ${isInWishlist(property.id) ? 'fill-red-500' : ''}`} />
                   </button>
                 </div>
 

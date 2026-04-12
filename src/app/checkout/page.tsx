@@ -236,9 +236,12 @@ function CheckoutContent() {
             </section>
 
             <div className="pt-8 block lg:hidden">
-                <Link href="/success" className="w-full block py-4 bg-primary text-white rounded-2xl font-bold text-center shadow-md hover:brightness-110 transition-all active:scale-95">
+                <button 
+                  onClick={handleConfirm}
+                  className="w-full block py-4 bg-primary text-white rounded-2xl font-bold text-center shadow-md hover:brightness-110 transition-all active:scale-95"
+                >
                   {t('confirmAndPay')}
-                </Link>
+                </button>
             </div>
           </div>
 

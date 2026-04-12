@@ -23,7 +23,7 @@ export default function ProfilePage() {
   const authName = isLoaded ? clerkName : guestName;
   const authEmail = isLoaded 
     ? (clerkUser?.primaryEmailAddress?.emailAddress || "—")
-    : "sarah.alfayed@vista.com";
+    : "—";
   
   const [activeTab, setActiveTab] = useState<"trips" | "wishlist" | "settings">("trips");
   const [bookingFilter, setBookingFilter] = useState<"upcoming" | "past">("upcoming");
@@ -88,20 +88,20 @@ export default function ProfilePage() {
                   <User className="w-5 h-5" />
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Vista Gold</p>
-                  <p className="text-[10px] font-bold opacity-40">MEMBER SINCE 2026</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">{t('vistaGold')}</p>
+                  <p className="text-[10px] font-bold opacity-40">{t('memberSince')}</p>
                 </div>
               </div>
               
               <div className="pt-4">
-                <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Guest Name</p>
+                <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{t('guestNameLabel')}</p>
                 <p className="text-xl font-heading font-bold tracking-tight">{authName}</p>
               </div>
 
               <div className="flex justify-between items-end pt-2">
                 <div className="space-y-1">
-                  <p className="text-[8px] font-black uppercase tracking-widest opacity-40">Status</p>
-                  <p className="text-[10px] font-bold px-2 py-0.5 bg-white/30 rounded-full border border-white/40">Elite Explorer</p>
+                  <p className="text-[8px] font-black uppercase tracking-widest opacity-40">{t('statusLabel')}</p>
+                  <p className="text-[10px] font-bold px-2 py-0.5 bg-white/30 rounded-full border border-white/40">{t('eliteExplorer')}</p>
                 </div>
                 <div className="flex gap-1">
                   {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 bg-navy rounded-full opacity-20" />)}
@@ -221,15 +221,19 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex items-center justify-between pt-4 border-t border-navy/5">
                             <div className="text-xs text-muted">
-                                <p className="font-bold text-navy uppercase tracking-widest mb-0.5">Check-in</p>
-                                <p>{booking.checkIn ? new Date(booking.checkIn).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : (bookingFilter === "upcoming" ? "Oct 12, 2026" : "Jun 04, 2025")}</p>
+                                <p className="font-bold text-navy uppercase tracking-widest mb-0.5">{t('checkIn')}</p>
+                                <p>{booking.checkIn ? new Date(booking.checkIn).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Oct 12, 2026"}</p>
+                            </div>
+                            <div className="text-xs text-muted text-right">
+                                <p className="font-bold text-navy uppercase tracking-widest mb-0.5">{t('checkOut')}</p>
+                                <p>{booking.checkOut ? new Date(booking.checkOut).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Oct 17, 2026"}</p>
                             </div>
                         </div>
                         
                         {bookingFilter === "upcoming" && (
                           <>
                             <div className="text-xs text-muted mt-2 font-mono">
-                              <span className="text-navy/40 uppercase tracking-widest text-[9px] font-bold block mb-0.5">Booking ID</span>
+                              <span className="text-navy/40 uppercase tracking-widest text-[9px] font-bold block mb-0.5">{t('bookingIdLabel')}</span>
                               {booking.bookingId}
                             </div>
                             <a 
@@ -242,7 +246,7 @@ export default function ProfilePage() {
                               className="w-full py-3 bg-navy/[0.03] hover:bg-navy hover:text-white text-navy rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
                             >
                               <MessageSquare className="w-4 h-4" />
-                              {t('contactConcierge') || 'Contact Concierge'}
+                              {t('contactConcierge')}
                             </a>
                           </>
                         )}

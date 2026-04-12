@@ -18,9 +18,9 @@ export default function MapboxMap({ properties }: MapboxMapProps) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-
   useEffect(() => {
     if (!mapboxToken || !mapContainerRef.current) return;
 
@@ -41,17 +41,22 @@ export default function MapboxMap({ properties }: MapboxMapProps) {
     // Add navigation controls
     map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
 
+    map.on('load', () => {
+      setMapLoaded(true);
+    });
+
     // Cleanup on unmount
     return () => {
       map.remove();
       mapRef.current = null;
+      setMapLoaded(false);
     };
   }, [mapboxToken]);
 
   // SYNC MARKERS (Add/Update as properties change)
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    if (!map || !mapLoaded) return;
 
     // Clear old markers
     markersRef.current.forEach(m => m.remove());
@@ -98,12 +103,8 @@ export default function MapboxMap({ properties }: MapboxMapProps) {
       });
     };
 
-    if (mapRef.current.loaded()) {
-      fitToProperties();
-    } else {
-      mapRef.current.once('load', fitToProperties);
-    }
-  }, [properties]);
+    fitToProperties();
+  }, [properties, mapLoaded]);
 
 
   if (!mapboxToken) {
@@ -162,11 +163,15 @@ export default function MapboxMap({ properties }: MapboxMapProps) {
         </div>
       )}
 
-      {/* Floating Badge for Experience — UPDATED for Premium Contrast */}
-      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-xl px-8 py-3 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-navy/10 z-10 pointer-events-none transition-all hover:scale-105">
-        <div className="flex flex-col items-center">
-          <span className="text-[9px] font-black text-navy/40 tracking-[0.3em] uppercase mb-0.5">Maritime Engine</span>
-          <span className="text-[11px] font-bold text-navy tracking-[0.1em] uppercase">
+      {/* Floating Badge for Experience — Cinematic Vista Design */}
+      <div className="absolute top-8 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-2xl px-10 py-5 rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)] border border-navy/5 z-10 pointer-events-none">
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-[1px] bg-primary/30" />
+            <span className="text-[8px] font-black text-primary tracking-[0.5em] uppercase whitespace-nowrap">Maritime Engine</span>
+            <div className="w-6 h-[1px] bg-primary/30" />
+          </div>
+          <span className="text-[13px] font-bold text-navy tracking-[0.2em] uppercase whitespace-nowrap">
             {lang === 'ar' ? "تجربة فيستا الحية" : "Live Vista Experience"}
           </span>
         </div>

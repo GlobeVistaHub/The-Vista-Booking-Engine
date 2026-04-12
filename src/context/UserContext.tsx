@@ -18,27 +18,35 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [preferences, setPreferences] = useState<string[]>(["Ocean Views", "High Security"]);
-  const [guestName] = useState("Sarah Al-Fayed"); // Default demo name
+  const [guestName] = useState("Vista Guest");
+  // Guard: only save AFTER we've loaded from localStorage (prevents overwriting on mount)
+  const [hydrated, setHydrated] = useState(false);
 
-  // Persist to localStorage for demo reliability
+  // LOAD from localStorage on mount
   useEffect(() => {
-    const savedWishlist = localStorage.getItem("vista_wishlist");
-    const savedPrefs = localStorage.getItem("vista_prefs");
-    
-    if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
-    if (savedPrefs) setPreferences(JSON.parse(savedPrefs));
+    try {
+      const savedWishlist = localStorage.getItem("vista_wishlist");
+      const savedPrefs = localStorage.getItem("vista_prefs");
+      if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
+      if (savedPrefs) setPreferences(JSON.parse(savedPrefs));
+    } catch (e) {}
+    setHydrated(true);
   }, []);
 
+  // SAVE wishlist — only after hydration to prevent overwriting on first render
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem("vista_wishlist", JSON.stringify(wishlist));
-  }, [wishlist]);
+  }, [wishlist, hydrated]);
 
+  // SAVE preferences — only after hydration
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem("vista_prefs", JSON.stringify(preferences));
-  }, [preferences]);
+  }, [preferences, hydrated]);
 
   const toggleWishlist = (id: number) => {
-    setWishlist(prev => 
+    setWishlist(prev =>
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
@@ -46,7 +54,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isInWishlist = (id: number) => wishlist.includes(id);
 
   const togglePreference = (pref: string) => {
-    setPreferences(prev => 
+    setPreferences(prev =>
       prev.includes(pref) ? prev.filter(p => p !== pref) : [...prev, pref]
     );
   };

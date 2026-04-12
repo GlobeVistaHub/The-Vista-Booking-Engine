@@ -21,13 +21,41 @@ import {
   Calendar
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useUser } from "@/context/UserContext";
 import { PROPERTIES } from "@/data/properties";
 
 export default function PropertyPage() {
   const { id } = useParams();
   const { t, lang } = useLanguage();
-  const [liked, setLiked] = useState(false);
+  const { toggleWishlist, isInWishlist } = useUser();
   const [currentImg, setCurrentImg] = useState(0);
+  const [shared, setShared] = useState(false);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = lang === "ar" ? property?.title_ar : property?.title;
+
+    // Tier 1: Native share sheet (mobile HTTPS)
+    if (navigator.share) {
+      try { await navigator.share({ title: title || "The Vista", url }); return; } catch (_) {}
+    }
+
+    // Tier 2: Clipboard API (desktop HTTPS)
+    if (navigator.clipboard?.writeText) {
+      try { await navigator.clipboard.writeText(url); setShared(true); setTimeout(() => setShared(false), 2000); return; } catch (_) {}
+    }
+
+    // Tier 3: execCommand fallback — works on localhost/HTTP
+    const textarea = document.createElement("textarea");
+    textarea.value = url;
+    textarea.style.cssText = "position:fixed;top:-9999px;left:-9999px;opacity:0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+    setShared(true);
+    setTimeout(() => setShared(false), 2000);
+  };
 
   // Find the actual property from our centralized data
   const property = PROPERTIES.find(p => p.id === Number(id));
@@ -104,14 +132,27 @@ export default function PropertyPage() {
         
         {/* Top Overlay Buttons (Heart/Share) */}
         <div className="absolute bottom-8 right-8 flex gap-4 z-20">
-          <button className="p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg hover:bg-white transition-all group">
-            <Share className="w-5 h-5 text-navy" />
+          <button
+            onClick={handleShare}
+            className="p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg hover:bg-white transition-all group relative"
+            aria-label="Share property"
+          >
+            {shared ? (
+              <Check className="w-5 h-5 text-green-500" />
+            ) : (
+              <Share className="w-5 h-5 text-navy group-hover:text-primary transition-colors" />
+            )}
+            {shared && (
+              <span className="absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap bg-navy text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">
+                Link copied!
+              </span>
+            )}
           </button>
           <button 
-            onClick={() => setLiked(!liked)}
+            onClick={() => toggleWishlist(property.id)}
             className="p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg hover:bg-white transition-all group"
           >
-            <Heart className={`w-5 h-5 transition-all ${liked ? 'fill-red-500 text-red-500' : 'text-navy group-hover:text-red-500'}`} />
+            <Heart className={`w-5 h-5 transition-all ${isInWishlist(property.id) ? 'fill-red-500 text-red-500' : 'text-navy group-hover:text-red-500'}`} />
           </button>
         </div>
       </div>

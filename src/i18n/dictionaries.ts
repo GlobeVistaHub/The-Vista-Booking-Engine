@@ -90,7 +90,7 @@ export const dictionaries: Dictionary = {
   tagInstantBook: { en: "Instant Book", ar: "حجز فوري" },
 
   // Footer
-  footerTagline: { en: "A GlobeVistaHub Brand. Created for the Red Sea Riviera.", ar: "علامة تجارية من GlobeVistaHub. صُممت لريفييرا البحر الأحمر." },
+  footerTagline: { en: "The Red Sea Riviera by GlobeVistaHub", ar: "The Red Sea Riviera by GlobeVistaHub" },
   footerPrivacy: { en: "Privacy", ar: "الخصوصية" },
   footerTerms: { en: "Terms", ar: "الشروط" },
   footerContact: { en: "Contact", ar: "اتصل بنا" },
@@ -163,6 +163,13 @@ export const dictionaries: Dictionary = {
   signOut: { en: "Sign Out", ar: "تسجيل الخروج" },
   expires: { en: "Expires", ar: "ينتهي" },
   contactConcierge: { en: "Contact Concierge", ar: "تواصل مع الكونسيرج" },
+  bookingIdLabel: { en: "Booking ID", ar: "رقم الحجز" },
+  vistaGold: { en: "Vista Gold", ar: "فيستا جولد" },
+  eliteExplorer: { en: "Elite Explorer", ar: "إيليت إكسبلورر" },
+  memberSince: { en: "MEMBER SINCE 2026", ar: "عضو منذ 2026" },
+  statusLabel: { en: "Status", ar: "الحالة" },
+  verifiedStatus: { en: "Verified", ar: "موثق" },
+  guestNameLabel: { en: "Guest Name", ar: "اسم الضيف" },
   
   // Dashboard & Preferences
   prefPrivateBeach: { en: "Private Beach", ar: "شاطئ خاص" },

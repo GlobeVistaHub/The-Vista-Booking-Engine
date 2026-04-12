@@ -74,14 +74,22 @@ export default function Header() {
               </button>
             </SignInButton>
           ) : (
-            <UserButton 
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  userButtonAvatarBox: "w-10 h-10 border-2 border-primary shadow-sm"
-                }
-              }}
-            />
+            <div className="flex items-center gap-4">
+              <Link
+                href="/profile"
+                className={`text-sm font-bold transition-all ${isSolid ? "text-navy hover:text-primary" : "text-white drop-shadow"}`}
+              >
+                {lang === 'ar' ? 'حجوزاتي' : 'My Trips'}
+              </Link>
+              <UserButton 
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "w-10 h-10 border-2 border-primary shadow-sm"
+                  }
+                }}
+              />
+            </div>
           )}
 
         </div>
