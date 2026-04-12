@@ -21,19 +21,40 @@ function SuccessContent() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [bookingId, setBookingId] = useState<string>("");
 
+  const hasSaved = useRef(false);
+
   useEffect(() => {
-    // Generate the unique ID only on the client to avoid hydration mismatch
+    if (hasSaved.current) return;
+
     const propId = searchParams.get("id") || "X";
     const from = searchParams.get("from");
     const to = searchParams.get("to");
-    const random = Math.random().toString(36).substring(7).toUpperCase();
-    const currentYear = new Date().getFullYear();
-    const newBookingId = `VST-${currentYear}-${propId}-${random}`;
-    setBookingId(newBookingId);
     
-    // ✅ PERSIST to localStorage so the Dashboard can read the real ID
     try {
       const existing = JSON.parse(localStorage.getItem("vista_bookings") || "[]");
+      
+      // Look for a very recent duplicate (within 5 minutes, same property and dates) 
+      // This handles page refreshes and strict-mode double mounts
+      const duplicate = existing.find((b: any) => 
+        b.propertyId === propId && 
+        b.checkIn === from && 
+        b.checkOut === to &&
+        (new Date().getTime() - new Date(b.timestamp).getTime() < 300000)
+      );
+
+      if (duplicate) {
+        setBookingId(duplicate.bookingId);
+        hasSaved.current = true;
+        return;
+      }
+
+      // If no duplicate, generate new
+      const random = Math.random().toString(36).substring(7).toUpperCase();
+      const currentYear = new Date().getFullYear();
+      const newBookingId = `VST-${currentYear}-${propId}-${random}`;
+      
+      setBookingId(newBookingId);
+      
       existing.unshift({ 
         bookingId: newBookingId, 
         propertyId: propId, 
@@ -41,7 +62,8 @@ function SuccessContent() {
         checkOut: to,
         timestamp: new Date().toISOString() 
       });
-      localStorage.setItem("vista_bookings", JSON.stringify(existing.slice(0, 10))); // keep last 10
+      localStorage.setItem("vista_bookings", JSON.stringify(existing.slice(0, 10)));
+      hasSaved.current = true;
     } catch(e) {}
   }, [searchParams]);
 
