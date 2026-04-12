@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Heart, Star, ChevronLeft, ChevronRight, ChevronRight as ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useUser } from "@/context/UserContext";
 
 interface Property {
   id: number;
@@ -19,12 +20,16 @@ interface Property {
   reviews: number;
   images: string[];
   tags: string[];
+  isBooked?: boolean;
 }
 
 export default function PropertyCard({ property }: { property: Property }) {
+
   const [currentImg, setCurrentImg] = useState(0);
-  const [liked, setLiked] = useState(false);
+  const { toggleWishlist, isInWishlist } = useUser();
   const { t, lang } = useLanguage();
+
+  const liked = isInWishlist(property.id);
 
   const prev = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -40,8 +45,14 @@ export default function PropertyCard({ property }: { property: Property }) {
     <Link href={`/property/${property.id}`}>
       <article className="group flex flex-col sm:flex-row gap-6 cursor-pointer border-b border-navy/5 pb-10 last:border-0 hover:bg-navy/[0.02] transition-colors p-4 -mx-4 rounded-3xl" dir={lang === "ar" ? "rtl" : "ltr"}>
 
+
+
+
         {/* IMAGE CAROUSEL */}
         <div className="relative w-full sm:w-72 h-56 sm:h-56 rounded-2xl overflow-hidden flex-shrink-0 bg-navy/5">
+
+
+
           {/* Images */}
           <div className="relative w-full h-full">
             {property.images.map((img, idx) => (
@@ -82,16 +93,39 @@ export default function PropertyCard({ property }: { property: Property }) {
 
           {/* Wishlist */}
           <button
-            onClick={(e) => { e.stopPropagation(); setLiked(!liked); }}
-            className={`absolute top-3 ${lang === "ar" ? "left-3" : "right-3"} p-2 bg-white/90 hover:bg-white backdrop-blur-md rounded-full shadow-sm transition-colors z-10`}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(property.id); }}
+            className={`absolute top-3 ${lang === "ar" ? "left-3" : "right-3"} p-2 bg-white/90 hover:bg-white backdrop-blur-md rounded-full shadow-sm transition-all z-10 group/heart`}
             aria-label="Save to wishlist"
           >
-            <Heart className={`w-4 h-4 transition-colors ${liked ? "fill-red-500 text-red-500" : "text-muted"}`} />
+            <Heart className={`w-4 h-4 transition-colors ${liked ? "fill-red-500 text-red-500" : "text-muted group-hover/heart:text-red-500"}`} />
           </button>
+
+          {/* PREMIUM BOOKED RIBBON (Corner Style) */}
+          {property.isBooked && (
+            <div className={`absolute top-0 ${lang === 'ar' ? 'right-0' : 'left-0'} z-20 overflow-hidden w-24 h-24 pointer-events-none`}>
+              <div className={`absolute top-4 ${lang === 'ar' ? '-right-8' : '-left-8'} w-32 py-1 bg-navy/90 backdrop-blur-md border-y border-white/20 shadow-2xl ${lang === 'ar' ? 'rotate-45' : '-rotate-45'} text-center`}>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white pr-1">
+                  {t('fullyBooked')}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* BEST OF THE BEST BADGE */}
+          {property.rating === 5.0 && !property.isBooked && (
+            <div className={`absolute bottom-3 ${lang === 'ar' ? 'right-3' : 'left-3'} z-20 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full border border-primary/20 shadow-lg flex items-center gap-1.5 animate-in fade-in zoom-in slide-in-from-bottom-2`}>
+              <span className="text-[8px] font-black uppercase tracking-widest text-primary">Best of the Best</span>
+            </div>
+          )}
         </div>
 
+
+
+
+
+
         {/* DETAILS */}
-        <div className="flex flex-col flex-1 py-1">
+        <div className="flex flex-col flex-1 py-1 min-h-[180px]">
           <div className="flex justify-between items-start">
             <div>
               <span className="text-xs font-bold uppercase tracking-widest text-muted">{t(property.type as keyof typeof import('@/i18n/dictionaries').dictionaries) || property.type} {t('in')} {lang === "ar" ? property.location_ar : property.location}</span>
@@ -115,6 +149,7 @@ export default function PropertyCard({ property }: { property: Property }) {
             ))}
           </div>
 
+          {/* PRICE AND CTA - Pushed to bottom regardless of content height above */}
           <div className="mt-auto pt-6 flex justify-between items-end">
             <div className="flex items-center gap-1 font-medium text-sm text-navy hover:text-primary transition-colors">
               {t('viewDetails')} <ArrowRight className={`w-4 h-4 ${lang === "ar" ? "rotate-180" : ""}`} />

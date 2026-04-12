@@ -8,7 +8,7 @@ import "react-day-picker/style.css";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
-const LOCATIONS = ["El Gouna", "Sahl Hasheesh", "Soma Bay", "Makadi Bay"];
+const LOCATIONS = ["regionGouna", "regionSahl", "regionSoma", "regionMakadi"];
 
 export default function BookingWidget() {
   const [activeTab, setActiveTab] = useState<"location" | "dates" | "guests" | null>(null);
@@ -54,7 +54,7 @@ export default function BookingWidget() {
           <div className="flex flex-col text-start">
             <span className="text-xs font-bold uppercase tracking-widest text-navy">{t('location')}</span>
             <span className={`text-sm font-medium transition-colors ${selectedLocation ? 'text-navy' : 'text-muted'}`}>
-              {selectedLocation || t('locationPlaceholder')}
+              {selectedLocation ? t(selectedLocation) : t('locationPlaceholder')}
             </span>
           </div>
         </div>
@@ -100,7 +100,10 @@ export default function BookingWidget() {
 
       {/* ABSOLUTE POPUP SHEETS (Desktop drops down, Mobile floats) */}
       {activeTab === "location" && (
-        <div className="absolute top-[110%] left-0 md:left-4 w-full md:w-[350px] bg-surface rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-200 z-50 border border-navy/5" style={{ boxShadow: "var(--shadow-hover)" }}>
+        <div 
+          className={`absolute top-[110%] ${lang === "ar" ? "right-0 md:right-4" : "left-0 md:left-4"} w-full md:w-[350px] bg-surface rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-200 z-50 border border-navy/5`} 
+          style={{ boxShadow: "var(--shadow-hover)" }}
+        >
           <h4 className="text-xs font-bold uppercase tracking-widest text-muted mb-4 px-2">{t('popularRegions')}</h4>
           <ul className="space-y-1">
             {LOCATIONS.map(loc => (
@@ -112,8 +115,8 @@ export default function BookingWidget() {
                 }}
                 className={`px-4 py-3 rounded-xl cursor-pointer flex items-center gap-3 transition-colors ${selectedLocation === loc ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-navy/5 text-navy font-medium'}`}
               >
-                <MapPin className="w-4 h-4 opacity-50" />
-                {loc}
+                <MapPin className="w-4 h-4 opacity-50 shrink-0" />
+                <span>{t(loc)}</span>
               </li>
             ))}
           </ul>
@@ -146,7 +149,10 @@ export default function BookingWidget() {
       )}
 
       {activeTab === "guests" && (
-        <div className="absolute top-[110%] right-0 md:right-1/4 w-full md:w-[350px] bg-surface rounded-2xl p-6 z-50 border border-navy/5" style={{ boxShadow: "var(--shadow-hover)" }}>
+        <div 
+          className={`absolute top-[110%] ${lang === "ar" ? "left-0 md:left-1/4" : "right-0 md:right-1/4"} w-full md:w-[350px] bg-surface rounded-2xl p-6 z-50 border border-navy/5`} 
+          style={{ boxShadow: "var(--shadow-hover)" }}
+        >
           {/* ADULTS */}
           <div className="flex items-center justify-between py-4 border-b border-navy/5">
             <div>

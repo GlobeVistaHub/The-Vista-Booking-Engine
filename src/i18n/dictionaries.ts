@@ -49,8 +49,20 @@ export const dictionaries: Dictionary = {
   typeOfPlace: { en: "Type of Place", ar: "نوع المكان" },
   price: { en: "Price", ar: "السعر" },
   instantBook: { en: "Instant Book", ar: "حجز فوري" },
+  fullyBooked: { en: "Booked", ar: "محجوز" },
+  selectCategories: { en: "Select Categories", ar: "اختر الفئات" },
+  priceRange: { en: "Price Range", ar: "نطاق السعر" },
+
+  noResultsFound: { en: "No properties matched", ar: "لا توجد نتائج مطابقة" },
+  noResultsDesc: { en: "Try adjusting your filters to find your perfect stay.", ar: "حاول تعديل الفلاتر للعثور على إقامتك المثالية." },
+  clearAllFilters: { en: "Reset All Filters", ar: "إعادة ضبط جميع الفلاتر" },
+
 
   // Property Card / Property Types
+  Villa: { en: "Villa", ar: "فيلا" },
+  Penthouse: { en: "Penthouse", ar: "بنتهاوس" },
+  Estate: { en: "Estate", ar: "عقار ريفي" },
+  Apartment: { en: "Apartment", ar: "شقة لكجري" },
   entireVilla: { en: "Entire Villa", ar: "فيلا بالكامل" },
   luxuryApartment: { en: "Luxury Apartment", ar: "شقة فاخرة" },
   entireEstate: { en: "Entire Estate", ar: "عقار بالكامل" },
@@ -73,6 +85,9 @@ export const dictionaries: Dictionary = {
   tagBeachAccess: { en: "Beach Access", ar: "وصول مباشر للشاطئ" },
   tagGolfCourseView: { en: "Golf Course View", ar: "إطلالة على ملعب الغولف" },
   tagChefIncluded: { en: "Chef Included", ar: "طاهٍ مُدرج" },
+  tagUltraWifi: { en: "Ultra High-speed WiFi", ar: "واي فاي فائق السرعة" },
+  tagSecurity: { en: "24/7 Gated Security", ar: "أمن 24/7" },
+  tagInstantBook: { en: "Instant Book", ar: "حجز فوري" },
 
   // Footer
   footerTagline: { en: "A GlobeVistaHub Brand. Created for the Red Sea Riviera.", ar: "علامة تجارية من GlobeVistaHub. صُممت لريفييرا البحر الأحمر." },
@@ -96,4 +111,89 @@ export const dictionaries: Dictionary = {
   totalLabel: { en: "Total", ar: "الإجمالي" },
   rareFind: { en: "This is a rare find", ar: "هذا اكتشاف نادر" },
   rareFindDetail: { en: "Vista's homes in El Gouna are usually fully booked.", ar: "منازل فيستا في الجونة عادة ما تكون محجوزة بالكامل." },
+
+  // Checkout Page
+  requestToBook: { en: "Request to book", ar: "طلب الحجز" },
+  confirmAndPay: { en: "Confirm and pay", ar: "تأكيد والدفع" },
+  yourTrip: { en: "Your trip", ar: "رحلتك" },
+  dates: { en: "Dates", ar: "التواريخ" },
+  edit: { en: "Edit", ar: "تعديل" },
+  paymentMethod: { en: "Payment method", ar: "طريقة الدفع" },
+  priceDetails: { en: "Price details", ar: "تفاصيل السعر" },
+  groundRules: { en: "Ground rules", ar: "قواعد المنزل" },
+  groundRulesDetail: { 
+    en: "We ask every guest to remember a few simple things about what makes a great guest.", 
+    ar: "نطلب من كل ضيف تذكر بعض الأشياء البسيطة حول ما يجعلك ضيفاً رائعاً." 
+  },
+  followHouseRules: { en: "Follow the house rules", ar: "اتبع قواعد المنزل" },
+  treatHomeLikeOwn: { en: "Treat the home like your own", ar: "عامل المنزل وكأنه ملكك" },
+
+  // Success Page
+  bookingConfirmed: { en: "Your stay is confirmed!", ar: "تم تأكيد إقامتك!" },
+  successSubtitle: { 
+    en: "A confirmation email has been sent to your inbox. We look forward to hosting you.", 
+    ar: "تم إرسال رسالة تأكيد إلى بريدك الإلكتروني. نحن نتطلع لاستضافتك." 
+  },
+  viewBookings: { en: "View my bookings", ar: "عرض حجوزاتي" },
+  backToHome: { en: "Back to Home", ar: "العودة إلى الرئيسية" },
+
+  // Profile Page
+  myAccount: { en: "My Account", ar: "حسابي" },
+  myBookings: { en: "My Bookings", ar: "حجوزاتي" },
+  upcoming: { en: "Upcoming", ar: "القادمة" },
+  past: { en: "Past", ar: "السابقة" },
+  manageProfile: { en: "Manage Profile", ar: "إدارة الملف الشخصي" },
+  noBookings: { en: "No bookings found.", ar: "لا توجد حجوزات." },
+  wishlistTab: { en: "Wishlist", ar: "قائمة الأمنيات" },
+  wishlistEmptyMsg: { en: "Your wishlist is empty. Start exploring to save your favorite sanctuaries.", ar: "قائمة أمنياتك فارغة. ابدأ باستكشاف وجهاتنا لحفظ ملاذاتك المفضلة." },
+  stayPreferences: { en: "Stay Preferences", ar: "تفضيلات الإقامة" },
+  
+  // Dashboard Settings
+  personalInfo: { en: "Personal Information", ar: "المعلومات الشخصية" },
+  fullName: { en: "Full Name", ar: "الاسم الكامل" },
+  emailAddress: { en: "Email Address", ar: "البريد الإلكتروني" },
+  phoneConcierge: { en: "Phone / Concierge Preference", ar: "الهاتف / تفضيل الكونسيرج" },
+  defaultTravelParty: { en: "Default Travel Party", ar: "مجموعة السفر الافتراضية" },
+  identityVerification: { en: "Identity Verification", ar: "التحقق من الهوية" },
+  passportVerified: { en: "Passport Verified", ar: "جواز السفر موثق" },
+  identitySecured: { en: "Your identity is secured. You are eligible for Instant Booking.", ar: "هويتك مؤمنة. أنت مؤهل للحجز الفوري." },
+  verifiedStatus: { en: "Verified", ar: "موثق" },
+  vistaVault: { en: "Vista Vault", ar: "خزنة فيستا" },
+  updateBtn: { en: "Update", ar: "تحديث" },
+  signOut: { en: "Sign Out", ar: "تسجيل الخروج" },
+  expires: { en: "Expires", ar: "ينتهي" },
+  contactConcierge: { en: "Contact Concierge", ar: "تواصل مع الكونسيرج" },
+  
+  // Dashboard & Preferences
+  prefPrivateBeach: { en: "Private Beach", ar: "شاطئ خاص" },
+  prefChefIncluded: { en: "Chef Included", ar: "طاهٍ خاص" },
+  prefOceanViews: { en: "Ocean Views", ar: "إطلالة بحرية" },
+  prefHighSecurity: { en: "High Security", ar: "أمن عالي" },
+  prefKidFriendly: { en: "Kid Friendly", ar: "مناسب للأطفال" },
+  prefPetFriendly: { en: "Pet Friendly", ar: "يسمح بالحيوانات الأليفة" },
+  prefPrivateGym: { en: "Private Gym", ar: "صالة رياضية خاصة" },
+  prefSeaSports: { en: "Sea Sports", ar: "رياضات بحرية" },
+  prefAirportVIP: { en: "Airport VIP Transfer", ar: "نقل VIP من المطار" },
+  prefNightLife: { en: "Night Life", ar: "حياة ليلية" },
+  prefShopping: { en: "Shopping", ar: "تسوق" },
+
+  // Checkout & Payment
+  notChargedYet: { en: "You won't be charged yet", ar: "لن يتم الخصم منك الآن" },
+  cardNumber: { en: "Card number", ar: "رقم البطاقة" },
+  expiration: { en: "Expiration", ar: "تاريخ الانتهاء" },
+  cvv: { en: "CVV", ar: "الرمز (CVV)" },
+  secureSsl: { en: "Secure SSL Encryption", ar: "تشفير SSL آمن" },
+  saveChanges: { en: "Save Changes", ar: "حفظ التغييرات" },
+  cancel: { en: "Cancel", ar: "إلغاء" },
+  editTrip: { en: "Edit Trip", ar: "تعديل الرحلة" },
+  editGuests: { en: "Edit Guests", ar: "تعديل الضيوف" },
+  confirmingBooking: { en: "Confirming booking...", ar: "جاري تأكيد حجزك..." },
+  emailSent: { en: "Booking confirmed & email sent!", ar: "تم تأكيد الحجز وإرسال البريد!" },
+  automationError: { en: "Booking confirmed (Email pending)", ar: "تم الحجز (البريد قيد الإرسال)" },
+
+  // Regions
+  regionGouna: { en: "El Gouna", ar: "الجونة" },
+  regionSahl: { en: "Sahl Hasheesh", ar: "سهل حشيش" },
+  regionSoma: { en: "Soma Bay", ar: "سوما باي" },
+  regionMakadi: { en: "Makadi Bay", ar: "خليج مكادي" },
 };

@@ -5,9 +5,11 @@ import { Globe } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useAuth, SignInButton, UserButton } from "@clerk/nextjs";
 
 export default function Header() {
   const pathname = usePathname();
+  const { isSignedIn } = useAuth();
   const isHome = pathname === "/";
   const isProperty = pathname.startsWith("/property/");
   const isTransparentBase = isHome || isProperty;
@@ -65,9 +67,23 @@ export default function Header() {
             <span>{lang === "en" ? "العربية" : "English"}</span>
           </button>
 
-          <button className="px-6 py-2.5 bg-primary text-white rounded-full text-sm font-bold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all outline-none">
-            {t('signIn')}
-          </button>
+          {!isSignedIn ? (
+            <SignInButton mode="modal">
+              <button className="px-6 py-2.5 bg-primary text-white rounded-full text-sm font-bold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all outline-none">
+                {t('signIn')}
+              </button>
+            </SignInButton>
+          ) : (
+            <UserButton 
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: "w-10 h-10 border-2 border-primary shadow-sm"
+                }
+              }}
+            />
+          )}
+
         </div>
       </div>
     </header>

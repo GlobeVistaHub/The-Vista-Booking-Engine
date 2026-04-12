@@ -28,9 +28,11 @@ export const metadata: Metadata = {
   description: "The Pinnacle of Riviera Living. Premium property booking and management in Hurghada.",
 };
 
+import { ClerkProvider } from '@clerk/nextjs';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { UserProvider } from "@/context/UserContext";
 
 export default function RootLayout({
   children,
@@ -38,17 +40,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" className={`${inter.variable} ${playfair.variable} ${cairo.variable} ${tajawal.variable} h-full antialiased`}>
-      <LanguageProvider>
-        <body className="min-h-full flex flex-col">
-          <Header />
-          <main className="flex-grow pt-20">
-            {children}
-          </main>
-          <Footer />
-        </body>
-      </LanguageProvider>
-    </html>
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "#D4AF37",
+          colorTextOnPrimaryBackground: "#031428", // Navy text on Gold buttons
+        },
+      }}
+    >
+      <html lang="en" dir="ltr" className={`${inter.variable} ${playfair.variable} ${cairo.variable} ${tajawal.variable} h-full antialiased`}>
+        <LanguageProvider>
+          <UserProvider>
+            <body className="min-h-full flex flex-col">
+              <Header />
+              <main className="flex-grow pt-20">
+                {children}
+              </main>
+              <Footer />
+            </body>
+          </UserProvider>
+        </LanguageProvider>
+      </html>
+    </ClerkProvider>
   );
 }
 

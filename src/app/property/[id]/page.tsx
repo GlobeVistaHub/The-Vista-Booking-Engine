@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { 
   MapPin, 
   Users, 
@@ -14,6 +15,7 @@ import {
   ShieldCheck, 
   Check, 
   ChevronRight,
+  ChevronLeft,
   Heart,
   Share,
   Calendar
@@ -25,6 +27,7 @@ export default function PropertyPage() {
   const { id } = useParams();
   const { t, lang } = useLanguage();
   const [liked, setLiked] = useState(false);
+  const [currentImg, setCurrentImg] = useState(0);
 
   // Find the actual property from our centralized data
   const property = PROPERTIES.find(p => p.id === Number(id));
@@ -48,17 +51,56 @@ export default function PropertyPage() {
   const serviceFee = Math.round(pricePerNight * 5 * 0.1); // 10% service fee
   const total = pricePerNight * 5 + cleaningFee + serviceFee;
 
+  const nextImg = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImg((i) => (i === property.images.length - 1 ? 0 : i + 1));
+  };
+
+  const prevImg = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImg((i) => (i === 0 ? property.images.length - 1 : i - 1));
+  };
+
   return (
     <div className="w-full bg-v-background min-h-screen">
       
       {/* 1. CINEMATIC HERO SECTION (Behind Transparent Header) */}
-      <div className="relative w-full h-[60vh] md:h-[70vh] -mt-20 overflow-hidden">
-        <img 
-          src={property.images[0]} 
-          alt={lang === "ar" ? property.title_ar : property.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-navy/20 mix-blend-multiply" />
+      <div className="relative w-full h-[60vh] md:h-[70vh] -mt-20 overflow-hidden group">
+        {property.images.map((img, idx) => (
+          <img 
+            key={idx}
+            src={img} 
+            alt={`${lang === "ar" ? property.title_ar : property.title} view ${idx + 1}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${idx === currentImg ? "opacity-100" : "opacity-0"}`}
+          />
+        ))}
+        <div className="absolute inset-0 bg-navy/20 mix-blend-multiply pointer-events-none" />
+
+        {/* Carousel Arrows */}
+        <button
+          onClick={prevImg}
+          className={`absolute ${lang === "ar" ? "right-8" : "left-8"} top-1/2 -translate-y-1/2 w-12 h-12 bg-white/40 hover:bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg text-white hover:text-navy opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all z-20`}
+          aria-label="Previous image"
+        >
+          <ChevronLeft className={`w-6 h-6 ${lang === "ar" ? "rotate-180" : ""}`} />
+        </button>
+        <button
+          onClick={nextImg}
+          className={`absolute ${lang === "ar" ? "left-8" : "right-8"} top-1/2 -translate-y-1/2 w-12 h-12 bg-white/40 hover:bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg text-white hover:text-navy opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all z-20`}
+          aria-label="Next image"
+        >
+          <ChevronRight className={`w-6 h-6 ${lang === "ar" ? "rotate-180" : ""}`} />
+        </button>
+
+        {/* Dot indicators */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex justify-center gap-2 z-20 pointer-events-none">
+          {property.images.map((_, idx) => (
+            <div
+              key={idx}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentImg ? "bg-white w-4" : "bg-white/50"}`}
+            />
+          ))}
+        </div>
         
         {/* Top Overlay Buttons (Heart/Share) */}
         <div className="absolute bottom-8 right-8 flex gap-4 z-20">
@@ -69,7 +111,7 @@ export default function PropertyPage() {
             onClick={() => setLiked(!liked)}
             className="p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg hover:bg-white transition-all group"
           >
-            <Heart className={`w-5 h-5 transition-all ${liked ? 'fill-red-500 text-red-500' : 'text-navy'}`} />
+            <Heart className={`w-5 h-5 transition-all ${liked ? 'fill-red-500 text-red-500' : 'text-navy group-hover:text-red-500'}`} />
           </button>
         </div>
       </div>
@@ -107,7 +149,7 @@ export default function PropertyPage() {
                 </div>
                 <div className="text-start">
                   <h3 className="font-bold text-navy text-lg">{t('hostedBy')}</h3>
-                  <p className="text-muted text-sm">Joined in 2021 • Superhost</p>
+                  <p className="text-muted text-sm">Joined in 2026 • Superhost</p>
                 </div>
               </div>
               <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-v-background border border-navy/10 rounded-full text-xs font-bold text-navy uppercase tracking-widest">
@@ -151,11 +193,11 @@ export default function PropertyPage() {
                 ))}
                 <div className="flex items-center gap-4 text-navy">
                   <Wifi className="w-5 h-5 text-primary opacity-60" />
-                  <span className="font-medium">Ultra High-speed WiFi</span>
+                  <span className="font-medium">{t('tagUltraWifi')}</span>
                 </div>
                 <div className="flex items-center gap-4 text-navy">
                   <ShieldCheck className="w-5 h-5 text-primary opacity-60" />
-                  <span className="font-medium">24/7 Gated Security</span>
+                  <span className="font-medium">{t('tagSecurity')}</span>
                 </div>
               </div>
             </div>
@@ -180,11 +222,11 @@ export default function PropertyPage() {
               {/* Mock Input Fields */}
               <div className="grid grid-cols-2 border border-navy/10 rounded-2xl overflow-hidden">
                 <div className="p-4 border-r border-navy/10 hover:bg-navy/[0.02] transition-colors cursor-pointer text-start">
-                  <p className="text-[10px] font-bold text-navy uppercase tracking-widest mb-1">Check-In</p>
+                  <p className="text-[10px] font-bold text-navy uppercase tracking-widest mb-1">{t('checkIn')}</p>
                   <p className="text-sm font-medium text-muted">10/12/2026</p>
                 </div>
                 <div className="p-4 hover:bg-navy/[0.02] transition-colors cursor-pointer text-start">
-                  <p className="text-[10px] font-bold text-navy uppercase tracking-widest mb-1">Check-Out</p>
+                  <p className="text-[10px] font-bold text-navy uppercase tracking-widest mb-1">{t('checkOut')}</p>
                   <p className="text-sm font-medium text-muted">15/12/2026</p>
                 </div>
                 <div className="col-span-2 p-4 border-t border-navy/10 hover:bg-navy/[0.02] transition-colors cursor-pointer flex justify-between items-center text-start">
@@ -197,12 +239,15 @@ export default function PropertyPage() {
               </div>
 
               {/* CTA Button */}
-              <button className="w-full py-4 bg-primary hover:brightness-110 text-white rounded-2xl font-bold text-lg shadow-md transition-all active:scale-95">
+              <Link 
+                href={`/checkout?id=${property.id}`}
+                className="w-full py-4 bg-primary hover:brightness-110 text-white rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95"
+              >
                 {t('reserve')}
-              </button>
+              </Link>
 
               <p className="text-center text-muted text-xs">
-                You won't be charged yet
+                {t('notChargedYet')}
               </p>
 
               {/* Price Breakdown */}
