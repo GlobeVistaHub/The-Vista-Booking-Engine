@@ -1,19 +1,30 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X, Map as MapIcon, Zap } from "lucide-react";
+import { parseISO } from "date-fns";
 
 import PropertyCard from "@/components/PropertyCard";
 import MapWrapper from "@/components/MapWrapper";
 import { useLanguage } from "@/context/LanguageContext";
-
 import { PROPERTIES } from "@/data/properties";
 
-export default function SearchResultsPage() {
+// ─── Inner component (needs useSearchParams inside Suspense) ────────────────
+function SearchContent() {
   const { t, lang } = useLanguage();
+  const searchParams = useSearchParams();
   const [showMap, setShowMap] = useState(false);
 
-  // FILTER STATE
+  // ── Read URL params from the Search Widget ──────────────────────────────
+  const urlLocation = searchParams.get("location") ?? "";
+  const urlFrom     = searchParams.get("from") ?? "";
+  const urlTo       = searchParams.get("to") ?? "";
+  const urlAdults   = Number(searchParams.get("adults") ?? 0);
+  const urlChildren = Number(searchParams.get("children") ?? 0);
+  const totalGuests = urlAdults + urlChildren;
+
+  // ── Secondary filter state (filter bar on search page) ──────────────────
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 2000 });
   const [instantBookOnly, setInstantBookOnly] = useState(false);
@@ -21,26 +32,58 @@ export default function SearchResultsPage() {
   const [isPriceOpen, setIsPriceOpen] = useState(false);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  const allTypes = useMemo(() => Array.from(new Set(PROPERTIES.map(p => p.type))), []);
-
-  const filteredProperties = useMemo(() => {
-    let results = PROPERTIES.filter(property => {
-      if (selectedTypes.length > 0 && !selectedTypes.includes(property.type)) return false;
-      if (property.price < priceRange.min || property.price > priceRange.max) return false;
+  // ── Step 1: Apply URL-level filters (location + guests) ──────────────────
+  const urlFilteredProperties = useMemo(() => {
+    return PROPERTIES.filter(p => {
+      if (urlLocation && p.location !== urlLocation) return false;
+      if (totalGuests > 0 && Number(p.guests) < totalGuests) return false;
       return true;
     });
-    if (instantBookOnly) {
-      return results.filter(p => p.tags.includes('tagInstantBook'));
-    }
-    return results;
-  }, [selectedTypes, priceRange, instantBookOnly]);
+  }, [urlLocation, totalGuests]);
 
-  const mapProperties = useMemo(() => {
-    if (instantBookOnly) {
-      return filteredProperties.filter(p => p.tags.includes('tagInstantBook'));
+  // ── Step 2: Apply secondary filters (type + price + instantBook) ─────────
+  const filteredProperties = useMemo(() => {
+    let results = urlFilteredProperties.filter(p => {
+      if (selectedTypes.length > 0 && !selectedTypes.includes(p.type)) return false;
+      if (p.price < priceRange.min || p.price > priceRange.max) return false;
+      return true;
+    });
+    if (instantBookOnly) results = results.filter(p => p.tags.includes("tagInstantBook"));
+    return results;
+  }, [urlFilteredProperties, selectedTypes, priceRange, instantBookOnly]);
+
+  // ── Type chips are derived from the URL-filtered set, not all properties ──
+  const availableTypes = useMemo(
+    () => Array.from(new Set(urlFilteredProperties.map(p => p.type))),
+    [urlFilteredProperties]
+  );
+
+  // ── Dynamic header subtitle ──────────────────────────────────────────────
+  const headerSubtitle = useMemo(() => {
+    const parts: string[] = [];
+    if (filteredProperties.length > 0)
+      parts.push(`${filteredProperties.length} ${filteredProperties.length === 1 ? "stay" : "stays"}`);
+    if (urlFrom && urlTo) parts.push(`${urlFrom} → ${urlTo}`);
+    if (totalGuests > 0) parts.push(`${totalGuests} ${t("guests")}`);
+    return parts.length > 0 ? parts.join("  ·  ") : t("searchHeaderSubtitle");
+  }, [filteredProperties.length, urlFrom, urlTo, totalGuests, t]);
+
+  const headerTitle = useMemo(() => {
+    if (urlLocation) {
+      const sample = PROPERTIES.find(p => p.location === urlLocation);
+      const displayLocation = lang === "ar" && sample ? sample.location_ar : urlLocation;
+      return lang === "ar"
+        ? `إقامات مختارة في ${displayLocation}`
+        : `Curated Stays in ${displayLocation}`;
     }
-    return filteredProperties;
-  }, [filteredProperties, instantBookOnly]);
+    return t("searchHeaderTitle");
+  }, [urlLocation, lang, t]);
+
+  const resetAll = () => {
+    setSelectedTypes([]);
+    setPriceRange({ min: 0, max: 2000 });
+    setInstantBookOnly(false);
+  };
 
   return (
     <div className="w-full min-h-screen bg-white">
@@ -51,8 +94,8 @@ export default function SearchResultsPage() {
 
           {/* HEADER */}
           <div className="px-4 sm:px-6 lg:px-12 pt-12 pb-4">
-            <p className="text-xs uppercase tracking-widest text-muted mb-1">{t('searchHeaderSubtitle')}</p>
-            <h1 className="text-2xl sm:text-3xl font-heading text-navy">{t('searchHeaderTitle')}</h1>
+            <p className="text-xs uppercase tracking-widest text-muted mb-1">{headerSubtitle}</p>
+            <h1 className="text-2xl sm:text-3xl font-heading text-navy">{headerTitle}</h1>
           </div>
 
           {/* FILTER BAR */}
@@ -67,38 +110,50 @@ export default function SearchResultsPage() {
 
                 {/* RESET BUTTON */}
                 <button
-                  onClick={() => { setSelectedTypes([]); setPriceRange({ min: 0, max: 2000 }); setInstantBookOnly(false); }}
+                  onClick={resetAll}
                   className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full border border-navy/10 text-navy/40 hover:text-navy hover:bg-navy/5 transition-all uppercase text-[10px] font-black tracking-[0.15em]"
                 >
                   <SlidersHorizontal className="w-3.5 h-3.5" />
-                  <span>{t('filtersOut')}</span>
+                  <span>{t("filtersOut")}</span>
                 </button>
 
                 {/* TYPE BUTTON */}
                 <button
                   id="type-filter-btn"
                   onClick={() => { setIsTypeOpen(!isTypeOpen); setIsPriceOpen(false); }}
-                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${selectedTypes.length > 0 ? 'bg-navy text-white border-navy shadow-lg shadow-navy/20' : 'bg-white text-navy border-navy/10 hover:border-navy hover:bg-navy/[0.02]'}`}
+                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
+                    selectedTypes.length > 0
+                      ? "bg-navy text-white border-navy shadow-lg shadow-navy/20"
+                      : "bg-white text-navy border-navy/10 hover:border-navy hover:bg-navy/[0.02]"
+                  }`}
                 >
-                  {t('typeOfPlace')}
+                  {t("typeOfPlace")}
                 </button>
 
                 {/* PRICE BUTTON */}
                 <button
                   id="price-filter-btn"
                   onClick={() => { setIsPriceOpen(!isPriceOpen); setIsTypeOpen(false); }}
-                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${(priceRange.min > 0 || priceRange.max < 2000) ? 'bg-navy text-white border-navy shadow-lg shadow-navy/20' : 'bg-white text-navy border-navy/10 hover:border-navy hover:bg-navy/[0.02]'}`}
+                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
+                    priceRange.min > 0 || priceRange.max < 2000
+                      ? "bg-navy text-white border-navy shadow-lg shadow-navy/20"
+                      : "bg-white text-navy border-navy/10 hover:border-navy hover:bg-navy/[0.02]"
+                  }`}
                 >
-                  {t('price')}
+                  {t("price")}
                 </button>
 
                 {/* INSTANT BOOK BUTTON */}
                 <button
                   onClick={() => setInstantBookOnly(!instantBookOnly)}
-                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 flex items-center gap-2 ${instantBookOnly ? 'bg-navy text-white border-navy shadow-lg shadow-navy/30' : 'bg-white text-navy/40 border-navy/10 hover:border-navy/30 hover:bg-navy/5'}`}
+                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 flex items-center gap-2 ${
+                    instantBookOnly
+                      ? "bg-navy text-white border-navy shadow-lg shadow-navy/30"
+                      : "bg-white text-navy/40 border-navy/10 hover:border-navy/30 hover:bg-navy/5"
+                  }`}
                 >
-                  <Zap className={`w-3.5 h-3.5 ${instantBookOnly ? 'fill-current' : 'text-primary'}`} />
-                  {t('instantBook')}
+                  <Zap className={`w-3.5 h-3.5 ${instantBookOnly ? "fill-current" : "text-primary"}`} />
+                  {t("instantBook")}
                 </button>
               </div>
             </div>
@@ -113,21 +168,23 @@ export default function SearchResultsPage() {
                   className={`absolute top-16 pointer-events-auto ${lang === "ar" ? "right-[calc(100vw-280px)]" : "left-[140px]"} w-64 bg-white rounded-3xl shadow-[0_20px_60px_rgba(15,23,42,0.15)] border border-navy/5 p-6 animate-in fade-in zoom-in-95 duration-300`}
                   dir={lang === "ar" ? "rtl" : "ltr"}
                 >
-                  <p className="text-[10px] font-black text-navy/30 tracking-widest uppercase mb-4 text-start">{t('selectCategories')}</p>
+                  <p className="text-[10px] font-black text-navy/30 tracking-widest uppercase mb-4 text-start">{t("selectCategories")}</p>
                   <div className="space-y-4 text-start">
-                    {allTypes.map(type => (
+                    {availableTypes.map(type => (
                       <label key={type} className="flex items-center gap-3 cursor-pointer group">
                         <input
                           type="checkbox"
                           checked={selectedTypes.includes(type)}
-                          onChange={() => {
+                          onChange={() =>
                             setSelectedTypes(prev =>
                               prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-                            );
-                          }}
+                            )
+                          }
                           className="w-5 h-5 rounded border-navy/10 text-navy focus:ring-navy cursor-pointer transition-all"
                         />
-                        <span className="text-sm font-bold text-navy/80 group-hover:text-primary transition-colors">{t(type as any) || type}</span>
+                        <span className="text-sm font-bold text-navy/80 group-hover:text-primary transition-colors">
+                          {(t as any)(type) || type}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -139,7 +196,7 @@ export default function SearchResultsPage() {
                   className={`absolute top-16 pointer-events-auto ${lang === "ar" ? "right-[calc(100vw-400px)]" : "left-[200px]"} w-80 bg-white rounded-3xl shadow-[0_20px_60px_rgba(15,23,42,0.15)] border border-navy/10 p-10 animate-in fade-in zoom-in-95 duration-300`}
                   dir={lang === "ar" ? "rtl" : "ltr"}
                 >
-                  <h4 className="text-xs font-black text-navy uppercase tracking-widest mb-8 border-b border-navy/5 pb-4 text-start">{t('priceRange')}</h4>
+                  <h4 className="text-xs font-black text-navy uppercase tracking-widest mb-8 border-b border-navy/5 pb-4 text-start">{t("priceRange")}</h4>
                   <div className="flex items-center gap-6">
                     <div className="flex-1 space-y-2">
                       <p className="text-[10px] font-black uppercase text-navy/30 tracking-wider">Min</p>
@@ -170,7 +227,12 @@ export default function SearchResultsPage() {
             {filteredProperties.length > 0 ? (
               <div className="flex flex-col">
                 {filteredProperties.map((property) => (
-                  <PropertyCard key={property.id} property={property} />
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    // Pass search context forward so PropertyDetails → Checkout inherits it
+                    searchContext={{ from: urlFrom, to: urlTo, adults: urlAdults, children: urlChildren }}
+                  />
                 ))}
               </div>
             ) : (
@@ -179,14 +241,14 @@ export default function SearchResultsPage() {
                   <X className="w-8 h-8 text-navy/20" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-xl font-bold text-navy tracking-tight">{t('noResultsFound')}</h3>
-                  <p className="text-sm text-navy/40 max-w-xs mx-auto leading-relaxed">{t('noResultsDesc')}</p>
+                  <h3 className="text-xl font-bold text-navy tracking-tight">{t("noResultsFound")}</h3>
+                  <p className="text-sm text-navy/40 max-w-xs mx-auto leading-relaxed">{t("noResultsDesc")}</p>
                 </div>
                 <button
-                  onClick={() => { setSelectedTypes([]); setPriceRange({ min: 0, max: 2000 }); setInstantBookOnly(false); }}
+                  onClick={resetAll}
                   className="px-8 py-3 bg-navy text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-navy/90 transition-all hover:scale-[1.05] active:scale-95 shadow-lg shadow-navy/10"
                 >
-                  {t('clearAllFilters')}
+                  {t("clearAllFilters")}
                 </button>
               </div>
             )}
@@ -196,17 +258,17 @@ export default function SearchResultsPage() {
 
         {/* RIGHT COLUMN: MAP */}
         <section className="hidden lg:block w-1/2 h-[calc(100vh-5rem)] sticky top-20 border-l border-navy/5 relative overflow-hidden">
-          <MapWrapper properties={mapProperties} />
+          <MapWrapper properties={filteredProperties} />
         </section>
 
-        {/* MOBILE: Floating Map Button — centered on the white/grey column border */}
+        {/* MOBILE: Floating Map Button */}
         <div className="lg:hidden fixed bottom-[360px] left-1/2 -translate-x-1/2 z-50">
           <button
             onClick={() => setShowMap(true)}
             className="flex items-center gap-2.5 px-6 py-3.5 bg-navy text-white rounded-full shadow-2xl font-bold text-sm hover:bg-navy/90 active:scale-95 transition-all"
           >
             <MapIcon className="w-4 h-4" />
-            <span>{t('mapView')}</span>
+            <span>{t("mapView")}</span>
           </button>
         </div>
 
@@ -214,19 +276,32 @@ export default function SearchResultsPage() {
         {showMap && (
           <div className="lg:hidden fixed inset-0 z-[100] flex flex-col bg-white">
             <div className="flex-1 relative">
-              <MapWrapper properties={mapProperties} />
+              <MapWrapper properties={filteredProperties} />
             </div>
             <button
               onClick={() => setShowMap(false)}
               className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-6 py-3.5 bg-navy text-white rounded-full shadow-2xl font-bold text-sm z-10"
             >
               <X className="w-4 h-4" />
-              <span>{t('listView')}</span>
+              <span>{t("listView")}</span>
             </button>
           </div>
         )}
 
       </div>
     </div>
+  );
+}
+
+// ─── Page wrapper with Suspense (required for useSearchParams in Next.js 15) ──
+export default function SearchResultsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   );
 }

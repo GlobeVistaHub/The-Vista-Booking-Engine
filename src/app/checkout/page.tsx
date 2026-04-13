@@ -63,12 +63,14 @@ function CheckoutContent() {
   const [selectedMethod, setSelectedMethod] = useState<"visa" | "mc" | "amex" | "apple">("visa");
 
   // Selection states
+  const urlFrom = searchParams.get("from");
+  const urlTo = searchParams.get("to");
   const [dateRange, setDateRange] = useState<{from: Date, to: Date}>({
-    from: new Date(2026, 9, 12),
-    to: new Date(2026, 9, 17)
+    from: urlFrom ? new Date(urlFrom) : new Date(2026, 9, 12),
+    to: urlTo ? new Date(urlTo) : new Date(2026, 9, 17)
   });
-  const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
+  const [adults, setAdults] = useState(Number(searchParams.get("adults")) || 2);
+  const [children, setChildren] = useState(Number(searchParams.get("children")) || 0);
 
   // If no property found, redirect to search
   useEffect(() => {

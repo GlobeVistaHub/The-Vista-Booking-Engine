@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { format, differenceInDays } from "date-fns";
 import Link from "next/link";
 import { 
   MapPin, 
@@ -24,8 +25,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useUser } from "@/context/UserContext";
 import { PROPERTIES } from "@/data/properties";
 
-export default function PropertyPage() {
+function PropertyContent() {
   const { id } = useParams();
+  const searchParams = useSearchParams();
   const { t, lang } = useLanguage();
   const { toggleWishlist, isInWishlist } = useUser();
   const [currentImg, setCurrentImg] = useState(0);
@@ -73,11 +75,21 @@ export default function PropertyPage() {
     );
   }
 
+  // PARSE SEARCH PARAMS FROM URL
+  const urlFrom = searchParams.get("from");
+  const urlTo = searchParams.get("to");
+  const parsedFrom = urlFrom ? new Date(urlFrom) : null;
+  const parsedTo = urlTo ? new Date(urlTo) : null;
+  const stayNights = parsedFrom && parsedTo ? Math.max(1, differenceInDays(parsedTo, parsedFrom)) : 5;
+  const urlAdults = Number(searchParams.get("adults")) || 0;
+  const urlChildren = Number(searchParams.get("children")) || 0;
+  const totalGuests = urlAdults + urlChildren;
+
   // Real pricing from model
   const pricePerNight = property.price;
   const cleaningFee = 150;
-  const serviceFee = Math.round(pricePerNight * 5 * 0.1); // 10% service fee
-  const total = pricePerNight * 5 + cleaningFee + serviceFee;
+  const serviceFee = Math.round(pricePerNight * stayNights * 0.1); // 10% service fee
+  const total = pricePerNight * stayNights + cleaningFee + serviceFee;
 
   const nextImg = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -264,16 +276,16 @@ export default function PropertyPage() {
               <div className="grid grid-cols-2 border border-navy/10 rounded-2xl overflow-hidden">
                 <div className="p-4 border-r border-navy/10 hover:bg-navy/[0.02] transition-colors cursor-pointer text-start">
                   <p className="text-[10px] font-bold text-navy uppercase tracking-widest mb-1">{t('checkIn')}</p>
-                  <p className="text-sm font-medium text-muted">10/12/2026</p>
+                  <p className="text-sm font-medium text-muted">{parsedFrom ? format(parsedFrom, 'dd/MM/yyyy') : 'Add date'}</p>
                 </div>
                 <div className="p-4 hover:bg-navy/[0.02] transition-colors cursor-pointer text-start">
                   <p className="text-[10px] font-bold text-navy uppercase tracking-widest mb-1">{t('checkOut')}</p>
-                  <p className="text-sm font-medium text-muted">15/12/2026</p>
+                  <p className="text-sm font-medium text-muted">{parsedTo ? format(parsedTo, 'dd/MM/yyyy') : 'Add date'}</p>
                 </div>
                 <div className="col-span-2 p-4 border-t border-navy/10 hover:bg-navy/[0.02] transition-colors cursor-pointer flex justify-between items-center text-start">
                   <div>
                     <p className="text-[10px] font-bold text-navy uppercase tracking-widest mb-1">{t('guests')}</p>
-                    <p className="text-sm font-medium text-navy">{property.guests} {t('guestCount')}</p>
+                    <p className="text-sm font-medium text-navy">{totalGuests > 0 ? totalGuests : property.guests} {t('guestCount')}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted" />
                 </div>
@@ -281,7 +293,7 @@ export default function PropertyPage() {
 
               {/* CTA Button */}
               <Link 
-                href={`/checkout?id=${property.id}`}
+                href={`/checkout?id=${property.id}&from=${urlFrom||''}&to=${urlTo||''}&adults=${urlAdults||2}&children=${urlChildren||0}`}
                 className="w-full py-4 bg-primary hover:brightness-110 text-white rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95"
               >
                 {t('reserve')}
@@ -294,8 +306,8 @@ export default function PropertyPage() {
               {/* Price Breakdown */}
               <div className="space-y-4 pt-2">
                 <div className="flex justify-between text-navy/70">
-                  <span className="underline decoration-navy/20 underline-offset-4 cursor-pointer hover:text-navy">${pricePerNight} x 5 {t('night')}</span>
-                  <span>${pricePerNight * 5}</span>
+                  <span className="underline decoration-navy/20 underline-offset-4 cursor-pointer hover:text-navy">${pricePerNight} x {stayNights} {t('night')}</span>
+                  <span>${pricePerNight * stayNights}</span>
                 </div>
                 <div className="flex justify-between text-navy/70">
                   <span className="underline decoration-navy/20 underline-offset-4 cursor-pointer hover:text-navy">{t('cleaningFee')}</span>
@@ -319,5 +331,18 @@ export default function PropertyPage() {
       </main>
 
     </div>
+  );
+}
+
+// WRAP WITH SUSPENSE FOR NEXTJS 15 COMPATIBILITY
+export default function PropertyPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+      </div>
+    }>
+      <PropertyContent />
+    </Suspense>
   );
 }

@@ -23,7 +23,7 @@ interface Property {
   isBooked?: boolean;
 }
 
-export default function PropertyCard({ property }: { property: Property }) {
+export default function PropertyCard({ property, searchContext }: { property: Property, searchContext?: {from: string, to: string, adults: number, children: number} }) {
   const [currentImg, setCurrentImg] = useState(0);
   const { toggleWishlist, isInWishlist } = useUser();
   const { t, lang } = useLanguage();
@@ -40,6 +40,10 @@ export default function PropertyCard({ property }: { property: Property }) {
     e.stopPropagation();
     setCurrentImg((i) => (i === property.images.length - 1 ? 0 : i + 1));
   };
+
+  const linkHref = searchContext 
+    ? `/property/${property.id}?from=${searchContext.from}&to=${searchContext.to}&adults=${searchContext.adults}&children=${searchContext.children}`
+    : `/property/${property.id}`;
 
   return (
     <div 
@@ -104,7 +108,7 @@ export default function PropertyCard({ property }: { property: Property }) {
 
       {/* 2. NAVIGATION ZONE: DETAILS (WRAPPED IN LINK) */}
       <Link 
-        href={`/property/${property.id}`}
+        href={linkHref}
         className="flex flex-col flex-1 py-1 min-h-[180px] group/details"
       >
         <div className="flex justify-between items-start">
