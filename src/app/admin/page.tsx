@@ -1,4 +1,5 @@
 import { TrendingUp, Plus } from "lucide-react";
+import SystemControlToggle from "@/components/SystemControlToggle";
 
 export default function AdminPage() {
   return (
@@ -15,6 +16,9 @@ export default function AdminPage() {
           Add New Property
         </button>
       </div>
+
+      {/* 2. System Control Toggle (Live vs Demo Mode) */}
+      <SystemControlToggle />
 
       {/* 3. The KPI Metrics (Top Row) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

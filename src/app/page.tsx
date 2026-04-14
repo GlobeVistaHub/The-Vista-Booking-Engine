@@ -1,15 +1,22 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { MapPin, Heart, Star } from "lucide-react";
 import Link from "next/link";
 import BookingWidget from "@/components/BookingWidget";
 import { useLanguage } from "@/context/LanguageContext";
 import { useUser } from "@/context/UserContext";
-import { PROPERTIES } from "@/data/properties";
+import { getProperties } from "@/data/api";
+import { Property } from "@/data/properties";
 
 export default function Home() {
   const { t, lang } = useLanguage();
   const { toggleWishlist, isInWishlist } = useUser();
+  const [properties, setProperties] = useState<Property[]>([]);
+
+  useEffect(() => {
+    getProperties().then(setProperties);
+  }, []);
 
   return (
     <main className="w-full min-h-screen pb-24">
@@ -58,7 +65,13 @@ export default function Home() {
 
         {/* CSS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {PROPERTIES.map((property) => (
+          {properties.length === 0 ? (
+             <div className="col-span-full py-24 flex justify-center items-center gap-2">
+               <div className="w-2.5 h-2.5 bg-primary/40 rounded-full animate-pulse"></div>
+               <div className="w-2.5 h-2.5 bg-primary/70 rounded-full animate-pulse delay-75"></div>
+               <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse delay-150"></div>
+             </div>
+          ) : properties.map((property) => (
             <Link href={`/property/${property.id}`} key={property.id}>
               <article 
                 className="group bg-surface rounded-2xl overflow-hidden cursor-pointer h-full"

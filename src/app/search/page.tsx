@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, Suspense } from "react";
+import { useState, useMemo, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X, Map as MapIcon, Zap } from "lucide-react";
 import { parseISO } from "date-fns";
@@ -8,13 +8,23 @@ import { parseISO } from "date-fns";
 import PropertyCard from "@/components/PropertyCard";
 import MapWrapper from "@/components/MapWrapper";
 import { useLanguage } from "@/context/LanguageContext";
-import { PROPERTIES } from "@/data/properties";
+import { getProperties } from "@/data/api";
+import { Property } from "@/data/properties";
 
 // ─── Inner component (needs useSearchParams inside Suspense) ────────────────
 function SearchContent() {
   const { t, lang } = useLanguage();
   const searchParams = useSearchParams();
   const [showMap, setShowMap] = useState(false);
+  const [allProperties, setAllProperties] = useState<Property[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    getProperties().then(data => {
+      setAllProperties(data);
+      setIsLoading(false);
+    });
+  }, []);
 
   // ── Read URL params from the Search Widget ──────────────────────────────
   const urlLocation = searchParams.get("location") ?? "";
@@ -34,12 +44,12 @@ function SearchContent() {
 
   // ── Step 1: Apply URL-level filters (location + guests) ──────────────────
   const urlFilteredProperties = useMemo(() => {
-    return PROPERTIES.filter(p => {
+    return allProperties.filter(p => {
       if (urlLocation && p.location !== urlLocation) return false;
       if (totalGuests > 0 && Number(p.guests) < totalGuests) return false;
       return true;
     });
-  }, [urlLocation, totalGuests]);
+  }, [allProperties, urlLocation, totalGuests]);
 
   // ── Step 2: Apply secondary filters (type + price + instantBook) ─────────
   const filteredProperties = useMemo(() => {
@@ -70,7 +80,7 @@ function SearchContent() {
 
   const headerTitle = useMemo(() => {
     if (urlLocation) {
-      const sample = PROPERTIES.find(p => p.location === urlLocation);
+      const sample = allProperties.find(p => p.location === urlLocation);
       const displayLocation = lang === "ar" && sample ? sample.location_ar : urlLocation;
       return lang === "ar"
         ? `إقامات مختارة في ${displayLocation}`
@@ -224,13 +234,18 @@ function SearchContent() {
 
           {/* PROPERTY LIST */}
           <div className="px-4 sm:px-6 lg:px-12 py-8 flex-1">
-            {filteredProperties.length > 0 ? (
+            {isLoading ? (
+               <div className="w-full py-24 flex justify-center items-center gap-2">
+                 <div className="w-2.5 h-2.5 bg-primary/40 rounded-full animate-pulse"></div>
+                 <div className="w-2.5 h-2.5 bg-primary/70 rounded-full animate-pulse delay-75"></div>
+                 <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse delay-150"></div>
+               </div>
+            ) : filteredProperties.length > 0 ? (
               <div className="flex flex-col">
                 {filteredProperties.map((property) => (
                   <PropertyCard
                     key={property.id}
                     property={property}
-                    // Pass search context forward so PropertyDetails → Checkout inherits it
                     searchContext={{ from: urlFrom, to: urlTo, adults: urlAdults, children: urlChildren }}
                   />
                 ))}

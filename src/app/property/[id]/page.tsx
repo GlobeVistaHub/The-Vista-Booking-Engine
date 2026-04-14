@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { format, differenceInDays } from "date-fns";
 import Link from "next/link";
@@ -23,7 +23,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useUser } from "@/context/UserContext";
-import { PROPERTIES } from "@/data/properties";
+import { getPropertyById } from "@/data/api";
+import { Property } from "@/data/properties";
 
 function PropertyContent() {
   const { id } = useParams();
@@ -32,6 +33,15 @@ function PropertyContent() {
   const { toggleWishlist, isInWishlist } = useUser();
   const [currentImg, setCurrentImg] = useState(0);
   const [shared, setShared] = useState(false);
+  const [property, setProperty] = useState<Property | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    getPropertyById(Number(id)).then(data => {
+      setProperty(data);
+      setIsLoading(false);
+    });
+  }, [id]);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -59,16 +69,25 @@ function PropertyContent() {
     setTimeout(() => setShared(false), 2000);
   };
 
-  // Find the actual property from our centralized data
-  const property = PROPERTIES.find(p => p.id === Number(id));
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-v-background">
+        <div className="flex gap-2">
+          <div className="w-3 h-3 bg-primary/40 rounded-full animate-pulse"></div>
+          <div className="w-3 h-3 bg-primary/70 rounded-full animate-pulse delay-75"></div>
+          <div className="w-3 h-3 bg-primary rounded-full animate-pulse delay-150"></div>
+        </div>
+      </div>
+    );
+  }
 
   // Fallback if property doesn't exist
   if (!property) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-v-background p-6">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-v-background p-6 text-center">
         <h1 className="text-2xl font-bold text-navy mb-4">Property not found</h1>
-        <p className="text-muted mb-8">The luxury escape you are looking for has moved or no longer exists.</p>
-        <button onClick={() => window.history.back()} className="px-8 py-3 bg-primary text-white rounded-full font-bold shadow-soft">
+        <p className="text-muted mb-8 max-w-md">Our apologies, the luxury escape you requested no longer exists or the link has expired.</p>
+        <button onClick={() => window.history.back()} className="px-8 py-3 bg-primary hover:brightness-110 transition-all text-white rounded-full font-bold shadow-soft">
           Go Back
         </button>
       </div>
