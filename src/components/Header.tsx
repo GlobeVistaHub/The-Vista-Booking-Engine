@@ -82,7 +82,6 @@ export default function Header() {
                 {lang === 'ar' ? 'حجوزاتي' : 'My Trips'}
               </Link>
               <UserButton 
-                afterSignOutUrl="/"
                 appearance={{
                   elements: {
                     userButtonAvatarBox: "w-10 h-10 border-2 border-primary shadow-sm"
