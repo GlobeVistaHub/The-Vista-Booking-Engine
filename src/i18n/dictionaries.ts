@@ -16,11 +16,11 @@ export const dictionaries: Dictionary = {
 
   // Homepage Hero
   heroTitle: { en: "The Pinnacle of Riviera Living", ar: "قمة المعيشة في الريفييرا" },
-  heroSubtitle: { 
-    en: "Curated luxury properties in Hurghada and the Red Sea.", 
-    ar: "عقارات فاخرة مختارة في الغردقة والبحر الأحمر." 
+  heroSubtitle: {
+    en: "Curated luxury properties in Hurghada and the Red Sea.",
+    ar: "عقارات فاخرة مختارة في الغردقة والبحر الأحمر."
   },
-  
+
   // Homepage Curated
   curatedTitle: { en: "Curated For You", ar: "مختارات من أجلك" },
   curatedSubtitle: { en: "Exceptional homes in the most sought-after Red Sea locations.", ar: "منازل استثنائية في أكثر مواقع البحر الأحمر رواجاً." },
@@ -99,9 +99,9 @@ export const dictionaries: Dictionary = {
   // Property Details Page (General Labels)
   hostedBy: { en: "Hosted by The Vista Concierge", ar: "بإدارة ذا فيستا كونسيرج" },
   aboutThisHome: { en: "About this home", ar: "عن هذا المنزل" },
-  descriptionBody: { 
-    en: "Experience luxury Riviera living at its finest.", 
-    ar: "اختبر أرقى معايير المعيشة الفاخرة في ريفييرا البحر الأحمر." 
+  descriptionBody: {
+    en: "Experience luxury Riviera living at its finest.",
+    ar: "اختبر أرقى معايير المعيشة الفاخرة في ريفييرا البحر الأحمر."
   },
   offers: { en: "What this place offers", ar: "ما يقدمه هذا المكان" },
   reserve: { en: "Reserve Now", ar: "احجز الآن" },
@@ -121,18 +121,18 @@ export const dictionaries: Dictionary = {
   paymentMethod: { en: "Payment method", ar: "طريقة الدفع" },
   priceDetails: { en: "Price details", ar: "تفاصيل السعر" },
   groundRules: { en: "Ground rules", ar: "قواعد المنزل" },
-  groundRulesDetail: { 
-    en: "We ask every guest to remember a few simple things about what makes a great guest.", 
-    ar: "نطلب من كل ضيف تذكر بعض الأشياء البسيطة حول ما يجعلك ضيفاً رائعاً." 
+  groundRulesDetail: {
+    en: "We ask every guest to remember a few simple things about what makes a great guest.",
+    ar: "نطلب من كل ضيف تذكر بعض الأشياء البسيطة حول ما يجعلك ضيفاً رائعاً."
   },
   followHouseRules: { en: "Follow the house rules", ar: "اتبع قواعد المنزل" },
   treatHomeLikeOwn: { en: "Treat the home like your own", ar: "عامل المنزل وكأنه ملكك" },
 
   // Success Page
   bookingConfirmed: { en: "Your stay is confirmed!", ar: "تم تأكيد إقامتك!" },
-  successSubtitle: { 
-    en: "A confirmation email has been sent to your inbox. We look forward to hosting you.", 
-    ar: "تم إرسال رسالة تأكيد إلى بريدك الإلكتروني. نحن نتطلع لاستضافتك." 
+  successSubtitle: {
+    en: "A confirmation email has been sent to your inbox. We look forward to hosting you.",
+    ar: "تم إرسال رسالة تأكيد إلى بريدك الإلكتروني. نحن نتطلع لاستضافتك."
   },
   viewBookings: { en: "View my bookings", ar: "عرض حجوزاتي" },
   backToHome: { en: "Back to Home", ar: "العودة إلى الرئيسية" },
@@ -147,7 +147,7 @@ export const dictionaries: Dictionary = {
   wishlistTab: { en: "Wishlist", ar: "قائمة الأمنيات" },
   wishlistEmptyMsg: { en: "Your wishlist is empty. Start exploring to save your favorite sanctuaries.", ar: "قائمة أمنياتك فارغة. ابدأ باستكشاف وجهاتنا لحفظ ملاذاتك المفضلة." },
   stayPreferences: { en: "Stay Preferences", ar: "تفضيلات الإقامة" },
-  
+
   // Dashboard Settings
   personalInfo: { en: "Personal Information", ar: "المعلومات الشخصية" },
   fullName: { en: "Full Name", ar: "الاسم الكامل" },
@@ -168,9 +168,9 @@ export const dictionaries: Dictionary = {
   eliteExplorer: { en: "Elite Explorer", ar: "إيليت إكسبلورر" },
   memberSince: { en: "MEMBER SINCE 2026", ar: "عضو منذ 2026" },
   statusLabel: { en: "Status", ar: "الحالة" },
-  verifiedStatus: { en: "Verified", ar: "موثق" },
+
   guestNameLabel: { en: "Guest Name", ar: "اسم الضيف" },
-  
+
   // Dashboard & Preferences
   prefPrivateBeach: { en: "Private Beach", ar: "شاطئ خاص" },
   prefChefIncluded: { en: "Chef Included", ar: "طاهٍ خاص" },
