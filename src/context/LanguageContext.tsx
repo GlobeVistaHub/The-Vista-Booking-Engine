@@ -33,11 +33,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   const t = (key: keyof typeof dictionaries): string => {
-    if (!dictionaries[key]) {
+    const entry = dictionaries[key as string];
+    if (!entry) {
       console.warn(`Translation key not found: ${key}`);
-      return key;
+      return String(key);
     }
-    return dictionaries[key][lang];
+    return String(entry[lang]);
   };
 
   return (
