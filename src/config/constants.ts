@@ -5,8 +5,8 @@ export const VISTA_CONFIG = {
   // PRIMARY CONCIERGE CONTACT
   // This is the centralized number used for WhatsApp bridges across the site
   concierge: {
-    phone: "+201011111111", // Your GlobeVistaHub Business Number
-    whatsappLink: (message: string) => `https://wa.me/201011111111?text=${encodeURIComponent(message)}`,
+    phone: "+201145551163", // Real GlobeVistaHub Business Number
+    whatsappLink: (message: string) => `https://wa.me/201145551163?text=${encodeURIComponent(message)}`,
   },
 
   // SUPPORT EMAILS
