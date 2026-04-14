@@ -23,11 +23,11 @@ export default function Home() {
         <div className="absolute inset-0 z-10 bg-slate-900/40 mix-blend-multiply" />
 
         {/* HERO TYPOGRAPHY */}
-        <div className="relative z-20 text-center px-6 mt-[-10vh]">
-          <h1 className="text-5xl md:text-7xl font-heading font-medium text-white tracking-tight drop-shadow-lg">
+        <div className="relative z-20 text-center px-6 pb-24 md:pb-32 mt-10 md:mt-0">
+          <h1 className="text-5xl md:text-7xl font-heading font-medium text-white tracking-tight drop-shadow-lg max-w-4xl mx-auto">
             {t('heroTitle')}
           </h1>
-          <p className="mt-4 text-lg md:text-xl font-body text-white/90 font-light drop-shadow-md">
+          <p className="mt-6 text-lg md:text-xl font-body text-white/90 font-light drop-shadow-md max-w-2xl mx-auto">
             {t('heroSubtitle')}
           </p>
         </div>
