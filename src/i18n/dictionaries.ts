@@ -17,8 +17,8 @@ export const dictionaries: Dictionary = {
   // Homepage Hero
   heroTitle: { en: "The Pinnacle of Riviera Living", ar: "قمة المعيشة في الريفييرا" },
   heroSubtitle: {
-    en: "Curated luxury properties in Hurghada and the Red Sea.",
-    ar: "عقارات فاخرة مختارة في الغردقة والبحر الأحمر."
+    en: "Curated luxury properties in Hurghada and the Mediterranean.",
+    ar: "عقارات فاخرة مختارة في الغردقة والبحر المتوسط."
   },
 
   // Homepage Curated

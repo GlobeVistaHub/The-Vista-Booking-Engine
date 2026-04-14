@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <main className="w-full min-h-screen pb-24">
       {/* 1. THE HERO SECTION */}
-      <div className="relative w-full min-h-[80vh] flex flex-col items-center justify-center">
+      <div className="relative w-full min-h-[85vh] flex flex-col items-center justify-start pt-[18vh] md:pt-[25vh]">
         {/* BACKGROUND IMAGE & OVERLAY */}
         <div 
           className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
