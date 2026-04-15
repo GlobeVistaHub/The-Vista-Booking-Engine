@@ -10,14 +10,18 @@ import {
   Download,
   Loader2,
   ArrowUpRight,
-  Wallet
+  Wallet,
+  LayoutGrid,
+  Store
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAppModeStore } from "@/store/appModeStore";
 
 export default function FinancialsDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { lang } = useLanguage();
+  const { isWhiteLabel, setWhiteLabel, brandName } = useAppModeStore();
 
   useEffect(() => {
     fetchFinancials();
@@ -26,15 +30,38 @@ export default function FinancialsDashboard() {
   const fetchFinancials = async () => {
     setIsLoading(true);
     const data = await getBookings();
-    // Only analyze confirmed bookings for real revenue
     setBookings(data.filter(b => b.status === 'confirmed'));
     setIsLoading(false);
   };
 
   // Financial Calculations
   const totalRevenue = bookings.reduce((sum, b) => sum + b.total_price, 0);
-  const platformFees = totalRevenue * 0.10; // 10% Vista Platform Fee
+  // In platform mode, show 10% fee. In white-label, the owner keeps 100%.
+  const platformFees = isWhiteLabel ? 0 : totalRevenue * 0.10;
   const hostPayout = totalRevenue - platformFees;
+
+  const handleExportCSV = () => {
+    const headers = ["Date", "Reference", "Property", "Guest", "Gross Amount", "Net Payout"];
+    const rows = bookings.map(b => {
+      const net = isWhiteLabel ? b.total_price : b.total_price * 0.9;
+      return [
+        format(parseISO(b.created_at), "MMM dd, yyyy"),
+        `TX-VST-${b.id.toString().padStart(4, '0')}`,
+        b.property?.title || `Property #${b.property_id}`,
+        b.guest_name,
+        `$${b.total_price}`,
+        `$${net.toFixed(2)}`
+      ].join(",");
+    });
+    const csvContent = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `vista-ledger-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-20">
@@ -46,12 +73,66 @@ export default function FinancialsDashboard() {
             <Wallet className="w-8 h-8 text-primary" />
             Financial Analytics
           </h1>
-          <p className="text-muted mt-2">Track your luxury portfolio revenue, platform fees, and transaction history.</p>
+          <p className="text-muted mt-2">Track revenue, platform fees, and transaction history.</p>
         </div>
-        <button className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-navy/10 text-navy rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm">
+        <button
+          onClick={handleExportCSV}
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-navy/10 text-navy rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm"
+        >
           <Download className="w-5 h-5" />
           Export Ledger
         </button>
+      </div>
+
+      {/* ─── PLATFORM MODE TOGGLE ─────────────────────────────────── */}
+      <div className="bg-white p-6 rounded-2xl shadow-soft border border-navy/5 relative overflow-hidden">
+        <div className={`absolute top-0 left-0 w-1.5 h-full transition-colors duration-500 ${isWhiteLabel ? 'bg-primary' : 'bg-emerald-500'}`} />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pl-4">
+          <div>
+            <h3 className="text-lg font-bold text-navy flex items-center gap-3">
+              Operating Mode
+              <span className={`text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full font-black shadow-sm ${
+                isWhiteLabel
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+              }`}>
+                {isWhiteLabel ? `White Label SaaS` : 'Platform Mode'}
+              </span>
+            </h3>
+            <p className="text-muted text-sm mt-1.5 max-w-xl">
+              {isWhiteLabel
+                ? `You are operating as a white-label SaaS owner. The application is fully branded as "${brandName}" with no Vista platform fees. 100% of revenue is yours.`
+                : "You are running as a shared marketplace platform. A 10% Vista platform fee applies to all transactions."}
+            </p>
+          </div>
+
+          {/* Toggle Switch */}
+          <div className="flex items-center bg-navy/[0.03] p-1.5 rounded-full w-full sm:w-auto h-14 relative border border-navy/5 shadow-inner flex-shrink-0">
+            <div
+              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-4px)] bg-white rounded-full shadow-md transition-all duration-500 ease-out z-0 ${
+                isWhiteLabel ? 'translate-x-[calc(100%+2px)]' : 'translate-x-[2px]'
+              }`}
+            />
+            <button
+              onClick={() => setWhiteLabel(false)}
+              className={`flex-1 sm:w-40 flex justify-center items-center gap-2 text-sm font-bold z-10 transition-all duration-300 ${
+                !isWhiteLabel ? 'text-emerald-600 scale-105' : 'text-navy/40 hover:text-navy'
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+              Platform
+            </button>
+            <button
+              onClick={() => setWhiteLabel(true)}
+              className={`flex-1 sm:w-40 flex justify-center items-center gap-2 text-sm font-bold z-10 transition-all duration-300 ${
+                isWhiteLabel ? 'text-primary scale-105' : 'text-navy/40 hover:text-navy'
+              }`}
+            >
+              <Store className="w-4 h-4" />
+              White Label
+            </button>
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
@@ -63,7 +144,7 @@ export default function FinancialsDashboard() {
         <>
           {/* Top Metrics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Metric 1 */}
+            {/* Metric 1: Total Revenue */}
             <div className="bg-white p-6 rounded-3xl border border-navy/5 shadow-soft relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-10 transition-opacity">
                 <TrendingUp className="w-24 h-24 text-primary -mr-8 -mt-8" />
@@ -80,26 +161,34 @@ export default function FinancialsDashboard() {
               <p className="text-sm font-medium text-muted">Total Gross Volume</p>
             </div>
 
-            {/* Metric 2 */}
+            {/* Metric 2: Fees (or 0 in white-label) */}
             <div className="bg-white p-6 rounded-3xl border border-navy/5 shadow-soft relative overflow-hidden group">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
                   <CreditCard className="w-6 h-6" />
                 </div>
+                {isWhiteLabel && (
+                  <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-1 rounded-md">Fee-Free</span>
+                )}
               </div>
               <h3 className="text-3xl font-heading font-bold text-navy mb-1">${platformFees.toLocaleString()}</h3>
-              <p className="text-sm font-medium text-muted">Platform Fees (10%)</p>
+              <p className="text-sm font-medium text-muted">
+                {isWhiteLabel ? "Platform Fees (Waived)" : "Platform Fees (10%)"}
+              </p>
             </div>
 
-            {/* Metric 3 */}
+            {/* Metric 3: Net Payout */}
             <div className="bg-navy p-6 rounded-3xl border border-navy shadow-lg relative overflow-hidden group text-white">
               <div className="flex items-start justify-between mb-4 relative z-10">
                 <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white backdrop-blur-sm">
                   <Wallet className="w-6 h-6" />
                 </div>
+                {isWhiteLabel && <span className="text-[10px] font-black uppercase tracking-wider bg-primary/60 text-white px-2 py-1 rounded-md">100% Yours</span>}
               </div>
               <h3 className="text-3xl font-heading font-bold text-white mb-1 relative z-10">${hostPayout.toLocaleString()}</h3>
-              <p className="text-sm font-medium text-white/70 relative z-10">Net Host Payout</p>
+              <p className="text-sm font-medium text-white/70 relative z-10">
+                {isWhiteLabel ? `${brandName} Net Revenue` : "Net Host Payout"}
+              </p>
               
               {/* Premium Glow Effect */}
               <div className="absolute bottom-0 right-0 w-32 h-32 bg-primary/30 rounded-full blur-3xl" />
@@ -108,8 +197,9 @@ export default function FinancialsDashboard() {
 
           {/* Transaction Ledger */}
           <div className="bg-white rounded-2xl shadow-soft border border-navy/5 overflow-hidden">
-            <div className="p-6 border-b border-navy/5">
+            <div className="p-6 border-b border-navy/5 flex items-center justify-between">
               <h2 className="text-xl font-bold text-navy">Confirmed Transactions Ledger</h2>
+              <span className="text-xs text-muted font-medium">{bookings.length} transaction{bookings.length !== 1 ? 's' : ''}</span>
             </div>
             
             {bookings.length === 0 ? (
@@ -130,7 +220,7 @@ export default function FinancialsDashboard() {
                   </thead>
                   <tbody className="divide-y divide-navy/5">
                     {bookings.map((booking) => {
-                      const net = booking.total_price * 0.9;
+                      const net = isWhiteLabel ? booking.total_price : booking.total_price * 0.9;
                       return (
                         <tr key={booking.id} className="hover:bg-slate-50/40 transition-colors group">
                           <td className="px-6 py-4">

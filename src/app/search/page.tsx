@@ -20,7 +20,7 @@ function SearchContent() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getProperties().then(data => {
+    getProperties({ includeHidden: false }).then(data => {
       setAllProperties(data);
       setIsLoading(false);
     });
@@ -58,7 +58,7 @@ function SearchContent() {
       if (p.price < priceRange.min || p.price > priceRange.max) return false;
       return true;
     });
-    if (instantBookOnly) results = results.filter(p => p.tags.includes("tagInstantBook"));
+    if (instantBookOnly) results = results.filter(p => p.isInstantBookable || p.tags.includes("tagInstantBook"));
     return results;
   }, [urlFilteredProperties, selectedTypes, priceRange, instantBookOnly]);
 

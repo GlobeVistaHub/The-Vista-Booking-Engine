@@ -1,6 +1,30 @@
 import { supabase } from '@/lib/supabase';
-import { PROPERTIES as MockProperties, Property } from '@/data/properties';
+import { Property } from '@/data/properties';
 import { useDemoStore } from '@/store/demoStore';
+import { useDataStore, Booking } from '@/store/dataStore';
+
+/**
+ * Technical Recommendation Logic for Sorting
+ * Reliability Score = (Rating * Log10(Reviews + 1))
+ * This balances high ratings with the confidence of high review counts.
+ */
+const getReliabilityScore = (p: Property) => {
+  return p.rating * Math.log10((p.reviews || 0) + 1);
+};
+
+const sortProperties = (props: Property[]) => {
+  return [...props].sort((a, b) => {
+    // 1st Layer: Instant Booking Priority
+    const aInstant = a.isInstantBookable || a.tags?.includes('tagInstantBook');
+    const bInstant = b.isInstantBookable || b.tags?.includes('tagInstantBook');
+    
+    if (aInstant && !bInstant) return -1;
+    if (!aInstant && bInstant) return 1;
+
+    // 2nd Layer: Reliability Score (Rating + Volume)
+    return getReliabilityScore(b) - getReliabilityScore(a);
+  });
+};
 
 /**
  * Helper to convert Supabase snake_case rows to our frontend camelCase Property interface
@@ -19,62 +43,101 @@ const mapDatabaseToProperty = (row: any): Property => {
     rating: row.rating,
     reviews: row.reviews,
     images: row.images,
-    tags: row.tags,
+    tags: row.tags || [],
     description_en: row.description_en,
     description_ar: row.description_ar,
     lat: row.lat,
     lng: row.lng,
     type: row.type,
     ownerPhone: row.owner_phone,
-    isBooked: row.is_booked
+    isBooked: row.is_booked,
+    isInstantBookable: row.is_instant_bookable
   };
 };
 
 /**
  * Master Traffic Controller
- * Determines whether to serve Mock Data or Live Supabase Data
  */
-export const getProperties = async (): Promise<Property[]> => {
+export const getProperties = async (options?: { includeHidden?: boolean }): Promise<Property[]> => {
   const isDemoMode = useDemoStore.getState().isDemoMode;
 
-  // If the master toggle is ON, serve the beautiful mock data
   if (isDemoMode) {
-    return MockProperties;
+    const mockData = useDataStore.getState().properties;
+    const filtered = options?.includeHidden ? mockData : mockData.filter(p => !p.isBooked);
+    return sortProperties(filtered);
   }
 
-  // Otherwise, fetch from Live Supabase
-  const { data, error } = await supabase.from('properties').select('*');
-
-  if (error) {
-    console.error("Supabase Error fetching properties:", error);
-    // Graceful fallback if database fails
-    return MockProperties;
+  let query = supabase.from('properties').select('*');
+  if (!options?.includeHidden) {
+    query = query.eq('is_booked', false);
   }
 
-  if (!data) return [];
-
-  // Convert to our strict TypeScript format
-  return data.map(mapDatabaseToProperty);
+  const { data, error } = await query;
+  if (error) return [];
+  
+  const mapped = data.map(mapDatabaseToProperty);
+  return sortProperties(mapped);
 };
 
-export const getPropertyById = async (id: number): Promise<Property | null> => {
+/**
+ * Add a new property
+ */
+export const addProperty = async (property: Omit<Property, 'id' | 'rating' | 'reviews'>): Promise<Property | null> => {
   const isDemoMode = useDemoStore.getState().isDemoMode;
 
   if (isDemoMode) {
-    return MockProperties.find(p => p.id === id) || null;
+    const existingProps = useDataStore.getState().properties;
+    const newId = existingProps.length > 0 ? Math.max(...existingProps.map(p => p.id)) + 1 : 1;
+    const newProp = { 
+      ...property, 
+      id: newId, 
+      rating: 5.0, 
+      reviews: 0,
+      tags: property.isInstantBookable ? [...(property.tags || []), 'tagInstantBook'] : (property.tags || [])
+    } as Property;
+    
+    useDataStore.getState().addProperty(newProp);
+    return newProp;
   }
 
   const { data, error } = await supabase
     .from('properties')
-    .select('*')
-    .eq('id', id)
+    .insert([{
+      title: property.title,
+      title_ar: property.title_ar,
+      guests: property.guests,
+      base_guests: property.baseGuests,
+      bedrooms: property.bedrooms,
+      location: property.location,
+      location_ar: property.location_ar,
+      price: property.price,
+      images: property.images,
+      tags: property.isInstantBookable ? [...(property.tags || []), 'tagInstantBook'] : (property.tags || []),
+      description_en: property.description_en,
+      description_ar: property.description_ar,
+      lat: property.lat,
+      lng: property.lng,
+      type: property.type,
+      owner_phone: property.ownerPhone,
+      is_booked: property.isBooked ?? false,
+      is_instant_bookable: property.isInstantBookable ?? false,
+      rating: 5.0,
+      reviews: 0
+    }])
+    .select()
     .single();
 
-  if (error || !data) {
-    console.error(`Supabase Error fetching property ${id}:`, error);
-    return null;
-  }
+  if (error || !data) return null;
+  return mapDatabaseToProperty(data);
+};
 
+export const getPropertyById = async (id: number): Promise<Property | null> => {
+  const isDemoMode = useDemoStore.getState().isDemoMode;
+  if (isDemoMode) {
+    return useDataStore.getState().properties.find(p => p.id === id) || null;
+  }
+  const { data, error } = await supabase.from('properties').select('*').eq('id', id).single();
+  if (error || !data) return null;
   return mapDatabaseToProperty(data);
 };
 
@@ -82,81 +145,47 @@ export const getPropertyById = async (id: number): Promise<Property | null> => {
 // PHASE 3: BOOKINGS ENGINE
 // ============================================================================
 
-export interface Booking {
-  id: number;
-  property_id: number;
-  guest_name: string;
-  guest_email: string;
-  check_in: string;
-  check_out: string;
-  status: 'pending' | 'confirmed' | 'cancelled';
-  total_price: number;
-  adults: number;
-  children: number;
-  created_at: string;
-  property?: Property; // Joined relation
-}
-
-// Temporary rich mock data for the Presentation Data Engine
-const MOCK_BOOKINGS: Booking[] = [
-  { id: 901, property_id: 1, guest_name: 'Mohammed Al Fayed', guest_email: 'mohammed@example.com', check_in: '2026-10-12', check_out: '2026-10-18', status: 'confirmed', total_price: 4200, adults: 4, children: 0, created_at: '2026-08-01T10:00:00Z', property: MockProperties.find(p => p.id === 1) },
-  { id: 902, property_id: 2, guest_name: 'Sarah Jenkins', guest_email: 'sarah@example.com', check_in: '2026-10-20', check_out: '2026-10-25', status: 'pending', total_price: 1850, adults: 2, children: 0, created_at: '2026-08-05T14:30:00Z', property: MockProperties.find(p => p.id === 2) },
-  { id: 903, property_id: 3, guest_name: 'Ahmed Hassan', guest_email: 'ahmed@example.com', check_in: '2026-11-01', check_out: '2026-11-10', status: 'confirmed', total_price: 12500, adults: 6, children: 2, created_at: '2026-08-10T09:15:00Z', property: MockProperties.find(p => p.id === 3) },
-];
+export type { Booking };
 
 export const getBookings = async (): Promise<Booking[]> => {
   const isDemoMode = useDemoStore.getState().isDemoMode;
-
   if (isDemoMode) {
-    return MOCK_BOOKINGS;
+    const bookings = useDataStore.getState().bookings;
+    const props = useDataStore.getState().properties;
+    return bookings.map(b => ({
+      ...b,
+      property: props.find(p => p.id === b.property_id)
+    }));
   }
 
-  // Fetch bookings WITH the linked property details
   const { data, error } = await supabase
     .from('bookings')
     .select('*, properties(*)')
     .order('created_at', { ascending: false });
 
-  if (error || !data) {
-    console.error("Supabase Error fetching bookings:", error);
-    return [];
-  }
-
-  // Format the joined data
+  if (error || !data) return [];
   return data.map((row: any) => ({
-    id: row.id,
-    property_id: row.property_id,
-    guest_name: row.guest_name,
-    guest_email: row.guest_email,
-    check_in: row.check_in,
-    check_out: row.check_out,
-    status: row.status,
-    total_price: row.total_price,
-    adults: row.adults,
-    children: row.children,
-    created_at: row.created_at,
+    ...row,
     property: row.properties ? mapDatabaseToProperty(row.properties) : undefined
   })) as Booking[];
 };
 
 export const updateBookingStatus = async (id: number, status: 'pending' | 'confirmed' | 'cancelled'): Promise<boolean> => {
   const isDemoMode = useDemoStore.getState().isDemoMode;
-
   if (isDemoMode) {
-    // In demo mode, simulate network delay then succeed
-    await new Promise(resolve => setTimeout(resolve, 600));
+    useDataStore.getState().updateBooking(id, { status });
     return true;
   }
+  const { error } = await supabase.from('bookings').update({ status }).eq('id', id);
+  return !error;
+};
 
-  const { error } = await supabase
-    .from('bookings')
-    .update({ status })
-    .eq('id', id);
-
-  if (error) {
-    console.error("Error updating booking status", error);
-    return false;
+export const togglePropertyStatus = async (id: number, currentStatus: boolean): Promise<boolean> => {
+  const isDemoMode = useDemoStore.getState().isDemoMode;
+  if (isDemoMode) {
+    useDataStore.getState().updateProperty(id, { isBooked: !currentStatus });
+    return true;
   }
-
-  return true;
+  const { error } = await supabase.from('properties').update({ is_booked: !currentStatus }).eq('id', id);
+  return !error;
 };

@@ -16,9 +16,10 @@ export interface Property {
   description_ar: string;
   lat: number;
   lng: number;
-  type: 'Villa' | 'Penthouse' | 'Estate' | 'Apartment';
+  type: 'Villa' | 'Penthouse' | 'Estate' | 'Apartment' | 'Resort' | 'Cabin' | 'Townhouse' | 'Studio' | 'Loft' | 'Mansion' | 'Village House';
   ownerPhone: string;
   isBooked?: boolean;
+  isInstantBookable?: boolean;
 }
 
 export const PROPERTIES: Property[] = [

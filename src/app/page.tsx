@@ -15,7 +15,7 @@ export default function Home() {
   const [properties, setProperties] = useState<Property[]>([]);
 
   useEffect(() => {
-    getProperties().then(setProperties);
+    getProperties({ includeHidden: false }).then(setProperties);
   }, []);
 
   return (

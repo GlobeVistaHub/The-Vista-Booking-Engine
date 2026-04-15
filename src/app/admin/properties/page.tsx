@@ -15,12 +15,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import AddPropertyModal from "@/components/admin/AddPropertyModal";
 
 export default function PropertiesDashboard() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { lang } = useLanguage();
 
   useEffect(() => {
@@ -29,7 +31,8 @@ export default function PropertiesDashboard() {
 
   const fetchProperties = async () => {
     setIsLoading(true);
-    const data = await getProperties();
+    // Admin sees ALL properties including hidden ones
+    const data = await getProperties({ includeHidden: true });
     setProperties(data);
     setIsLoading(false);
   };
@@ -67,7 +70,10 @@ export default function PropertiesDashboard() {
             Manage your luxury portfolio, control visibility, and add new listings.
           </p>
         </div>
-        <button className="flex items-center justify-center gap-2 px-6 py-3 bg-navy text-white rounded-xl font-bold hover:bg-navy/90 transition-all shadow-soft group">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-navy text-white rounded-xl font-bold hover:bg-navy/90 transition-all shadow-soft group"
+        >
           <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
           Add Property
         </button>
@@ -199,7 +205,7 @@ export default function PropertiesDashboard() {
                     </Link>
 
                     <button
-                      onClick={() => handleToggleStatus(property.id, property.isBooked)}
+                      onClick={() => handleToggleStatus(property.id, !!property.isBooked)}
                       disabled={togglingId === property.id}
                       aria-label={isActive ? "Hide property" : "Publish property"}
                       className={`relative flex items-center justify-center w-12 h-6 rounded-full transition-colors duration-300 ${
@@ -223,6 +229,12 @@ export default function PropertiesDashboard() {
           })}
         </div>
       )}
+
+      <AddPropertyModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => fetchProperties()}
+      />
     </div>
   );
 }
