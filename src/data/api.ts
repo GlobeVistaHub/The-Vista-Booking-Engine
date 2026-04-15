@@ -44,7 +44,7 @@ export const getProperties = async (): Promise<Property[]> => {
 
   // Otherwise, fetch from Live Supabase
   const { data, error } = await supabase.from('properties').select('*');
-  
+
   if (error) {
     console.error("Supabase Error fetching properties:", error);
     // Graceful fallback if database fails
@@ -106,7 +106,7 @@ const MOCK_BOOKINGS: Booking[] = [
 
 export const getBookings = async (): Promise<Booking[]> => {
   const isDemoMode = useDemoStore.getState().isDemoMode;
-  
+
   if (isDemoMode) {
     return MOCK_BOOKINGS;
   }
@@ -121,7 +121,7 @@ export const getBookings = async (): Promise<Booking[]> => {
     console.error("Supabase Error fetching bookings:", error);
     return [];
   }
-  
+
   // Format the joined data
   return data.map((row: any) => ({
     id: row.id,
@@ -141,11 +141,11 @@ export const getBookings = async (): Promise<Booking[]> => {
 
 export const updateBookingStatus = async (id: number, status: 'pending' | 'confirmed' | 'cancelled'): Promise<boolean> => {
   const isDemoMode = useDemoStore.getState().isDemoMode;
-  
+
   if (isDemoMode) {
     // In demo mode, simulate network delay then succeed
     await new Promise(resolve => setTimeout(resolve, 600));
-    return true; 
+    return true;
   }
 
   const { error } = await supabase
@@ -157,6 +157,6 @@ export const updateBookingStatus = async (id: number, status: 'pending' | 'confi
     console.error("Error updating booking status", error);
     return false;
   }
-  
+
   return true;
 };
