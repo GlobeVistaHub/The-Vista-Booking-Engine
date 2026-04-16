@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { getSiteContent, updateSiteLabel, SiteLabel, getBookings } from "@/data/api";
+import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAppModeStore, AppModeState } from "@/store/appModeStore";
 import { useAppStore } from "@/hooks/useAppStore";
