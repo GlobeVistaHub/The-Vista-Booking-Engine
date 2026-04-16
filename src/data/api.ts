@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { Property } from '@/data/properties';
 import { useDemoStore } from '@/store/demoStore';
 import { useDataStore, Booking } from '@/store/dataStore';
+import { useAppModeStore } from '@/store/appModeStore';
 
 /**
  * Technical Recommendation Logic for Sorting
@@ -234,6 +235,7 @@ export async function batchCreateProperties(properties: Partial<Property>[]) {
       id: nextId++,
       baseGuests: p.base_guests, // Map back to camelCase for store
       ownerPhone: p.owner_phone,
+      ownerEmail: p.owner_email,
       isInstantBookable: p.is_instant_bookable,
       isBooked: p.is_booked
     })) as Property[];
