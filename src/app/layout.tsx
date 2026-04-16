@@ -34,7 +34,7 @@ import { UserProvider } from "@/context/UserContext";
 import BrandingEngine from "@/components/BrandingEngine";
 import { useAppModeStore } from "@/store/appModeStore";
 import { useAppStore } from "@/hooks/useAppStore";
-import AlexConcierge from "@/components/AlexConcierge";
+import AlexaConcierge from "@/components/AlexaConcierge";
 
 export default function RootLayout({
   children,
@@ -64,7 +64,7 @@ export default function RootLayout({
                 {children}
               </main>
               <Footer />
-              <AlexConcierge />
+              <AlexaConcierge />
             </body>
           </UserProvider>
         </LanguageProvider>

@@ -9,9 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.64",
     "@ai-sdk/openai": "^3.0.35",
     "@ai-sdk/react": "^3.0.167",
     "@clerk/nextjs": "^7.0.12",
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.103.0",
     "@types/mapbox-gl": "^3.4.1",
     "ai": "^3.1.30",
