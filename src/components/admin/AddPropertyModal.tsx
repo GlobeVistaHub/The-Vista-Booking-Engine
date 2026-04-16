@@ -45,6 +45,7 @@ type FormData = {
   description_en: string;
   description_ar: string;
   ownerPhone: string;
+  ownerEmail: string;
   lat: string;
   lng: string;
   isInstantBookable: boolean;
@@ -65,6 +66,7 @@ const initialForm: FormData = {
   description_en: "",
   description_ar: "",
   ownerPhone: "",
+  ownerEmail: "",
   lat: "",
   lng: "",
   isInstantBookable: false,
@@ -138,6 +140,7 @@ export default function AddPropertyModal({ isOpen, onClose, onSuccess }: Props) 
       description_en: form.description_en,
       description_ar: form.description_ar,
       ownerPhone: form.ownerPhone,
+      ownerEmail: form.ownerEmail || "",
       lat: parseFloat(form.lat) || 0,
       lng: parseFloat(form.lng) || 0,
       isBooked: false,
