@@ -25,7 +25,18 @@ export default function AlexaConcierge() {
         role: 'assistant',
         content: initialGreeting
       }
-    ]
+    ],
+    onError: (err) => {
+      console.error("Chat error:", err);
+      // Soft error message
+      append({
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: lang === 'ar' 
+          ? "عذراً، أواجه صعوبة بسيطة في الاتصال حالياً. هل يمكنك المحاولة مرة أخرى؟" 
+          : "I'm sorry, I'm having a bit of trouble connecting right now. Could you try again?"
+      });
+    }
   });
 
   // Scroll to bottom
