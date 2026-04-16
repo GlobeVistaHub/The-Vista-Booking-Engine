@@ -1,28 +1,47 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Settings,
-  Building2,
-  Store,
-  LayoutGrid,
-  Save,
-  CheckCircle,
-  Database,
-  LayoutTemplate,
-  Globe,
-  Info
-} from "lucide-react";
-import { useAppModeStore } from "@/store/appModeStore";
+import { getSiteContent, updateSiteLabel, SiteLabel } from "@/data/api";
+import { useLanguage } from "@/context/LanguageContext";
+import { useAppModeStore, AppModeState } from "@/store/appModeStore";
+import { useAppStore } from "@/hooks/useAppStore";
 import { useDemoStore } from "@/store/demoStore";
+import { 
+  Loader2, 
+  Plus, 
+  Edit3, 
+  Trash2, 
+  Settings, 
+  LayoutGrid, 
+  CheckCircle, 
+  Store, 
+  Globe, 
+  Info, 
+  Save, 
+  Coins, 
+  DollarSign, 
+  LayoutTemplate, 
+  Database, 
+  Building2,
+  Palette,
+  Upload,
+  Image
+} from "lucide-react";
 import Link from "next/link";
 
+
 export default function SettingsPage() {
-  const { isWhiteLabel, brandName, ownerName, setWhiteLabel, setBrandName, setOwnerName } = useAppModeStore();
+  const store = useAppModeStore();
+  const brandName = useAppStore(useAppModeStore, (s: AppModeState) => s.brandName) as string;
+  const brandLogo = useAppStore(useAppModeStore, (s: AppModeState) => s.brandLogo) as string;
+  const ownerName = useAppStore(useAppModeStore, (s: AppModeState) => s.ownerName) as string;
+  const isWhiteLabel = useAppStore(useAppModeStore, (s: AppModeState) => s.isWhiteLabel) as boolean;
+  const exchangeRate = useAppStore(useAppModeStore, (s: AppModeState) => s.exchangeRate) as number;
   const { isDemoMode, setDemoMode } = useDemoStore();
 
   const [localBrand, setLocalBrand] = useState(brandName);
   const [localOwner, setLocalOwner] = useState(ownerName);
+  const [localRate, setLocalRate] = useState(exchangeRate?.toString() || "50.0");
   const [saved, setSaved] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -30,11 +49,16 @@ export default function SettingsPage() {
     setMounted(true);
     setLocalBrand(brandName);
     setLocalOwner(ownerName);
-  }, [brandName, ownerName]);
+    setLocalRate(exchangeRate?.toString() || "50.0");
+  }, [brandName, ownerName, exchangeRate]);
 
   const handleSave = () => {
-    setBrandName(localBrand);
-    setOwnerName(localOwner);
+    store.setBrandName(localBrand || "The Vista");
+    store.setOwnerName(localOwner || "Concierge");
+    const rateNum = parseFloat(localRate);
+    if (!isNaN(rateNum) && rateNum > 0) {
+      store.setExchangeRate(rateNum);
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
@@ -67,7 +91,7 @@ export default function SettingsPage() {
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Platform Mode Card */}
           <button
-            onClick={() => setWhiteLabel(false)}
+            onClick={() => store.setWhiteLabel(false)}
             className={`text-left p-6 rounded-xl border-2 transition-all duration-200 ${
               !isWhiteLabel
                 ? "border-emerald-500 bg-emerald-50/50"
@@ -90,7 +114,7 @@ export default function SettingsPage() {
 
           {/* White Label Mode Card */}
           <button
-            onClick={() => setWhiteLabel(true)}
+            onClick={() => store.setWhiteLabel(true)}
             className={`text-left p-6 rounded-xl border-2 transition-all duration-200 ${
               isWhiteLabel
                 ? "border-primary bg-primary/5"
@@ -113,7 +137,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* ── Section 2: Branding (only meaningful in white-label) ──── */}
+      {/* ── Section 2: Branding & Identity ────────────────────────── */}
       <div className={`bg-white rounded-2xl shadow-soft border overflow-hidden transition-all ${isWhiteLabel ? "border-primary/20" : "border-navy/5 opacity-70"}`}>
         <div className="p-6 border-b border-navy/5 flex items-center justify-between">
           <div>
@@ -133,32 +157,34 @@ export default function SettingsPage() {
         </div>
 
         <div className="p-6 space-y-5">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
-              Brand / App Name
-            </label>
-            <input
-              disabled={!isWhiteLabel}
-              value={localBrand}
-              onChange={(e) => setLocalBrand(e.target.value)}
-              placeholder="The Vista"
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-navy font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            />
-            <p className="text-xs text-muted mt-1.5">Appears in the sidebar logo and admin panels.</p>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
+                Brand / App Name
+              </label>
+              <input
+                disabled={!isWhiteLabel}
+                value={localBrand || ""}
+                onChange={(e) => setLocalBrand(e.target.value)}
+                placeholder="The Vista"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-navy font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              />
+              <p className="text-xs text-muted mt-1.5">Appears in the sidebar logo and admin panels.</p>
+            </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
-              Owner / Admin Name
-            </label>
-            <input
-              disabled={!isWhiteLabel}
-              value={localOwner}
-              onChange={(e) => setLocalOwner(e.target.value)}
-              placeholder="Concierge"
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-navy font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            />
-            <p className="text-xs text-muted mt-1.5">Shown in the sidebar profile area.</p>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
+                Owner / Admin Name
+              </label>
+              <input
+                disabled={!isWhiteLabel}
+                value={localOwner || ""}
+                onChange={(e) => setLocalOwner(e.target.value)}
+                placeholder="Concierge"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-navy font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              />
+              <p className="text-xs text-muted mt-1.5">Shown in the sidebar profile area.</p>
+            </div>
           </div>
 
           <div className="pt-2">
@@ -176,6 +202,51 @@ export default function SettingsPage() {
             </button>
           </div>
         </div>
+
+        {/* ── Section 2.1: Financial Engine (Vista Rate) ─────────── */}
+        <div className="p-6 border-t border-navy/5 bg-primary/[0.02]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="max-w-md">
+              <h3 className="font-bold text-navy text-sm flex items-center gap-2 mb-1">
+                <Coins className="w-4 h-4 text-primary" />
+                Vista Financial Engine
+              </h3>
+              <p className="text-xs text-muted leading-relaxed">
+                Set your own internal exchange rate to avoid bank conversion surprises for guests. 
+                Total prices in USD will be converted to this EGP rate for Paymob transactions.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="bg-white border border-navy/10 rounded-xl p-3 px-4 flex items-center gap-3 shadow-sm">
+                <span className="text-sm font-bold text-navy">1 USD =</span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={localRate}
+                    onChange={(e) => setLocalRate(e.target.value)}
+                    className="w-24 bg-slate-50 border-none outline-none font-bold text-primary text-lg text-center"
+                  />
+                  <span className="text-sm font-bold text-navy">EGP</span>
+                </div>
+              </div>
+              
+              <button
+                onClick={handleSave}
+                className={`whitespace-nowrap flex items-center gap-2 px-6 py-4 rounded-xl font-bold text-sm transition-all ${
+                  saved
+                    ? "bg-emerald-500 text-white"
+                    : "bg-navy text-white hover:bg-navy/90 active:scale-95 shadow-lg shadow-navy/10"
+                }`}
+              >
+                {saved ? <CheckCircle className="w-4 h-4" /> : <DollarSign className="w-4 h-4 text-primary" />}
+                {saved ? "Saved!" : "Update Rate"}
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* ── Section 3: Data Mode ──────────────────────────────────── */}
@@ -228,6 +299,138 @@ export default function SettingsPage() {
               </div>
             )}
           </button>
+        </div>
+      </div>
+
+      {/* ── Section 3.5: Visual Identity (Logo & Colors) ─────────── */}
+      <div className={`bg-white rounded-2xl shadow-soft border overflow-hidden transition-all ${isWhiteLabel ? "border-primary/20" : "border-navy/5 opacity-70"}`}>
+        <div className="p-6 border-b border-navy/5">
+          <h2 className="font-bold text-navy text-lg flex items-center gap-2">
+            <Palette className="w-5 h-5 text-primary" />
+            Visual Identity
+          </h2>
+          <p className="text-sm text-muted mt-1">
+            Upload your brand logo and set a signature color. We'll automatically generate matching shadows and accents.
+          </p>
+        </div>
+
+        <div className="p-6 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Logo Upload Tool */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted mb-4">
+                Brand Logo (Upload)
+              </label>
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-slate-50 border-2 border-dashed border-navy/10 flex items-center justify-center overflow-hidden shrink-0 group relative">
+                  {store.brandLogo ? (
+                    <img src={store.brandLogo} alt="Preview" className="w-full h-full object-contain p-2" />
+                  ) : (
+                    <Image className="w-8 h-8 text-navy/20" />
+                  )}
+                  {isWhiteLabel && (
+                    <div className="absolute inset-0 bg-navy/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                       <Upload className="w-5 h-5 text-white" />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <input
+                    type="file"
+                    id="logo-upload"
+                    className="hidden"
+                    accept="image/*"
+                    disabled={!isWhiteLabel}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        if (file.size > 500000) {
+                          alert("Logo is too large. Please use an image under 500KB.");
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          store.setBrandLogo(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="logo-upload"
+                    className={`inline-flex items-center gap-2 px-4 py-2 bg-navy text-white rounded-xl text-xs font-bold cursor-pointer transition-all hover:bg-navy/90 active:scale-95 ${!isWhiteLabel && 'opacity-40 cursor-not-allowed'}`}
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    Upload Logo
+                  </label>
+                  {brandLogo && (
+                    <button
+                      onClick={() => store.setBrandLogo('')}
+                      className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors border border-rose-100"
+                      title="Remove Logo"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  <p className="text-[10px] text-muted leading-tight">Recommended: PNG or SVG with transparent background.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Brand Color Master */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted mb-4">
+                Core Brand Color
+              </label>
+              <div className="flex items-center gap-4">
+                <div 
+                  className="w-12 h-12 rounded-full shadow-lg border-4 border-white overflow-hidden shrink-0"
+                  style={{ backgroundColor: store.brandColor }}
+                />
+                <div className="flex-1">
+                  <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 focus-within:border-primary transition-all">
+                    <input
+                      type="color"
+                      disabled={!isWhiteLabel}
+                      value={store.brandColor}
+                      onChange={(e) => store.setBrandColor(e.target.value)}
+                      className="w-8 h-8 bg-transparent border-none cursor-pointer p-0"
+                    />
+                    <input
+                      type="text"
+                      disabled={!isWhiteLabel}
+                      value={store.brandColor.toUpperCase()}
+                      onChange={(e) => store.setBrandColor(e.target.value)}
+                      className="flex-1 bg-transparent border-none outline-none text-sm font-mono font-bold text-navy ml-3 uppercase"
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted mt-2">Pick a color. We'll derive RGB and Shadows from this Hex value.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-navy/5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-8 h-8 rounded-lg animate-pulse" 
+                style={{ 
+                  backgroundColor: store.brandColor,
+                  boxShadow: `0 0 15px ${store.brandColor}44`
+                }} 
+              />
+              <span className="text-[10px] text-muted font-bold uppercase tracking-widest">Active Brand Glow Simulation</span>
+            </div>
+            <button
+              onClick={() => {
+                setSaved(true);
+                setTimeout(() => setSaved(false), 2500);
+              }}
+              className="text-xs font-bold text-primary hover:underline"
+            >
+              Test Visual Sync
+            </button>
+          </div>
         </div>
       </div>
 

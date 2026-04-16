@@ -69,25 +69,35 @@ function SearchContent() {
   );
 
   // ── Dynamic header subtitle ──────────────────────────────────────────────
+  const formatStays = (count: number, lang: string) => {
+    if (lang !== 'ar') return `${count} ${count === 1 ? "stay" : "stays"}`;
+    
+    // Arabic Pluralization Rules (simplified for UI)
+    if (count === 1) return "إقامة واحدة";
+    if (count === 2) return "إقامتان مختارتان";
+    if (count >= 3 && count <= 10) return `${count} إقامات فاخرة`;
+    return `${count} إقامة مختارة`; // 11+ stays
+  };
+
   const headerSubtitle = useMemo(() => {
     const parts: string[] = [];
     if (filteredProperties.length > 0)
-      parts.push(`${filteredProperties.length} ${filteredProperties.length === 1 ? "stay" : "stays"}`);
+      parts.push(formatStays(filteredProperties.length, lang));
     if (urlFrom && urlTo) parts.push(`${urlFrom} → ${urlTo}`);
     if (totalGuests > 0) parts.push(`${totalGuests} ${t("guests")}`);
     return parts.length > 0 ? parts.join("  ·  ") : t("searchHeaderSubtitle");
-  }, [filteredProperties.length, urlFrom, urlTo, totalGuests, t]);
+  }, [filteredProperties.length, urlFrom, urlTo, totalGuests, t, lang]);
 
   const headerTitle = useMemo(() => {
     if (urlLocation) {
       const sample = allProperties.find(p => p.location === urlLocation);
       const displayLocation = lang === "ar" && sample ? sample.location_ar : urlLocation;
       return lang === "ar"
-        ? `إقامات مختارة في ${displayLocation}`
-        : `Curated Stays in ${displayLocation}`;
+        ? `أفضل الإقامات في ${displayLocation}`
+        : `Premier Stays in ${displayLocation}`;
     }
     return t("searchHeaderTitle");
-  }, [urlLocation, lang, t]);
+  }, [urlLocation, lang, t, allProperties]);
 
   const resetAll = () => {
     setSelectedTypes([]);
@@ -242,10 +252,11 @@ function SearchContent() {
                </div>
             ) : filteredProperties.length > 0 ? (
               <div className="flex flex-col">
-                {filteredProperties.map((property) => (
+                {filteredProperties.map((property, idx) => (
                   <PropertyCard
                     key={property.id}
                     property={property}
+                    delayIndex={idx % 10}
                     searchContext={{ from: urlFrom, to: urlTo, adults: urlAdults, children: urlChildren }}
                   />
                 ))}

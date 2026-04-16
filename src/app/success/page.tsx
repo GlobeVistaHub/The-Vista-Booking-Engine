@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, Home, Calendar, Loader2, MailCheck } from "lucide-react";
+import { CheckCircle, Home, Calendar, Loader2, MailCheck, X, Info } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -18,192 +18,186 @@ function SuccessContent() {
   const { t, lang } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [bookingId, setBookingId] = useState<string>("");
-
-  const hasSaved = useRef(false);
+  const [status, setStatus] = useState<"verifying" | "success" | "error" | "pending">("verifying");
+  const [bookingDetails, setBookingDetails] = useState<any>(null);
+  
+  const isCanceled = searchParams.get("success") === "false";
+  const email = searchParams.get("email") || "guest@example.com"; // We can pass this in success_url
 
   useEffect(() => {
-    if (hasSaved.current) return;
-
-    // IMPORTANT: If we already have a bookingId in the URL, 
-    // it means this is a re-visit to an already confirmed booking.
-    // Do NOT create a new one.
-    const existingId = searchParams.get("bookingId");
-    if (existingId) {
-      setBookingId(existingId);
-      setStatus("success"); // IMMEDIATELY SUCCESS if ID exists
-      hasSaved.current = true;
+    // -------------------------------------------------------------------------
+    // FRAME-BUSTER: If this page is stuck in an iframe, break out to top level!
+    // -------------------------------------------------------------------------
+    if (window.top !== window.self) {
+      window.top!.location.href = window.location.href;
       return;
     }
 
-    const propId = searchParams.get("id");
-    const from = searchParams.get("from");
-    const to = searchParams.get("to");
-    
-    // Only proceed if we have the necessary "Intent to Book" parameters
-    if (!propId || !from || !to) return;
-    
-    try {
-      const existing = JSON.parse(localStorage.getItem("vista_bookings") || "[]");
-      
-      // Look for a very recent duplicate (within 5 minutes, same property and dates) 
-      const duplicate = existing.find((b: any) => 
-        b.propertyId === propId && 
-        b.checkIn === from && 
-        b.checkOut === to &&
-        (new Date().getTime() - new Date(b.timestamp).getTime() < 300000)
-      );
+    if (isCanceled) {
+      setStatus("error");
+      return;
+    }
 
-      let workingId = "";
+    const verifyBooking = async () => {
+      // -------------------------------------------------------------------------
+      // FULL-STACK DASHBOARD SYNC (Localhost / Demo Bridge)
+      // -------------------------------------------------------------------------
+      if (searchParams.get("success") === "true") {
+        const transactionId = searchParams.get("id");
+        const propertyId = searchParams.get("propertyId");
+        const checkIn = searchParams.get("checkIn");
+        const checkOut = searchParams.get("checkOut");
 
-      if (duplicate) {
-        workingId = duplicate.bookingId;
-      } else {
-        // If no duplicate, generate new
-        const random = Math.random().toString(36).substring(7).toUpperCase();
-        const currentYear = new Date().getFullYear();
-        workingId = `VST-${currentYear}-${propId}-${random}`;
-        
-        existing.unshift({ 
-          bookingId: workingId, 
-          propertyId: propId, 
-          checkIn: from,
-          checkOut: to,
-          timestamp: new Date().toISOString() 
-        });
-        localStorage.setItem("vista_bookings", JSON.stringify(existing.slice(0, 10)));
+        // 1. Mark as SUCCESS immediately for UI
+        setStatus("success");
+
+        // 2. Persist to Local Storage for "My Trips" dashboard
+        if (propertyId) {
+          try {
+            const existingBookings = JSON.parse(localStorage.getItem("vista_bookings") || "[]");
+            const newBookingRecord = {
+              bookingId: transactionId || `VST-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+              propertyId: propertyId,
+              checkIn: checkIn,
+              checkOut: checkOut,
+              verifiedAt: new Date().toISOString()
+            };
+            
+            // Avoid duplicates
+            if (!existingBookings.find((b: any) => b.bookingId === newBookingRecord.bookingId)) {
+               localStorage.setItem("vista_bookings", JSON.stringify([newBookingRecord, ...existingBookings]));
+            }
+          } catch (e) {
+            console.error("LocalStorage Sync Failed:", e);
+          }
+        }
+
+        // 3. SECURE SYNC: Update Database via POST (Bypasses missing webhook on localhost)
+        try {
+          await fetch("/api/bookings/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: email,
+              transactionId: transactionId,
+              status: "success"
+            })
+          });
+        } catch (e) {
+          console.error("Database Manual Sync Failed:", e);
+        }
       }
 
-      setBookingId(workingId);
-      hasSaved.current = true;
-    } catch(e) {}
-  }, [searchParams, router]);
-
-  useEffect(() => {
-    const triggerAutomation = async () => {
-      // Only trigger if we have an ID and we haven't started yet
-      if (!bookingId || status !== "idle") return;
-      
-      const propId = searchParams.get("id");
-      const from = searchParams.get("from");
-      const to = searchParams.get("to");
-
-      // Verify we have the funnel data before starting
-      if (!from || !to || !propId) return;
-
-      setStatus("loading");
-      
-      const property = PROPERTIES.find(p => p.id === Number(propId));
-
-      const payload = {
-        bookingId: bookingId,
-        propertyId: propId,
-        propertyTitle: property?.title || "Luxury Villa",
-        ownerPhone: property?.ownerPhone || "+201000000000",
-        dates: { from, to },
-        guests: {
-          adults: searchParams.get("adults"),
-          children: searchParams.get("children")
-        },
-        financials: {
-          price: searchParams.get("price"),
-          cleaning: searchParams.get("cleaning"),
-          service: searchParams.get("service"),
-          total: searchParams.get("total")
-        },
-        guestEmail: "guest@example.com",
-        timestamp: new Date().toISOString()
-      };
-
+      // 4. Standard verification check
       try {
-        const response = await fetch("/api/booking-confirmation", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+        const response = await fetch(`/api/bookings/verify?email=${encodeURIComponent(email)}`);
+        const data = await response.json();
 
-        if (response.ok) {
+        if (data.status === "paid" || data.status === "confirmed") {
+          setBookingDetails(data);
           setStatus("success");
-          
-          // ONLY CLEANUP URL AFTER SUCCESS
-          const newParams = new URLSearchParams({
-            bookingId: bookingId,
-            id: propId
-          });
-          router.replace(`/success?${newParams.toString()}`, { scroll: false });
-        } else {
-          setStatus("error");
+        } else if ((status as string) !== "success") {
+          // Fallback polling for slow database updates
+          let attempts = 0;
+          const interval = setInterval(async () => {
+            attempts++;
+            const pollRes = await fetch(`/api/bookings/verify?email=${encodeURIComponent(email)}`);
+            const pollData = await pollRes.json();
+            
+            if (pollData.status === "paid" || pollData.status === "confirmed") {
+              setBookingDetails(pollData);
+              setStatus("success");
+              clearInterval(interval);
+            } else if (attempts >= 5) {
+              if ((status as string) !== "success") setStatus("pending");
+              clearInterval(interval);
+            }
+          }, 3000);
         }
       } catch (err) {
-        console.error("n8n automation failed:", err);
-        setStatus("error");
+        console.error("Verification failed:", err);
+        if ((status as string) !== "success") setStatus("pending");
       }
     };
 
-    triggerAutomation();
-  }, [searchParams, status, bookingId, router]);
+    verifyBooking();
+  }, [isCanceled, email]);
 
+  if (isCanceled) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-v-background text-center">
+        <div className="max-w-md space-y-6">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+            <X className="w-10 h-10 text-red-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-navy">Payment Canceled</h1>
+          <p className="text-muted">Your transaction was not completed. No charges were made.</p>
+          <button onClick={() => router.push("/checkout")} className="w-full py-4 bg-navy text-white rounded-2xl font-bold">Try Again</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-v-background min-h-[85vh] flex items-center justify-center py-20 px-6 overflow-hidden">
       <div className="max-w-xl w-full text-center space-y-10 relative">
-        
-        {/* Cinematic Backdrop Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -z-10" />
 
-        {/* Success Icon */}
-        <div className="relative inline-block">
-          <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-          <div className="relative w-24 h-24 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/20">
-            <CheckCircle className="w-12 h-12 text-white" />
+        {status === "verifying" && (
+          <div className="space-y-6 animate-pulse">
+            <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <Loader2 className="w-12 h-12 text-primary animate-spin" />
+            </div>
+            <h1 className="text-3xl font-bold text-navy">Verifying Payment...</h1>
+            <p className="text-muted">Waiting for confirmation from Paymob. This usually takes a few seconds.</p>
           </div>
-        </div>
+        )}
 
-        {/* Text Content */}
-        <div className="space-y-4">
-          <h1 className="text-4xl md:text-5xl font-heading font-bold text-navy tracking-tight">
-            {t('bookingConfirmed')}
-          </h1>
-          
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-lg text-green-600 font-bold leading-relaxed max-w-sm mx-auto animate-in fade-in zoom-in duration-500">
-              {t('successSubtitle')}
-            </p>
+        {status === "success" && (
+          <>
+            <div className="relative inline-block">
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+              <div className="relative w-24 h-24 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/20">
+                <CheckCircle className="w-12 h-12 text-white" />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h1 className="text-4xl md:text-5xl font-heading font-bold text-navy tracking-tight">
+                {t('bookingConfirmed')}
+              </h1>
+              <p className="text-lg text-green-600 font-bold leading-relaxed max-w-sm mx-auto">
+                Payment Received. Your stay at The Vista is secured.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Link href="/" className="w-full sm:w-auto px-8 py-4 bg-white border border-navy/10 text-navy rounded-2xl font-bold shadow-soft">
+                {t('backToHome')}
+              </Link>
+              <Link href="/profile" className="w-full sm:w-auto px-8 py-4 bg-navy text-white rounded-2xl font-bold shadow-soft">
+                {t('viewBookings')}
+              </Link>
+            </div>
+
+            <div className="pt-12 border-t border-navy/5">
+              <p className="text-sm text-muted font-medium">
+                Booking ID: <span className="text-navy font-bold uppercase">{bookingDetails?.id || "VST-PAYMOB-SUCCESS"}</span>
+              </p>
+            </div>
+          </>
+        )}
+
+        {status === "pending" && (
+          <div className="space-y-6">
+            <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
+              <Info className="w-12 h-12 text-amber-600" />
+            </div>
+            <h1 className="text-3xl font-bold text-navy">Payment Still Processing</h1>
+            <p className="text-muted">Paymob is still verifying your transaction. We will update your dashboard and send an email once confirmed.</p>
+            <Link href="/profile" className="block w-full py-4 bg-navy text-white rounded-2xl font-bold">Go to My Bookings</Link>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <Link 
-            href="/" 
-            className="w-full sm:w-auto px-8 py-4 bg-white border border-navy/10 text-navy rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-navy/[0.02] transition-all shadow-soft"
-          >
-            <Home className="w-5 h-5" />
-            {t('backToHome')}
-          </Link>
-
-          <Link 
-            href="/profile" 
-            className="w-full sm:w-auto px-8 py-4 bg-navy text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-navy/90 transition-all shadow-soft group"
-          >
-            <Calendar className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            {t('viewBookings')}
-          </Link>
-        </div>
-
-
-        {/* Trip Support Info */}
-        <div className="pt-12 border-t border-navy/5">
-          <p className="text-sm text-muted font-medium min-h-[1.25rem]">
-            {bookingId && (
-              <>
-                Booking ID: <span className="text-navy">{bookingId}</span>
-              </>
-            )}
-          </p>
-        </div>
-
+        )}
       </div>
     </div>
   );

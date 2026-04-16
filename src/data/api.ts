@@ -189,3 +189,162 @@ export const togglePropertyStatus = async (id: number, currentStatus: boolean): 
   const { error } = await supabase.from('properties').update({ is_booked: !currentStatus }).eq('id', id);
   return !error;
 };
+
+export async function batchCreateProperties(properties: Partial<Property>[]) {
+  const isDemoMode = useDemoStore.getState().isDemoMode;
+
+  const mappedProps = properties.map(p => ({
+    title: p.title,
+    title_ar: p.title_ar || p.title,
+    type: p.type || "Villa",
+    location: p.location || "Red Sea",
+    location_ar: p.location_ar || p.location,
+    price: Number(p.price || 0),
+    base_guests: Number(p.baseGuests || 0),
+    guests: String(p.guests || "0"),
+    bedrooms: String(p.bedrooms || "0"),
+    // Support semicolon-separated images from CSV
+    images: typeof p.images === 'string' 
+      ? (p.images as string).split(';').map(img => img.trim())
+      : (p.images || []),
+    tags: p.tags || [],
+    description_en: p.description_en || "",
+    description_ar: p.description_ar || "",
+    lat: Number(p.lat || 27.257),
+    lng: Number(p.lng || 33.811),
+    owner_phone: p.ownerPhone || "+201145551163",
+    is_instant_bookable: p.isInstantBookable ?? false,
+    is_booked: p.isBooked || false,
+    rating: Number(p.rating || 5.0),
+    reviews: Number(p.reviews || 0),
+  }));
+
+  if (isDemoMode) {
+    const existingProps = useDataStore.getState().properties;
+    let nextId = existingProps.length > 0 ? Math.max(...existingProps.map(p => p.id)) + 1 : 1;
+    
+    const newProps = mappedProps.map(p => ({
+      ...p,
+      id: nextId++,
+      baseGuests: p.base_guests, // Map back to camelCase for store
+      ownerPhone: p.owner_phone,
+      isInstantBookable: p.is_instant_bookable,
+      isBooked: p.is_booked
+    })) as Property[];
+
+    useDataStore.getState().setProperties([...newProps, ...existingProps]);
+    return true;
+  }
+
+  const { data, error } = await supabase
+    .from('properties')
+    .insert(mappedProps);
+
+  if (error) {
+    console.error("Error batch creating properties:", error);
+    return false;
+  }
+  return true;
+}
+
+export const deleteAllProperties = async (): Promise<boolean> => {
+  const isDemoMode = useDemoStore.getState().isDemoMode;
+  
+  if (isDemoMode) {
+    useDataStore.getState().setProperties([]);
+    return true;
+  }
+
+  // DELETE request without a filter defaults to "all" in some Supabase configs, 
+  // but usually requires a filter to avoid accidents. We use .neq('id', 0) to match all.
+  const { error } = await supabase
+    .from('properties')
+    .delete()
+    .neq('id', 0);
+
+  if (error) {
+    console.error("Error deleting all properties:", error);
+    return false;
+  }
+  return true;
+};
+
+export const deleteProperty = async (id: number): Promise<boolean> => {
+  const isDemoMode = useDemoStore.getState().isDemoMode;
+  
+  if (isDemoMode) {
+    const props = useDataStore.getState().properties;
+    useDataStore.getState().setProperties(props.filter(p => p.id !== id));
+    return true;
+  }
+
+  const { error } = await supabase
+    .from('properties')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error(`Error deleting property ${id}:`, error);
+    return false;
+  }
+  return true;
+};
+
+// ============================================================================
+// PHASE 4: DYNAMIC CONTENT CMS
+// ============================================================================
+
+export interface SiteLabel {
+  key: string;
+  value_en: string;
+  value_ar: string;
+}
+
+export const getSiteContent = async (): Promise<SiteLabel[]> => {
+  const isDemoMode = useDemoStore.getState().isDemoMode;
+  
+  if (isDemoMode) {
+    return useDataStore.getState().siteContent || [];
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('site_content')
+      .select('*');
+
+    if (error && Object.keys(error).length > 0) {
+      // Log removed to prevent user distraction during connection hiccups
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.warn("Silent fallback: Site content fetch failed, using defaults.", err);
+    return [];
+  }
+};
+
+export const updateSiteLabel = async (label: SiteLabel): Promise<boolean> => {
+  const isDemoMode = useDemoStore.getState().isDemoMode;
+  
+  if (isDemoMode) {
+    const current = useDataStore.getState().siteContent || [];
+    const exists = current.find(l => l.key === label.key);
+    if (exists) {
+      useDataStore.getState().setSiteContent(current.map(l => l.key === label.key ? label : l));
+    } else {
+      useDataStore.getState().setSiteContent([...current, label]);
+    }
+    return true;
+  }
+
+  // Upsert logic for site_content
+  const { error } = await supabase
+    .from('site_content')
+    .upsert(label, { onConflict: 'key' });
+
+  if (error) {
+    console.error(`Error updating label ${label.key}:`, error);
+    return false;
+  }
+  return true;
+};

@@ -23,7 +23,15 @@ interface Property {
   isBooked?: boolean;
 }
 
-export default function PropertyCard({ property, searchContext }: { property: Property, searchContext?: {from: string, to: string, adults: number, children: number} }) {
+export default function PropertyCard({ 
+  property, 
+  searchContext,
+  delayIndex = 0 
+}: { 
+  property: Property, 
+  searchContext?: {from: string, to: string, adults: number, children: number},
+  delayIndex?: number
+}) {
   const [currentImg, setCurrentImg] = useState(0);
   const { toggleWishlist, isInWishlist } = useUser();
   const { t, lang } = useLanguage();
@@ -47,7 +55,8 @@ export default function PropertyCard({ property, searchContext }: { property: Pr
 
   return (
     <div 
-      className="group flex flex-col sm:flex-row gap-6 border-b border-navy/5 pb-10 last:border-0 p-4 -mx-4 rounded-3xl transition-all hover:bg-navy/[0.01]" 
+      className={`group flex flex-col sm:flex-row gap-6 border-b border-navy/5 pb-10 last:border-0 p-4 -mx-4 rounded-3xl transition-all hover:bg-navy/[0.01] animate-reveal`}
+      style={{ animationDelay: `${delayIndex * 100}ms` }}
       dir={lang === "ar" ? "rtl" : "ltr"}
     >
       {/* 1. INTERACTIVE ZONE: IMAGE & CAROUSEL (NO LINK) */}

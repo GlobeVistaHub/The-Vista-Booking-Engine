@@ -1,22 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { Search, MapPin, Calendar as CalendarIcon, Users, Plus, Minus } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
-import { PROPERTIES } from "@/data/properties";
+import { getProperties } from "@/data/api";
+import { Property } from "@/data/properties";
 
-// Derive unique locations dynamically from the data — zero hardcoding
-const UNIQUE_LOCATIONS = Array.from(new Set(PROPERTIES.map(p => p.location))).sort();
+interface BookingWidgetProps {
+  properties?: Property[];
+}
 
-export default function BookingWidget() {
+export default function BookingWidget({ properties: propList }: BookingWidgetProps) {
   const router = useRouter();
   const { t, lang } = useLanguage();
 
+  const [allProperties, setAllProperties] = useState<Property[]>(propList || []);
   const [activeTab, setActiveTab] = useState<"location" | "dates" | "guests" | null>(null);
+  
+  // Fetch properties if not provided (e.g., on other pages)
+  useEffect(() => {
+    if (!propList || propList.length === 0) {
+      getProperties({ includeHidden: false }).then(setAllProperties);
+    } else {
+      setAllProperties(propList);
+    }
+  }, [propList]);
+
+  // Derive unique locations dynamically from the actual data
+  const UNIQUE_LOCATIONS = useMemo(() => {
+    return Array.from(new Set(allProperties.map(p => p.location))).sort();
+  }, [allProperties]);
+
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to?: Date | undefined }>({
@@ -27,7 +45,7 @@ export default function BookingWidget() {
 
   // Get the translated display label for a raw location string
   const getLocationDisplay = (loc: string) => {
-    const property = PROPERTIES.find(p => p.location === loc);
+    const property = allProperties.find(p => p.location === loc);
     return lang === "ar" && property ? property.location_ar : loc;
   };
 

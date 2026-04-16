@@ -41,7 +41,7 @@ export default function Home() {
 
         {/* THE BOOKING WIDGET (INTERACTIVE CLIENT COMPONENT) */}
         <div className="absolute -bottom-8 md:-bottom-[4.5rem] z-30 w-full flex justify-center px-4">
-          <BookingWidget />
+          <BookingWidget properties={properties} />
         </div>
       </div>
 

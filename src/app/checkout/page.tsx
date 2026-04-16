@@ -11,13 +11,16 @@ import {
   Calendar,
   Users
 } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { PROPERTIES } from "@/data/properties";
 import { format, differenceInDays } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
-import { Plus, Minus, X } from "lucide-react";
+import { Plus, Minus, X, Loader2, Globe } from "lucide-react";
+import { useAppModeStore } from "@/store/appModeStore";
+import { useAppStore } from "@/hooks/useAppStore";
 
 // PAYMENT METHOD LOGOS (VITAL SVGS)
 const VisaLogo = () => (
@@ -58,6 +61,7 @@ function CheckoutContent() {
   const property = PROPERTIES.find(p => p.id === Number(propertyId));
 
   // Edit States
+  const { user: clerkUser } = useUser();
   const [isEditingDates, setIsEditingDates] = useState(false);
   const [isEditingGuests, setIsEditingGuests] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<"visa" | "mc" | "amex" | "apple">("visa");
@@ -72,6 +76,14 @@ function CheckoutContent() {
   const [adults, setAdults] = useState(Number(searchParams.get("adults")) || 2);
   const [children, setChildren] = useState(Number(searchParams.get("children")) || 0);
 
+  // Paymob States
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentToken, setPaymentToken] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Exchange Rate from Store
+  const exchangeRate = useAppStore(useAppModeStore, (s) => s.exchangeRate) as number || 50.0;
+
   // If no property found, redirect to search
   useEffect(() => {
     if (!property) {
@@ -84,13 +96,14 @@ function CheckoutContent() {
   const stayNights = differenceInDays(dateRange.to, dateRange.from) || 1;
   const totalGuests = adults + children;
   const maxGuests = Number(property.guests) || 8;
-  const extraGuestFee = 75; // $75 per extra guest per night above baseGuests
+  const extraGuestFee = 75;
   const extraGuests = Math.max(0, totalGuests - property.baseGuests);
   const extraGuestTotal = extraGuests * extraGuestFee * stayNights;
   const pricePerNight = property.price;
   const cleaningFee = 150;
   const serviceFee = Math.round((pricePerNight * stayNights + extraGuestTotal) * 0.1);
   const total = pricePerNight * stayNights + extraGuestTotal + cleaningFee + serviceFee;
+  const amountEGP = Math.round(total * exchangeRate);
 
   const paymentMethods = [
     { id: "visa", logo: <VisaLogo /> },
@@ -99,19 +112,40 @@ function CheckoutContent() {
     { id: "apple", logo: <ApplePayLogo /> },
   ];
 
-  const handleConfirm = () => {
-    const params = new URLSearchParams({
-      id: propertyId || "",
-      adults: adults.toString(),
-      children: children.toString(),
-      from: format(dateRange.from, "yyyy-MM-dd"),
-      to: format(dateRange.to, "yyyy-MM-dd"),
-      price: pricePerNight.toString(),
-      cleaning: cleaningFee.toString(),
-      service: serviceFee.toString(),
-      total: total.toString()
-    });
-    router.push(`/success?${params.toString()}`);
+  const handleConfirm = async () => {
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/payments/paymob/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          propertyId: property.id,
+          guestName: clerkUser?.fullName || "Guest", 
+          guestEmail: clerkUser?.primaryEmailAddress?.emailAddress || "guest@example.com",
+          amountUSD: total,
+          exchangeRate: exchangeRate,
+          checkIn: format(dateRange.from, "yyyy-MM-dd"),
+          checkOut: format(dateRange.to, "yyyy-MM-dd"),
+          adults,
+          children
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to initiate payment");
+
+      if (data.paymentToken) {
+        setPaymentToken(data.paymentToken);
+      } else {
+        throw new Error("No payment token received");
+      }
+    } catch (err: any) {
+      console.error("Payment Error:", err);
+      setError(err.message);
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -128,7 +162,7 @@ function CheckoutContent() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 xl:gap-24">
           
-          {/* LEFT COLUMN: PAYMENT & TRIP DETAILS */}
+          {/* LEFT COLUMN */}
           <div className="space-y-12">
             
             {/* 1. Trip Section */}
@@ -141,12 +175,7 @@ function CheckoutContent() {
                     <p className="font-bold text-navy text-sm md:text-base">{t('dates')}</p>
                     <p className="text-muted text-sm">{format(dateRange.from, "MMM d")} – {format(dateRange.to, "MMM d")}, 2026</p>
                   </div>
-                  <button 
-                    onClick={() => setIsEditingDates(true)}
-                    className="text-primary font-bold underline underline-offset-4 hover:brightness-125 transition-all px-2 shrink-0"
-                  >
-                    {t('edit')}
-                  </button>
+                  <button onClick={() => setIsEditingDates(true)} className="text-primary font-bold underline underline-offset-4 hover:brightness-125 transition-all text-sm">{t('edit')}</button>
                 </div>
 
                 <div className="flex items-center justify-between gap-4 py-2">
@@ -154,67 +183,38 @@ function CheckoutContent() {
                     <p className="font-bold text-navy text-sm md:text-base">{t('guests')}</p>
                     <p className="text-muted text-sm">{adults + children} {t('guestCount')}</p>
                   </div>
-                  <button 
-                    onClick={() => setIsEditingGuests(true)}
-                    className="text-primary font-bold underline underline-offset-4 hover:brightness-125 transition-all px-2 shrink-0"
-                  >
-                    {t('edit')}
-                  </button>
+                  <button onClick={() => setIsEditingGuests(true)} className="text-primary font-bold underline underline-offset-4 hover:brightness-125 transition-all text-sm">{t('edit')}</button>
                 </div>
               </div>
             </section>
 
             <div className="h-px bg-navy/10 w-full" />
 
-            {/* 2. Payment Section */}
+            {/* 2. Payment Strategy Info */}
             <section className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold text-navy">{t('paymentMethod')}</h2>
-                <div className="flex flex-wrap gap-2">
-                  {paymentMethods.map((method) => (
-                    <button
-                      key={method.id}
-                      onClick={() => setSelectedMethod(method.id as any)}
-                      className={`p-1.5 rounded-lg border-2 transition-all duration-300 ${
-                        selectedMethod === method.id 
-                          ? 'border-primary bg-primary/5 shadow-md scale-105' 
-                          : 'border-navy/10 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 hover:border-navy/30'
-                      }`}
-                    >
-                      {method.logo}
-                    </button>
-                  ))}
+              <h2 className="text-2xl font-bold text-navy">{t('paymentMethod')}</h2>
+              <div className="p-6 bg-white border border-navy/10 rounded-2xl shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                    <span className="font-bold text-navy">Paymob Secure Card Checkout</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <VisaLogo />
+                    <MCLogo />
+                  </div>
                 </div>
+                <p className="text-sm text-muted">
+                  You will pay in **Egyptian Pounds (EGP)** at a fixed exchange rate of **1 USD = {exchangeRate} EGP**. 
+                  One-time secure processing by Paymob.
+                </p>
               </div>
 
-              <div className="p-1 px-4 border border-navy/10 rounded-2xl bg-white shadow-sm">
-                <div className="border-b border-navy/10 py-4 flex items-center gap-4">
-                  <CreditCard className="w-5 h-5 text-navy opacity-40 shrink-0" />
-                  <input 
-                    type="text" 
-                    placeholder={t('cardNumber')}
-                    className="w-full bg-transparent border-none outline-none font-medium placeholder:text-navy/20"
-                  />
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-medium animate-shake">
+                  {error}
                 </div>
-                <div className="grid grid-cols-2">
-                  <div className="border-r border-navy/10 py-4 flex items-center gap-4">
-                    <Calendar className="ml-4 w-5 h-5 text-navy opacity-40 shrink-0" />
-                    <input 
-                      type="text" 
-                      placeholder={t('expiration')}
-                      className="w-full bg-transparent border-none outline-none font-medium placeholder:text-navy/20"
-                    />
-                  </div>
-                  <div className="py-4 flex items-center gap-4">
-                    <ShieldCheck className="ml-4 w-5 h-5 text-navy opacity-40 shrink-0" />
-                    <input 
-                      type="text" 
-                      placeholder={t('cvv')}
-                      className="w-full bg-transparent border-none outline-none font-medium placeholder:text-navy/20"
-                    />
-                  </div>
-                </div>
-              </div>
+              )}
             </section>
 
             <div className="h-px bg-navy/10 w-full" />
@@ -222,45 +222,24 @@ function CheckoutContent() {
             {/* 3. Ground Rules */}
             <section className="space-y-6">
               <h2 className="text-2xl font-bold text-navy">{t('groundRules')}</h2>
-              <p className="text-muted leading-relaxed">
-                {t('groundRulesDetail')}
-              </p>
-              <ul className="space-y-4 font-medium text-navy">
-                <li className="flex items-center gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-navy/20" />
-                  {t('followHouseRules')}
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-navy/20" />
-                  {t('treatHomeLikeOwn')}
-                </li>
+              <p className="text-muted leading-relaxed">{t('groundRulesDetail')}</p>
+              <ul className="space-y-4 font-medium text-navy text-sm">
+                <li className="flex items-center gap-3"><div className="w-1.5 h-1.5 rounded-full bg-navy/20" />{t('followHouseRules')}</li>
+                <li className="flex items-center gap-3"><div className="w-1.5 h-1.5 rounded-full bg-navy/20" />{t('treatHomeLikeOwn')}</li>
               </ul>
             </section>
-
-            <div className="pt-8 block lg:hidden">
-                <button 
-                  onClick={handleConfirm}
-                  className="w-full block py-4 bg-primary text-white rounded-2xl font-bold text-center shadow-md hover:brightness-110 transition-all active:scale-95"
-                >
-                  {t('confirmAndPay')}
-                </button>
-            </div>
           </div>
 
-          {/* RIGHT COLUMN: PRICE SUMMARY CARD */}
-          <div className="lg:block">
+          {/* RIGHT COLUMN: PRICE SUMMARY */}
+          <div>
             <div className="sticky top-28 border border-navy/10 rounded-3xl p-8 bg-white shadow-soft">
-              
-              {/* Property Mini Card */}
               <div className="flex gap-4 pb-8 border-b border-navy/10">
                 <div className="w-24 h-24 rounded-xl overflow-hidden bg-navy/5 shrink-0">
                   <img src={property.images[0]} alt={property.title} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex flex-col justify-between py-1">
                   <div>
-                    <h3 className="font-bold text-navy line-clamp-1">
-                      {lang === "ar" ? property.title_ar : property.title}
-                    </h3>
+                    <h3 className="font-bold text-navy line-clamp-1">{lang === "ar" ? property.title_ar : property.title}</h3>
                     <p className="text-sm text-muted">{lang === "ar" ? property.location_ar : property.location}</p>
                   </div>
                   <div className="flex items-center gap-1 text-sm font-medium text-navy">
@@ -271,51 +250,85 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              {/* Price Details */}
               <div className="py-8 space-y-4">
                 <h2 className="text-xl font-bold text-navy mb-6">{t('priceDetails')}</h2>
-                <div className="flex justify-between items-center text-navy/70">
-                  <span>${pricePerNight} x {stayNights} {t('night')} ({property.baseGuests} {t('guests')} base)</span>
+                <div className="flex justify-between items-center text-navy/70 text-sm">
+                  <span>${pricePerNight} x {stayNights} {t('night')}</span>
                   <span>${pricePerNight * stayNights}</span>
                 </div>
                 {extraGuests > 0 && (
-                  <div className="flex justify-between items-center text-navy/70">
-                    <span>+{extraGuests} extra guest{extraGuests > 1 ? 's' : ''} × {stayNights} {t('night')}</span>
+                  <div className="flex justify-between items-center text-navy/70 text-sm">
+                    <span>+{extraGuests} extra guests × {stayNights} {t('night')}</span>
                     <span>${extraGuestTotal}</span>
                   </div>
                 )}
-                <div className="flex justify-between items-center text-navy/70">
+                <div className="flex justify-between items-center text-navy/70 text-sm">
                   <span>{t('cleaningFee')}</span>
                   <span>${cleaningFee}</span>
                 </div>
-                <div className="flex justify-between items-center text-navy/70">
+                <div className="flex justify-between items-center text-navy/70 text-sm">
                   <span>{t('serviceFee')}</span>
                   <span>${serviceFee}</span>
                 </div>
-                <div className="pt-4 mt-4 border-t border-navy/10 flex justify-between items-center text-navy text-lg font-bold">
+                
+                <div className="pt-4 border-t border-navy/10 flex justify-between items-center text-navy font-bold">
                   <span>{t('totalLabel')} (USD)</span>
-                  <span>${total}</span>
+                  <span className="text-xl">${total}</span>
+                </div>
+
+                {/* EGP CONVERSION BOX */}
+                <div className="mt-4 p-4 bg-primary/[0.03] border border-primary/20 rounded-2xl flex justify-between items-center group hover:bg-primary/[0.05] transition-colors">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70">Paymob Secure Total</span>
+                    <span className="text-[10px] text-muted">Fixed Rate: 1 USD = {exchangeRate} EGP</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-lg font-black text-primary font-heading tracking-tight">{amountEGP.toLocaleString()} EGP</span>
+                  </div>
                 </div>
               </div>
 
-              {/* CTA */}
-              <div className="hidden lg:block pt-4">
+              <div className="pt-4">
                 <button 
                   onClick={handleConfirm}
-                  className="w-full block py-4 bg-primary text-white rounded-2xl font-bold text-center shadow-md hover:brightness-110 transition-all active:scale-95"
+                  disabled={isProcessing}
+                  className="w-full flex items-center justify-center gap-3 py-4 bg-primary text-white rounded-2xl font-bold text-center shadow-md hover:brightness-110 transition-all active:scale-95 disabled:opacity-50"
                 >
-                  {t('confirmAndPay')}
+                  {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
+                  {isProcessing ? "Processing..." : t('confirmAndPay')}
                 </button>
-                <div className="flex items-center justify-center gap-2 mt-4 text-xs text-muted">
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>{t('secureSsl')}</span>
+                <div className="flex items-center justify-center gap-2 mt-4 text-[10px] text-muted font-bold uppercase tracking-widest">
+                  <ShieldCheck className="w-3 h-3" />
+                  <span>256-bit SSL Secure Payment</span>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
       </main>
+
+      {/* MODAL: PAYMOB IFRAME OVERLAY */}
+      {paymentToken && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-6 transition-all duration-500">
+          <div className="absolute inset-0 bg-navy/60 backdrop-blur-md animate-fade-in" onClick={() => setPaymentToken(null)} />
+          <div className="relative w-full h-full md:max-w-xl md:h-[85vh] bg-white md:rounded-3xl shadow-2xl overflow-hidden animate-slide-up">
+            <div className="absolute top-0 left-0 right-0 bg-white border-b border-navy/5 p-4 flex items-center justify-between z-10">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-primary" />
+                <span className="text-xs font-bold text-navy uppercase tracking-widest">Vista Secure Checkout</span>
+              </div>
+              <button onClick={() => setPaymentToken(null)} className="p-2 hover:bg-navy/5 rounded-full transition-colors">
+                <X className="w-5 h-5 text-navy" />
+              </button>
+            </div>
+            <iframe
+              src={`https://accept.paymob.com/api/acceptance/iframes/1033348?payment_token=${paymentToken}`}
+              className="w-full h-full pt-16"
+              title="Secure Payment"
+            />
+          </div>
+        </div>
+      )}
 
       {/* MODAL: EDIT DATES */}
       {isEditingDates && (

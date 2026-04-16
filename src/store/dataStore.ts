@@ -26,8 +26,10 @@ const INITIAL_MOCK_BOOKINGS: Booking[] = [
 interface DataStore {
   properties: Property[];
   bookings: Booking[];
+  siteContent: any[];
   setProperties: (props: Property[]) => void;
   setBookings: (books: Booking[]) => void;
+  setSiteContent: (content: any[]) => void;
   updateProperty: (id: number, updates: Partial<Property>) => void;
   addProperty: (prop: Property) => void;
   updateBooking: (id: number, updates: Partial<Booking>) => void;
@@ -39,8 +41,10 @@ export const useDataStore = create<DataStore>()(
     (set) => ({
       properties: MockProperties,
       bookings: INITIAL_MOCK_BOOKINGS,
+      siteContent: [],
       setProperties: (properties) => set({ properties }),
       setBookings: (bookings) => set({ bookings }),
+      setSiteContent: (siteContent) => set({ siteContent }),
       updateProperty: (id, updates) => set((state) => ({
         properties: state.properties.map(p => p.id === id ? { ...p, ...updates } : p)
       })),

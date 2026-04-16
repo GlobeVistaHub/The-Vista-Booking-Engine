@@ -6,6 +6,8 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth, SignInButton, UserButton } from "@clerk/nextjs";
+import { useAppModeStore } from "@/store/appModeStore";
+import { useAppStore } from "@/hooks/useAppStore";
 
 export default function Header() {
   const pathname = usePathname();
@@ -14,6 +16,9 @@ export default function Header() {
   const isProperty = pathname.startsWith("/property/");
   const isTransparentBase = isHome || isProperty;
   const { lang, t, toggleLanguage } = useLanguage();
+  const isWhiteLabel = useAppStore(useAppModeStore, (s) => s.isWhiteLabel);
+  const brandName = useAppStore(useAppModeStore, (s) => s.brandName) as string;
+  const brandLogo = useAppStore(useAppModeStore, (s) => s.brandLogo) as string;
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -33,11 +38,15 @@ export default function Header() {
     }`}>
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
 
-        {/* LOGO — always English, never translated */}
+        {/* LOGO — dynamic branding */}
         <Link href="/" className="flex items-center gap-2">
-          <span className={`text-2xl font-heading font-bold tracking-tight transition-colors duration-500 ${isSolid ? "text-navy" : "text-white drop-shadow-md"}`}>
-            THE VISTA
-          </span>
+          {brandLogo ? (
+            <img src={brandLogo} alt={brandName} className={`h-8 w-auto object-contain transition-all duration-500 ${!isSolid ? "brightness-0 invert drop-shadow-md" : ""}`} />
+          ) : (
+            <span className={`text-2xl font-heading font-bold tracking-tight transition-colors duration-500 ${(isWhiteLabel || (brandName && brandName !== "The Vista")) ? "" : "uppercase"} ${isSolid ? "text-navy" : "text-white drop-shadow-md"}`}>
+              {(isWhiteLabel || (brandName && brandName !== "The Vista")) ? brandName : "THE VISTA"}
+            </span>
+          )}
         </Link>
 
         {/* ACTIONS */}

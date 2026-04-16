@@ -57,12 +57,18 @@ export const dictionaries: Dictionary = {
   noResultsDesc: { en: "Try adjusting your filters to find your perfect stay.", ar: "حاول تعديل الفلاتر للعثور على إقامتك المثالية." },
   clearAllFilters: { en: "Reset All Filters", ar: "إعادة ضبط جميع الفلاتر" },
 
-
   // Property Card / Property Types
   Villa: { en: "Villa", ar: "فيلا" },
   Penthouse: { en: "Penthouse", ar: "بنتهاوس" },
   Estate: { en: "Estate", ar: "عقار ريفي" },
   Apartment: { en: "Apartment", ar: "شقة لكجري" },
+  Mansion: { en: "Mansion", ar: "قصر" },
+  Resort: { en: "Resort", ar: "منتجع" },
+  Loft: { en: "Loft", ar: "لوفت" },
+  Studio: { en: "Studio", ar: "ستوديو" },
+  Cabin: { en: "Cabin", ar: "كوخ" },
+  Townhouse: { en: "Townhouse", ar: "تاون هاوس" },
+  "Village House": { en: "Village House", ar: "بيت ريفي" },
   entireVilla: { en: "Entire Villa", ar: "فيلا بالكامل" },
   luxuryApartment: { en: "Luxury Apartment", ar: "شقة فاخرة" },
   entireEstate: { en: "Entire Estate", ar: "عقار بالكامل" },
@@ -88,13 +94,30 @@ export const dictionaries: Dictionary = {
   tagUltraWifi: { en: "Ultra High-speed WiFi", ar: "واي فاي فائق السرعة" },
   tagSecurity: { en: "24/7 Gated Security", ar: "أمن 24/7" },
   tagInstantBook: { en: "Instant Book", ar: "حجز فوري" },
+  tagDesertVibe: { en: "Desert Vibe", ar: "أجواء صحراوية" },
+  tagEcoFriendly: { en: "Eco Friendly", ar: "صديق للبيئة" },
+  tagCitySkyline: { en: "City Skyline", ar: "أفق المدينة" },
+  tagDesignFocus: { en: "Design Focused", ar: "اهتمام بالتصميم" },
+  tagFamilyFriendly: { en: "Family Friendly", ar: "مناسب للعائلات" },
+  tagModernArch: { en: "Modern Architecture", ar: "معمار حديث" },
+  tagSeaFront: { en: "Sea Front", ar: "مواجه للبحر" },
+  tagBoutique: { en: "Boutique", ar: "بوتيك" },
+  tagCulturalHub: { en: "Cultural Hub", ar: "مركز ثقافي" },
+  tagHeritage: { en: "Heritage", ar: "تراثي" },
+  tagPeaceful: { en: "Peaceful", ar: "هادئ" },
+  tagPrivateBeach: { en: "Private Beach", ar: "شاطئ خاص" },
+  tagHelipad: { en: "Helipad", ar: "مهبط طائرات" },
+  tagInfinityPool: { en: "Infinity Pool", ar: "مسبح إنفينيتي" },
+  tagDivingCenter: { en: "Diving Center", ar: "مركز غوص" },
+  tagNightlife: { en: "Nightlife", ar: "حياة ليلية" },
+  tagLuxuryTech: { en: "Luxury Tech", ar: "تكنولوجيا فاخرة" },
 
   // Footer
-  footerTagline: { en: "The Red Sea Riviera by GlobeVistaHub", ar: "The Red Sea Riviera by GlobeVistaHub" },
+  footerTagline: { en: "The Red Sea Riviera by GlobeVistaHub", ar: "ريفييرا البحر الأحمر برعاية GlobeVistaHub" },
   footerPrivacy: { en: "Privacy", ar: "الخصوصية" },
   footerTerms: { en: "Terms", ar: "الشروط" },
   footerContact: { en: "Contact", ar: "اتصل بنا" },
-  footerCopyright: { en: "© 2026 THE VISTA. All rights reserved.", ar: "© 2026 ذا فيستا. جميع الحقوق محفوظة." },
+  footerCopyright: { en: "© 2026 THE VISTA. All rights reserved.", ar: "جميع الحقوق محفوظة © 2026 ذا فيستا." },
 
   // Property Details Page (General Labels)
   hostedBy: { en: "Hosted by The Vista Concierge", ar: "بإدارة ذا فيستا كونسيرج" },
@@ -198,9 +221,16 @@ export const dictionaries: Dictionary = {
   emailSent: { en: "Booking confirmed & email sent!", ar: "تم تأكيد الحجز وإرسال البريد!" },
   automationError: { en: "Booking confirmed (Email pending)", ar: "تم الحجز (البريد قيد الإرسال)" },
 
-  // Regions
+  // Regions & Locations
   regionGouna: { en: "El Gouna", ar: "الجونة" },
   regionSahl: { en: "Sahl Hasheesh", ar: "سهل حشيش" },
   regionSoma: { en: "Soma Bay", ar: "سوما باي" },
   regionMakadi: { en: "Makadi Bay", ar: "خليج مكادي" },
+  regionCairo: { en: "Cairo Waterfront", ar: "كورنيش القاهرة" },
+  regionZamalek: { en: "Zamalek", ar: "الزمالك" },
+  regionHurghadaDesert: { en: "Hurghada Desert", ar: "صحراء الغردقة" },
+  regionNorthCoast: { en: "North Coast", ar: "الساحل الشمالي" },
+  regionAlamein: { en: "New Alamein", ar: "العلمين الجديدة" },
+  regionMarsaAlam: { en: "Marsa Alam", ar: "مرسى علم" },
+  regionSiwa: { en: "Siwa Oasis", ar: "واحة سيوة" },
 };
