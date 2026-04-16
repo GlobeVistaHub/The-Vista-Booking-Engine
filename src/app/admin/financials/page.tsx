@@ -30,12 +30,17 @@ export default function FinancialsDashboard() {
   const fetchFinancials = async () => {
     setIsLoading(true);
     const data = await getBookings();
-    setBookings(data.filter(b => b.status === "confirmed"));
+    setBookings(data);
     setIsLoading(false);
   };
 
   // Financial Calculations
-  const totalRevenue = bookings.reduce((sum, b) => sum + b.total_price, 0);
+  const confirmedBookings = bookings.filter(b => b.status === "confirmed");
+  const failedBookings = bookings.filter(b => b.payment_status === "failed");
+  
+  const totalRevenue = confirmedBookings.reduce((sum, b) => sum + b.total_price, 0);
+  const potentialRevenue = failedBookings.reduce((sum, b) => sum + b.total_price, 0);
+  
   // In platform mode, show 10% fee. In white-label, the owner keeps 100%.
   const platformFees = isWhiteLabel ? 0 : totalRevenue * 0.10;
   const hostPayout = totalRevenue - platformFees;
@@ -187,6 +192,29 @@ export default function FinancialsDashboard() {
             </div>
           </div>
 
+          {/* Lead Recovery Analytics */}
+          {failedBookings.length > 0 && (
+            <div className="bg-rose-50 border border-rose-100 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+               <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-rose-500 shadow-sm">
+                    <TrendingUp className="w-6 h-6 rotate-180" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest text-rose-600">Lost Opportunity</p>
+                    <h4 className="text-2xl font-heading font-bold text-navy">${potentialRevenue.toLocaleString()}</h4>
+                  </div>
+               </div>
+               <div className="text-center md:text-right">
+                  <p className="text-sm text-navy/60 max-w-xs">
+                    You have <span className="font-bold text-rose-600">{failedBookings.length} failed attempts</span>. Recovering just 20% of these could add <strong>${Math.round(potentialRevenue * 0.2).toLocaleString()}</strong> to your net payout.
+                  </p>
+               </div>
+               <button onClick={() => window.location.href='/admin'} className="px-6 py-3 bg-navy text-white rounded-xl font-bold text-sm hover:brightness-110 transition-all">
+                  Review Failed Leads
+               </button>
+            </div>
+          )}
+
           {/* Transaction Ledger */}
           <div className="bg-white rounded-2xl shadow-soft border border-navy/5 overflow-hidden">
             <div className="p-4 md:p-6 border-b border-navy/5 flex items-center justify-between">
@@ -213,10 +241,11 @@ export default function FinancialsDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-navy/5">
-                      {bookings.map((booking) => {
+                      {bookings.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((booking) => {
                         const net = isWhiteLabel ? booking.total_price : booking.total_price * 0.9;
+                        const isFailed = booking.payment_status === 'failed';
                         return (
-                          <tr key={booking.id} className="hover:bg-slate-50/40 transition-colors group">
+                          <tr key={booking.id} className={`hover:bg-slate-50/40 transition-colors group ${isFailed ? "opacity-60" : ""}`}>
                             <td className="px-6 py-4">
                               <span className="text-sm font-medium text-navy">
                                 {format(parseISO(booking.created_at), "MMM dd, yyyy")}
@@ -224,22 +253,29 @@ export default function FinancialsDashboard() {
                             </td>
                             <td className="px-6 py-4">
                               <span className="text-xs font-mono font-bold text-navy/40">
-                                TX-VST-{booking.id.toString().padStart(4, "0")}
+                                {isFailed ? "LEAD-" : "TX-VST-"}{booking.id.toString().padStart(4, "0")}
                               </span>
                             </td>
                             <td className="px-6 py-4">
-                              <p className="font-bold text-navy text-sm">
-                                {lang === "ar" && booking.property ? booking.property.title_ar : booking.property?.title}
-                              </p>
+                              <div className="flex items-center gap-3">
+                                <p className="font-bold text-navy text-sm">
+                                  {lang === "ar" && booking.property ? booking.property.title_ar : booking.property?.title}
+                                </p>
+                                {isFailed && <span className="text-[8px] font-black uppercase px-1.5 py-0.5 bg-rose-50 text-rose-500 border border-rose-100 rounded">Lead</span>}
+                              </div>
                               <p className="text-xs text-muted mt-0.5">{booking.guest_name}</p>
                             </td>
                             <td className="px-6 py-4 text-right">
-                              <span className="font-bold text-navy text-sm">${booking.total_price.toLocaleString()}</span>
+                              <span className={`font-bold text-sm ${isFailed ? "text-navy/30 line-through" : "text-navy"}`}>${booking.total_price.toLocaleString()}</span>
                             </td>
                             <td className="px-6 py-4 text-right">
-                              <span className="font-bold text-emerald-600 text-sm bg-emerald-50 px-2 py-1 rounded-md">
-                                + ${net.toLocaleString()}
-                              </span>
+                              {isFailed ? (
+                                <span className="text-[10px] font-black text-rose-400 uppercase tracking-tighter italic">Interrupted</span>
+                              ) : (
+                                <span className="font-bold text-emerald-600 text-sm bg-emerald-50 px-2 py-1 rounded-md">
+                                  + ${net.toLocaleString()}
+                                </span>
+                              )}
                             </td>
                           </tr>
                         );

@@ -57,7 +57,13 @@ export async function POST(req: Request) {
 
     // 3. Initiate Paymob handshake with dynamic Redirection URL
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const redirectionUrl = `${baseUrl}/success?success=true&email=${encodeURIComponent(guestEmail)}&propertyId=${propertyId}&checkIn=${checkIn}&checkOut=${checkOut}`;
+    
+    // Safety check for production
+    if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_APP_URL) {
+      console.warn("⚠️ CRITICAL: NEXT_PUBLIC_APP_URL is missing in production. Paymob will likely fail to redirect.");
+    }
+
+    const redirectionUrl = `${baseUrl}/api/payments/paymob/callback?id=${booking.id}&propertyId=${propertyId}&from=${checkIn}&to=${checkOut}&adults=${adults}&children=${children}`;
 
     const paymentToken = await PaymobService.createSession(
       amountCents, 

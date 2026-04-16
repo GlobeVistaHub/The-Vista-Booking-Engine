@@ -11,7 +11,7 @@ export const VISTA_CONFIG = {
 
   // SUPPORT EMAILS
   support: {
-    email: "concierge@thevista.com",
+    email: "support@globevistahub.com",
   },
   
   // SOCIAL LINKS

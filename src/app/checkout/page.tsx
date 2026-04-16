@@ -9,7 +9,9 @@ import {
   ShieldCheck, 
   Info,
   Calendar,
-  Users
+  Users,
+  MessageCircle,
+  AlertTriangle
 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
@@ -159,6 +161,39 @@ function CheckoutContent() {
           </button>
           <h1 className="text-3xl md:text-4xl font-heading font-bold text-navy">{t('confirmAndPay')}</h1>
         </div>
+
+        {/* PAYMENT FAILURE BANNER (RETENTION) */}
+        {searchParams.get("error") === "payment_failed" && (
+          <div className="mb-12 bg-rose-50 border border-rose-100 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 animate-shake shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-rose-500" />
+            <div className="flex items-start gap-5">
+              <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6 text-rose-500" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold text-navy">Payment Interrupted</h3>
+                <p className="text-navy/60 text-sm max-w-md leading-relaxed">
+                  We couldn't process your transaction. Don't worry, your preferred dates at **{property.title}** are still held for you.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+              <button 
+                onClick={() => window.open(`https://wa.me/+201145551163?text=Hi, I had an issue booking ${property.title}. Can Alex help?`, '_blank')}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-rose-200 text-rose-600 rounded-2xl text-sm font-bold hover:bg-rose-100 transition-all w-full sm:w-auto"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Speak to Alex
+              </button>
+              <button 
+                onClick={handleConfirm}
+                className="px-8 py-3 bg-rose-500 text-white rounded-2xl text-sm font-bold hover:bg-rose-600 transition-all w-full sm:w-auto shadow-sm"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 xl:gap-24">
           

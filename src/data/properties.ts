@@ -18,6 +18,7 @@ export interface Property {
   lng: number;
   type: 'Villa' | 'Penthouse' | 'Estate' | 'Apartment' | 'Resort' | 'Cabin' | 'Townhouse' | 'Studio' | 'Loft' | 'Mansion' | 'Village House';
   ownerPhone: string;
+  ownerEmail: string;
   isBooked?: boolean;
   isInstantBookable?: boolean;
 }
@@ -46,7 +47,8 @@ export const PROPERTIES: Property[] = [
     lat: 27.3912,
     lng: 33.6811,
     type: 'Villa',
-    ownerPhone: '+201000000000'
+    ownerPhone: '+201000000000',
+    ownerEmail: 'support@globevistahub.com'
   },
   {
     id: 2,
@@ -72,6 +74,7 @@ export const PROPERTIES: Property[] = [
     lng: 33.8824,
     type: 'Penthouse',
     ownerPhone: '+201111111111',
+    ownerEmail: 'support@globevistahub.com',
     isBooked: true
   },
 
@@ -98,7 +101,8 @@ export const PROPERTIES: Property[] = [
     lat: 26.8488,
     lng: 33.9904,
     type: 'Estate',
-    ownerPhone: '+201222222222'
+    ownerPhone: '+201222222222',
+    ownerEmail: 'support@globevistahub.com'
   },
   {
     id: 4,
@@ -122,6 +126,7 @@ export const PROPERTIES: Property[] = [
     tags: ["tagPanoramicViews", "tagBeachAccess", "tagInstantBook"],
     description_en: "Experience luxury living in the heart of Alexandria. This royal apartment features stunning panoramic sea views and direct access to the Mediterranean shore.",
     description_ar: "اختبر المعيشة الفاخرة في قلب الإسكندرية. تتميز هذه الشقة الملكية بإطلالات بانورامية خلابة على البحر ووصول مباشر إلى شواطئ البحر الأبيض المتوسط.",
-    ownerPhone: "+201222222222"
+    ownerPhone: "+201222222222",
+    ownerEmail: "support@globevistahub.com"
   }
 ];

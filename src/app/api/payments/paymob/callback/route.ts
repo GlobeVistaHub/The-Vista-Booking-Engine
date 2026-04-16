@@ -69,22 +69,37 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Database update failed" }, { status: 500 });
     }
 
-    // 5. Trigger n8n Automation (Only on SUCCESS)
-    if (isSuccess) {
-      // In a real production app, we'd trigger n8n here via fetch()
-      console.log("TRIGGERING N8N AUTOMATION for Booking:", booking.id);
-      /*
-      fetch(process.env.N8N_WEBHOOK_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          event: "payment_success",
-          bookingId: booking.id,
-          guestName: booking.guest_name,
-          totalUSD: booking.total_price,
-          amountEGP: amountEGP
-        })
-      });
-      */
+    // 4.1 Fetch Dynamic Support Email for n8n
+    const { data: supportEmailRecord } = await supabaseAdmin
+      .from('site_content')
+      .select('value_en')
+      .eq('key', 'support_email')
+      .single();
+    
+    const finalSupportEmail = supportEmailRecord?.value_en || "support@globevistahub.com";
+
+    // 5. Trigger n8n Automation
+    try {
+      const n8nUrl = process.env.N8N_WEBHOOK_URL;
+      if (n8nUrl) {
+        await fetch(n8nUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            event: isSuccess ? "payment_success" : "payment_failed",
+            booking: {
+              ...booking,
+              property_title: obj.order.items?.[0]?.name || "Luxury Property",
+              owner_email: booking.owner_email || finalSupportEmail
+            },
+            amountEGP,
+            transactionId
+          })
+        });
+        console.log(`n8n ${isSuccess ? 'Success' : 'Failure'} signal sent.`);
+      }
+    } catch (n8nErr) {
+      console.error("n8n Trigger failed (non-blocking):", n8nErr);
     }
 
     return NextResponse.json({ success: true, message: "Transaction processed" });
@@ -105,8 +120,15 @@ export async function GET(req: Request) {
 
   // Redirect the user to the frontend success or failure page
   if (success) {
-    return NextResponse.redirect(new URL("/success", req.url));
+    return NextResponse.redirect(new URL(`/success?id=${bookingId}`, req.url));
   } else {
-    return NextResponse.redirect(new URL("/checkout?error=payment_failed", req.url));
+    // Preserve ALL booking context so the guest doesn't have to restart
+    const propertyId = searchParams.get("propertyId");
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
+    const adults = searchParams.get("adults");
+    const children = searchParams.get("children");
+    
+    return NextResponse.redirect(new URL(`/checkout?error=payment_failed&id=${propertyId}&from=${from}&to=${to}&adults=${adults}&children=${children}`, req.url));
   }
 }

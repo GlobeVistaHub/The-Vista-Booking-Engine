@@ -50,6 +50,7 @@ const mapDatabaseToProperty = (row: any): Property => {
     lng: row.lng,
     type: row.type,
     ownerPhone: row.owner_phone,
+    ownerEmail: row.owner_email || useAppModeStore.getState().supportEmail || 'support@globevistahub.com',
     isBooked: row.is_booked,
     isInstantBookable: row.is_instant_bookable
   };
@@ -119,6 +120,7 @@ export const addProperty = async (property: Omit<Property, 'id' | 'rating' | 're
       lng: property.lng,
       type: property.type,
       owner_phone: property.ownerPhone,
+      owner_email: property.ownerEmail || useAppModeStore.getState().supportEmail || 'support@globevistahub.com',
       is_booked: property.isBooked ?? false,
       is_instant_bookable: property.isInstantBookable ?? false,
       rating: 5.0,
@@ -170,13 +172,16 @@ export const getBookings = async (): Promise<Booking[]> => {
   })) as Booking[];
 };
 
-export const updateBookingStatus = async (id: number, status: 'pending' | 'confirmed' | 'cancelled'): Promise<boolean> => {
+export const updateBookingStatus = async (id: number, status: 'pending' | 'confirmed' | 'cancelled', paymentStatus?: 'pending' | 'paid' | 'failed'): Promise<boolean> => {
   const isDemoMode = useDemoStore.getState().isDemoMode;
   if (isDemoMode) {
-    useDataStore.getState().updateBooking(id, { status });
+    useDataStore.getState().updateBooking(id, { status, ...(paymentStatus && { payment_status: paymentStatus }) });
     return true;
   }
-  const { error } = await supabase.from('bookings').update({ status }).eq('id', id);
+  const updateData: any = { status };
+  if (paymentStatus) updateData.payment_status = paymentStatus;
+  
+  const { error } = await supabase.from('bookings').update(updateData).eq('id', id);
   return !error;
 };
 
@@ -213,6 +218,7 @@ export async function batchCreateProperties(properties: Partial<Property>[]) {
     lat: Number(p.lat || 27.257),
     lng: Number(p.lng || 33.811),
     owner_phone: p.ownerPhone || "+201145551163",
+    owner_email: p.ownerEmail || useAppModeStore.getState().supportEmail || "support@globevistahub.com",
     is_instant_bookable: p.isInstantBookable ?? false,
     is_booked: p.isBooked || false,
     rating: Number(p.rating || 5.0),

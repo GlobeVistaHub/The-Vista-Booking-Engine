@@ -27,7 +27,21 @@ export default function LabelsManagerPage() {
     setIsLoading(true);
     const data = await getSiteContent();
     // Default keys to ensure are always manageable - REMOVED nStays
-    const essentialKeys = ['stays', 'properties', 'ourStory', 'signIn', 'footerTagline', 'footerCopyright'];
+    const essentialKeys = [
+      'stays', 
+      'properties', 
+      'ourStory', 
+      'signIn', 
+      'pinnacleTitle', 
+      'pinnacleSub',
+      'curatedTitle',
+      'curatedSub',
+      'socialInsta',
+      'socialFB',
+      'socialX',
+      'footerTagline', 
+      'footerCopyright'
+    ];
     
     // Merge remote labels with essential keys if missing
     let merged = [...data];

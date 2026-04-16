@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getSiteContent, updateSiteLabel, SiteLabel } from "@/data/api";
+import { useState, useEffect, useRef } from "react";
+import { getSiteContent, updateSiteLabel, SiteLabel, getBookings } from "@/data/api";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAppModeStore, AppModeState } from "@/store/appModeStore";
 import { useAppStore } from "@/hooks/useAppStore";
@@ -25,7 +25,10 @@ import {
   Building2,
   Palette,
   Upload,
-  Image
+  Image,
+  FlaskConical,
+  Zap,
+  AlertCircle
 } from "lucide-react";
 import Link from "next/link";
 
@@ -37,10 +40,14 @@ export default function SettingsPage() {
   const ownerName = useAppStore(useAppModeStore, (s: AppModeState) => s.ownerName) as string;
   const isWhiteLabel = useAppStore(useAppModeStore, (s: AppModeState) => s.isWhiteLabel) as boolean;
   const exchangeRate = useAppStore(useAppModeStore, (s: AppModeState) => s.exchangeRate) as number;
+  const supportEmail = useAppStore(useAppModeStore, (s: AppModeState) => s.supportEmail) as string;
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { isDemoMode, setDemoMode } = useDemoStore();
+  const [isSimulating, setIsSimulating] = useState(false);
 
   const [localBrand, setLocalBrand] = useState(brandName);
   const [localOwner, setLocalOwner] = useState(ownerName);
+  const [localEmail, setLocalEmail] = useState(supportEmail);
   const [localRate, setLocalRate] = useState(exchangeRate?.toString() || "50.0");
   const [saved, setSaved] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -49,18 +56,56 @@ export default function SettingsPage() {
     setMounted(true);
     setLocalBrand(brandName);
     setLocalOwner(ownerName);
+    setLocalEmail(supportEmail);
     setLocalRate(exchangeRate?.toString() || "50.0");
-  }, [brandName, ownerName, exchangeRate]);
+  }, [brandName, ownerName, supportEmail, exchangeRate]);
 
   const handleSave = () => {
     store.setBrandName(localBrand || "The Vista");
     store.setOwnerName(localOwner || "Concierge");
+    store.setSupportEmail(localEmail || "support@globevistahub.com");
     const rateNum = parseFloat(localRate);
     if (!isNaN(rateNum) && rateNum > 0) {
       store.setExchangeRate(rateNum);
     }
+
+    // Also update site_content in Supabase for backend access
+    updateSiteLabel({ 
+      key: 'support_email', 
+      value_en: localEmail || 'support@globevistahub.com', 
+      value_ar: localEmail || 'support@globevistahub.com' 
+    });
+
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
+  };
+
+  const simulateFailure = async () => {
+    setIsSimulating(true);
+    try {
+      // 1. Fetch the most recent booking
+      const bookings = await getBookings();
+      if (bookings.length === 0) {
+        alert("No bookings found to simulate failure on. Please create a booking first.");
+        return;
+      }
+      const target = bookings[0]; // Most recent
+
+      // 2. Inject 'failed' status into the db using the existing supabase client
+      const { error } = await supabase
+        .from('bookings')
+        .update({ payment_status: 'failed', status: 'pending' })
+        .eq('id', target.id);
+
+      if (error) throw error;
+      
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error("Simulation failed:", err);
+    } finally {
+      setIsSimulating(false);
+    }
   };
 
   if (!mounted) return null;
@@ -184,6 +229,21 @@ export default function SettingsPage() {
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-navy font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               />
               <p className="text-xs text-muted mt-1.5">Shown in the sidebar profile area.</p>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted mb-2">
+                Customer Support Email
+              </label>
+              <input
+                disabled={!isWhiteLabel}
+                type="email"
+                value={localEmail || ""}
+                onChange={(e) => setLocalEmail(e.target.value)}
+                placeholder="support@globevistahub.com"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-navy font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              />
+              <p className="text-xs text-muted mt-1.5">This email will be used for all automated guest confirmations and recovery alerts.</p>
             </div>
           </div>
 
@@ -337,15 +397,15 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <input
                     type="file"
-                    id="logo-upload"
-                    className="hidden"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
                     accept="image/*"
                     disabled={!isWhiteLabel}
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        if (file.size > 500000) {
-                          alert("Logo is too large. Please use an image under 500KB.");
+                        if (file.size > 2000000) {
+                          alert("Logo is too large. Please use an image under 2MB.");
                           return;
                         }
                         const reader = new FileReader();
@@ -356,13 +416,15 @@ export default function SettingsPage() {
                       }
                     }}
                   />
-                  <label
-                    htmlFor="logo-upload"
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={!isWhiteLabel}
                     className={`inline-flex items-center gap-2 px-4 py-2 bg-navy text-white rounded-xl text-xs font-bold cursor-pointer transition-all hover:bg-navy/90 active:scale-95 ${!isWhiteLabel && 'opacity-40 cursor-not-allowed'}`}
                   >
                     <Upload className="w-3.5 h-3.5" />
                     Upload Logo
-                  </label>
+                  </button>
                   {brandLogo && (
                     <button
                       onClick={() => store.setBrandLogo('')}
@@ -434,7 +496,51 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* ── Section 4: Quick Links ────────────────────────────────── */}
+      {/* ── Section 4: Funnel Testing Lab ─────────────────────────── */}
+      <div className="bg-rose-50/50 border border-rose-100 rounded-2xl overflow-hidden group">
+        <div className="p-6 border-b border-rose-100 flex items-center justify-between">
+          <div>
+            <h2 className="font-bold text-navy text-lg flex items-center gap-2 text-rose-600">
+              <FlaskConical className="w-5 h-5" />
+              Funnel Testing Lab
+            </h2>
+            <p className="text-sm text-navy/60 mt-1">
+              Test your 'Intelligence & Retention' workflows. These tools simulate high-friction guest scenarios.
+            </p>
+          </div>
+          <Zap className="w-5 h-5 text-rose-300 group-hover:text-rose-500 transition-colors" />
+        </div>
+
+        <div className="p-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="max-w-md">
+              <h3 className="font-bold text-navy text-sm flex items-center gap-2 mb-1">
+                <AlertCircle className="w-4 h-4 text-rose-500" />
+                Simulate Payment Interruption
+              </h3>
+              <p className="text-xs text-muted leading-relaxed">
+                This will find the most recent booking and move it to <strong>'Payment Failed'</strong>. 
+                Use this to see the Real-Time Rose Banner appear on the dashboard and trigger your n8n recovery flows.
+              </p>
+            </div>
+
+            <button
+              onClick={simulateFailure}
+              disabled={isSimulating}
+              className="flex items-center gap-2 px-6 py-4 bg-rose-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-rose-200 hover:bg-rose-600 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {isSimulating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Zap className="w-4 h-4" />
+              )}
+              {isSimulating ? "Injecting..." : "Simulate Failure"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Section 5: Quick Links ────────────────────────────────── */}
       <div className="bg-white rounded-2xl shadow-soft border border-navy/5 p-6">
         <h2 className="font-bold text-navy text-lg mb-4">Quick Navigation</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

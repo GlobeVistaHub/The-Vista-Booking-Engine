@@ -8,6 +8,7 @@ import { format, parseISO } from "date-fns";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAppModeStore } from "@/store/appModeStore";
 import AddPropertyModal from "@/components/admin/AddPropertyModal";
+import { supabase } from "@/lib/supabase";
 
 export default function AdminPage() {
   const { lang } = useLanguage();
@@ -20,6 +21,24 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchDashboardData();
+
+    // ENABLE REALTIME INTELLIGENCE
+    // This ensures that failures and bookings update VISUALLY the second they happen.
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings' },
+        () => {
+          console.log("Realtime update detected in bookings...");
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchDashboardData = async () => {
@@ -36,6 +55,8 @@ export default function AdminPage() {
   // ── Stats Calculations ──────────────────────────────────────────
   const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
   const pendingBookings = bookings.filter(b => b.status === 'pending');
+  // Leads: Transactions that reached checkout but failed (Payment Interruption)
+  const failedPayments = bookings.filter(b => b.payment_status === 'failed');
   const totalRevenue = confirmedBookings.reduce((sum, b) => sum + b.total_price, 0);
   
   // Recent activity (last 5)
@@ -103,20 +124,43 @@ export default function AdminPage() {
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-soft border border-navy/5 relative overflow-hidden">
-            {pendingBookings.length > 0 && (
-              <div className="absolute top-6 right-6 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+            {failedPayments.length > 0 && (
+              <div className="absolute top-6 right-6 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.5)]"></div>
             )}
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
                 <Clock className="w-5 h-5" />
               </div>
-              <p className="text-sm font-bold text-muted uppercase tracking-wider">Pending Approvals</p>
+              <p className="text-sm font-bold text-muted uppercase tracking-wider">Payment Alerts</p>
             </div>
             <div className="flex items-center justify-between">
-              <h3 className="text-3xl font-heading font-black">{pendingBookings.length}</h3>
-              <span className={`text-[10px] px-2 py-1 rounded-md font-bold uppercase ${pendingBookings.length > 0 ? "bg-red-50 text-red-600" : "bg-slate-100 text-muted"}`}>
-                {pendingBookings.length > 0 ? "Priority" : "All Clear"}
+              <h3 className="text-3xl font-heading font-black">{failedPayments.length}</h3>
+              <span className={`text-[10px] px-2 py-1 rounded-md font-bold uppercase ${failedPayments.length > 0 ? "bg-rose-50 text-rose-600 border border-rose-100" : "bg-slate-100 text-muted"}`}>
+                {failedPayments.length > 0 ? "Retain Lead" : "All Processed"}
               </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Attention Required: Failed Leads */}
+      {failedPayments.length > 0 && (
+        <div className="bg-rose-50/50 border border-rose-100 rounded-2xl p-6 relative overflow-hidden group hover:bg-rose-50 transition-colors">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-rose-500" />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-start gap-5">
+              <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                <Clock className="w-6 h-6 text-rose-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-navy">Retention Opportunity</h3>
+                <p className="text-navy/60 text-sm max-w-xl mt-1 leading-relaxed">
+                  These guests experienced a payment interruption. They have high intent—reaching out via WhatsApp or Email can recover **${failedPayments.reduce((sum, b) => sum + b.total_price, 0).toLocaleString()}** in potential revenue.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+               <span className="text-xs font-bold text-rose-600 uppercase tracking-widest">{failedPayments.length} Pending Recovery</span>
             </div>
           </div>
         </div>
@@ -173,13 +217,13 @@ export default function AdminPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${
-                        booking.status === 'confirmed' 
+                        booking.payment_status === 'paid' || booking.status === 'confirmed'
                           ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
-                          : booking.status === 'pending'
-                          ? "bg-amber-50 text-amber-700 border-amber-100"
-                          : "bg-red-50 text-red-700 border-red-100"
+                          : booking.payment_status === 'failed'
+                          ? "bg-rose-50 text-rose-700 border-rose-100 animate-pulse"
+                          : "bg-amber-50 text-amber-700 border-amber-100"
                       }`}>
-                        {booking.status}
+                        {booking.payment_status === 'failed' ? "Payment Failed" : booking.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 font-black text-right text-sm">

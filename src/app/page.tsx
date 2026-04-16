@@ -32,10 +32,10 @@ export default function Home() {
         {/* HERO TYPOGRAPHY */}
         <div className="relative z-20 text-center px-6 pb-24 md:pb-32 mt-10 md:mt-0">
           <h1 className="text-5xl md:text-7xl font-heading font-medium text-white tracking-tight drop-shadow-lg max-w-4xl mx-auto">
-            {t('heroTitle')}
+            {t('pinnacleTitle') !== 'pinnacleTitle' ? t('pinnacleTitle') : t('heroTitle')}
           </h1>
           <p className="mt-6 text-lg md:text-xl font-body text-white/90 font-light drop-shadow-md max-w-2xl mx-auto">
-            {t('heroSubtitle')}
+            {t('pinnacleSub') !== 'pinnacleSub' ? t('pinnacleSub') : t('heroSubtitle')}
           </p>
         </div>
 
@@ -50,10 +50,10 @@ export default function Home() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
           <div>
             <h2 className="text-3xl md:text-4xl font-heading font-medium text-navy tracking-tight">
-              {t('curatedTitle')}
+              {t('curatedTitle') !== 'curatedTitle' ? t('curatedTitle') : "Curated for You"}
             </h2>
             <p className="mt-2 text-muted font-body text-lg">
-              {t('curatedSubtitle')}
+              {t('curatedSub') !== 'curatedSub' ? t('curatedSub') : "Exceptional homes in the most sought-after destinations."}
             </p>
           </div>
           <Link href="/search" className="mt-4 md:mt-0 self-start md:self-auto">

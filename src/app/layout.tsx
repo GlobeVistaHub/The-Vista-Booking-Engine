@@ -34,6 +34,7 @@ import { UserProvider } from "@/context/UserContext";
 import BrandingEngine from "@/components/BrandingEngine";
 import { useAppModeStore } from "@/store/appModeStore";
 import { useAppStore } from "@/hooks/useAppStore";
+import ConciergeWidget from "@/components/ConciergeWidget";
 
 export default function RootLayout({
   children,
@@ -63,6 +64,7 @@ export default function RootLayout({
                 {children}
               </main>
               <Footer />
+              <ConciergeWidget />
             </body>
           </UserProvider>
         </LanguageProvider>
