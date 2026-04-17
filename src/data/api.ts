@@ -134,14 +134,30 @@ export const addProperty = async (property: Omit<Property, 'id' | 'rating' | 're
   return mapDatabaseToProperty(data);
 };
 
-export const getPropertyById = async (id: number): Promise<Property | null> => {
+export const getPropertyById = async (id: number | string): Promise<Property | null> => {
+  const numericId = typeof id === 'string' ? Number(id) : id;
   const isDemoMode = useDemoStore.getState().isDemoMode;
+  
+  // 1. Try Primary Mode
   if (isDemoMode) {
-    return useDataStore.getState().properties.find(p => p.id === id) || null;
+    const mock = useDataStore.getState().properties.find(p => Number(p.id) === numericId);
+    if (mock) return mock;
+  } else {
+    // We use .eq('id', numericId) explicitly
+    const { data } = await supabase.from('properties').select('*').eq('id', numericId).maybeSingle();
+    if (data) return mapDatabaseToProperty(data);
   }
-  const { data, error } = await supabase.from('properties').select('*').eq('id', id).single();
-  if (error || !data) return null;
-  return mapDatabaseToProperty(data);
+
+  // 2. Fail-Safe: Check the Other Mode (The "Elastic" Handshake)
+  if (!isDemoMode) {
+    const mockFallback = useDataStore.getState().properties.find(p => Number(p.id) === numericId);
+    if (mockFallback) return mockFallback;
+  } else {
+    const { data: liveFallback } = await supabase.from('properties').select('*').eq('id', numericId).maybeSingle();
+    if (liveFallback) return mapDatabaseToProperty(liveFallback);
+  }
+
+  return null;
 };
 
 // ============================================================================
