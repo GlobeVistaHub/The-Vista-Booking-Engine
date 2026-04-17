@@ -39,15 +39,11 @@ function SuccessContent() {
     }
 
     const verifyBooking = async () => {
-      const transactionId = searchParams.get("id");
-      const vistaIdFromUrl = searchParams.get("vista_id") || searchParams.get("merchant_order_id");
-      
       // -------------------------------------------------------------------------
-      // MEMORY BRIDGE: Recover ID from LocalStorage if Paymob stripped the URL
+      // FULL-STACK DASHBOARD SYNC (Localhost / Demo Bridge)
       // -------------------------------------------------------------------------
-      const recoveredVistaId = vistaIdFromUrl || localStorage.getItem('vst_last_booking');
-      
       if (searchParams.get("success") === "true") {
+        const transactionId = searchParams.get("id");
         const propertyId = searchParams.get("propertyId");
         const checkIn = searchParams.get("checkIn");
         const checkOut = searchParams.get("checkOut");
@@ -56,18 +52,18 @@ function SuccessContent() {
         setStatus("success");
 
         // 2. Persist to Local Storage for "My Trips" dashboard
-        if (propertyId || recoveredVistaId) {
+        if (propertyId) {
           try {
             const existingBookings = JSON.parse(localStorage.getItem("vista_bookings") || "[]");
             const newBookingRecord = {
               bookingId: transactionId || `VST-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-              propertyId: propertyId || "unknown",
+              propertyId: propertyId,
               checkIn: checkIn,
               checkOut: checkOut,
-              vistaId: recoveredVistaId,
               verifiedAt: new Date().toISOString()
             };
             
+            // Avoid duplicates
             if (!existingBookings.find((b: any) => b.bookingId === newBookingRecord.bookingId)) {
                localStorage.setItem("vista_bookings", JSON.stringify([newBookingRecord, ...existingBookings]));
             }
@@ -76,7 +72,7 @@ function SuccessContent() {
           }
         }
 
-        // 3. SECURE SYNC: Update Database via POST
+        // 3. SECURE SYNC: Update Database via POST (Bypasses missing webhook on localhost)
         try {
           await fetch("/api/bookings/verify", {
             method: "POST",
@@ -84,7 +80,6 @@ function SuccessContent() {
             body: JSON.stringify({
               email: email,
               transactionId: transactionId,
-              vistaId: recoveredVistaId,
               status: "success"
             })
           });
@@ -93,9 +88,10 @@ function SuccessContent() {
         }
       }
 
-      // 4. Standard verification check with Persistent Polling
+      // 4. Standard verification check
       try {
-        const fetchUrl = `/api/bookings/verify?email=${encodeURIComponent(email)}&id=${transactionId || ""}&vista_id=${recoveredVistaId || ""}`;
+        const vistaIdFromUrl = searchParams.get("vista_id") || searchParams.get("merchant_order_id");
+        const fetchUrl = `/api/bookings/verify?email=${encodeURIComponent(email)}&id=${transactionId || ""}&vista_id=${vistaIdFromUrl || ""}`;
         
         const response = await fetch(fetchUrl);
         const data = await response.json();
@@ -103,12 +99,9 @@ function SuccessContent() {
         if (data.status === "paid" || data.status === "confirmed") {
           setBookingDetails(data);
           setStatus("success");
-          // Clear the memory bridge once succeeded
-          localStorage.removeItem('vst_last_booking');
-        } else {
-          // Fallback polling for slow database updates (The Guarantee)
+        } else if ((status as string) !== "success") {
+          // Fallback polling for slow database updates
           let attempts = 0;
-          const maxAttempts = 20; // 60 seconds total
           const interval = setInterval(async () => {
             attempts++;
             const pollRes = await fetch(fetchUrl);
@@ -117,22 +110,21 @@ function SuccessContent() {
             if (pollData.status === "paid" || pollData.status === "confirmed") {
               setBookingDetails(pollData);
               setStatus("success");
-              localStorage.removeItem('vst_last_booking');
               clearInterval(interval);
-            } else if (attempts >= maxAttempts) {
-              if (status !== "success") setStatus("pending");
+            } else if (attempts >= 5) {
+              if ((status as string) !== "success") setStatus("pending");
               clearInterval(interval);
             }
           }, 3000);
         }
       } catch (err) {
         console.error("Verification failed:", err);
-        if (status !== "success") setStatus("pending");
+        if ((status as string) !== "success") setStatus("pending");
       }
     };
 
     verifyBooking();
-  }, [isCanceled, email, searchParams]);
+  }, [isCanceled, email]);
 
   if (isCanceled) {
     return (

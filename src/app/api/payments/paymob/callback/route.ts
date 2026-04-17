@@ -75,18 +75,10 @@ export async function GET(req: Request) {
         })
         .eq("paymob_transaction_id", String(paymobId));
     }
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    console.log('Paymob Callback Received:', paymobId);
     
-    const targetUrl = new URL(`${baseUrl}/success`);
-    targetUrl.searchParams.set('vista_id', String(vistaId || ""));
-    targetUrl.searchParams.set('id', String(paymobId || ""));
-    
-    console.log('Redirecting to Success Page:', targetUrl.toString());
-    return NextResponse.redirect(targetUrl.toString());
+    return NextResponse.redirect(new URL(`/success?vista_id=${vistaId || ""}&id=${paymobId || ""}`, req.url));
   } else {
     // Payment failure redirect
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    return NextResponse.redirect(`${baseUrl}/checkout?error=payment_failed`);
+    return NextResponse.redirect(new URL(`/checkout?error=payment_failed`, req.url));
   }
 }
