@@ -20,10 +20,19 @@ function CheckoutContent() {
 
   useEffect(() => {
     if (propertyId) {
+      console.log('Transitioning to Checkout with ID:', propertyId); // Forensic Logic Marker
+      
+      // -------------------------------------------------------------------------
+      // MEMORY BRIDGE: Save the intent to book this property. 
+      // This is our backup if Paymob strips the URL on return.
+      // -------------------------------------------------------------------------
+      localStorage.setItem('vst_last_booking_property', String(propertyId));
+      
       setLoadingProperty(true);
-      getPropertyById(Number(propertyId))
+      getPropertyById(String(propertyId))
         .then(data => {
           if (data) {
+            console.log('Property Loaded Successfully:', data.title);
             setProperty(data);
           } else {
             setError('Villa not found in our collection.');
