@@ -20,15 +20,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
-    // 1. Log the transaction for audit
-    console.log(`Paymob Callback received for Order ID: ${obj.order.id}, Status: ${obj.success}`);
+    // 1. Log the transaction for audit (Essential for debugging)
+    console.log(`[PAYMOB CALLBACK] OrderID: ${obj.order.id}, TransactionID: ${obj.id}, Success: ${obj.success}`);
 
-    // 2. Extract key details
-    const paymobOrderId = obj.order.id;
+    // 2. Extract key details - FORCE TO STRINGS for column compatibility
+    const paymobOrderId = String(obj.order.id);
     const isSuccess = obj.success === true;
     const amountEGP = obj.amount_cents / 100;
-    const transactionId = obj.id;
+    const transactionId = String(obj.id);
     const merchantOrderId = obj.order.merchant_order_id;
+    const guestEmail = obj.order.shipping_data?.email;
 
     // 3. Update the booking in Supabase using the Golden Thread
     let booking;
@@ -50,11 +51,11 @@ export async function POST(req: Request) {
       booking = data;
     }
 
-    if (!booking) {
+    if (!booking && guestEmail) {
       const { data } = await supabaseAdmin
         .from("bookings")
         .select("*")
-        .eq("guest_email", obj.order.shipping_data.email)
+        .eq("guest_email", guestEmail)
         .eq("payment_status", "pending")
         .order("created_at", { ascending: false })
         .limit(1)
@@ -63,20 +64,27 @@ export async function POST(req: Request) {
     }
 
     if (!booking) {
+      console.error("[PAYMOB CALLBACK ERROR] Booking not found for reconciliation.");
       return NextResponse.json({ error: "Booking reconciliation failed" }, { status: 404 });
     }
 
-    // 4. Final Update
-    await supabaseAdmin
+    // 4. Final Update: SYNC ALL COLUMNS
+    const { error: updateError } = await supabaseAdmin
       .from("bookings")
       .update({
         payment_status: isSuccess ? "paid" : "failed",
         status: isSuccess ? "confirmed" : "pending",
         paymob_order_id: paymobOrderId,
         paymob_transaction_id: transactionId,
+        transaction_id: transactionId, // UPDATED: Fill both ID columns for absolute redundancy
         payment_method: obj.payment_key_claims?.extra_info?.billing_data?.payment_method || "card"
       })
       .eq("id", booking.id);
+
+    if (updateError) {
+      console.error("[PAYMOB CALLBACK ERROR] DB Update failed:", updateError);
+      return NextResponse.json({ error: "Database update failed" }, { status: 500 });
+    }
 
     // 5. Trigger n8n Automation
     try {
@@ -98,7 +106,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, message: "Transaction processed" });
 
   } catch (error: any) {
-    console.error("Paymob Callback Error:", error);
+    console.error("Paymob Callback Top-Level Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -114,12 +122,14 @@ export async function GET(req: Request) {
 
   if (success) {
     if (vistaId) {
+      // PROACTIVE SYNC: Ensure the database is updated BEFORE the user sees the success page
       await supabaseAdmin
         .from("bookings")
         .update({
           payment_status: "paid",
           status: "confirmed",
-          paymob_transaction_id: paymobId,
+          paymob_transaction_id: String(paymobId),
+          transaction_id: String(paymobId)
         })
         .eq("id", vistaId);
         
