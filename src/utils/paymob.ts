@@ -26,26 +26,23 @@ export interface BillingData {
 }
 
 export class PaymobService {
+  private static apiKey = process.env.PAYMOB_API_KEY!;
+  private static hmacSecret = process.env.PAYMOB_HMAC_SECRET!;
+  private static integrationId = process.env.PAYMOB_INTEGRATION_ID!;
+
   /**
    * Step 1: Authentication
    * @returns auth_token
    */
   static async authenticate(): Promise<string> {
-    const apiKey = process.env.PAYMOB_API_KEY;
-    if (!apiKey) throw new Error("PAYMOB_API_KEY is completely missing from the server environment.");
-
     const res = await fetch(`${PAYMOB_BASE_URL}/auth/tokens`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ api_key: apiKey }),
-      cache: "no-store",
+      body: JSON.stringify({ api_key: this.apiKey }),
     });
 
     const data = await res.json();
-    if (!res.ok) {
-      console.error("Paymob Auth Rejection:", data);
-      throw new Error(`Paymob Auth Failed: ${data.message || data.detail || JSON.stringify(data)}`);
-    }
+    if (!res.ok) throw new Error(data.message || "Paymob Auth Failed");
     return data.token;
   }
 
@@ -63,14 +60,10 @@ export class PaymobService {
         currency: "EGP",
         items: items,
       }),
-      cache: "no-store",
     });
 
     const data = await res.json();
-    if (!res.ok) {
-      console.error("Paymob Order Rejection:", data);
-      throw new Error(`Paymob Order Creation Failed: ${data.message || data.detail || JSON.stringify(data)}`);
-    }
+    if (!res.ok) throw new Error(data.message || "Paymob Order Creation Failed");
     return data.id;
   }
 
@@ -84,9 +77,6 @@ export class PaymobService {
     billingData: BillingData,
     redirectionUrl: string
   ): Promise<string> {
-    const integrationId = process.env.PAYMOB_INTEGRATION_ID;
-    if (!integrationId) throw new Error("PAYMOB_INTEGRATION_ID is missing from the server environment.");
-
     const res = await fetch(`${PAYMOB_BASE_URL}/acceptance/payment_keys`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -97,7 +87,7 @@ export class PaymobService {
         order_id: orderId,
         billing_data: billingData,
         currency: "EGP",
-        integration_id: integrationId,
+        integration_id: this.integrationId,
         lock_order_when_paid: "true",
         redirection_url: redirectionUrl,
         success_url: redirectionUrl,
@@ -106,10 +96,7 @@ export class PaymobService {
     });
 
     const data = await res.json();
-    if (!res.ok) {
-      console.error("Paymob Payment Key Rejection:", data);
-      throw new Error(`Paymob Payment Key Failed: ${data.message || data.detail || JSON.stringify(data)}`);
-    }
+    if (!res.ok) throw new Error(data.message || "Paymob Payment Key Failed");
     return data.token;
   }
 
@@ -117,8 +104,7 @@ export class PaymobService {
    * HMAC Verification for webhook security
    */
   static verifyHmac(payload: string, signature: string): boolean {
-    const secret = process.env.PAYMOB_HMAC_SECRET || "";
-    const hmac = crypto.createHmac("sha512", secret);
+    const hmac = crypto.createHmac("sha512", this.hmacSecret);
     const hash = hmac.update(payload).digest("hex");
     return hash === signature;
   }

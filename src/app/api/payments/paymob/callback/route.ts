@@ -116,12 +116,11 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const success = searchParams.get("success") === "true";
-  const bookingId = searchParams.get("bookingId"); // Use bookingId so it doesn't collide with Paymob's 'id'
+  const bookingId = searchParams.get("id"); // If we passed this in the success_url
 
   // Redirect the user to the frontend success or failure page
   if (success) {
-    const email = searchParams.get("email") || "";
-    return NextResponse.redirect(new URL(`/success?id=${bookingId}&success=true&email=${encodeURIComponent(email)}`, req.url));
+    return NextResponse.redirect(new URL(`/success?id=${bookingId}`, req.url));
   } else {
     // Preserve ALL booking context so the guest doesn't have to restart
     const propertyId = searchParams.get("propertyId");

@@ -10,9 +10,7 @@ export default function AlexaConcierge() {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [activeAudio, setActiveAudio] = useState<HTMLAudioElement | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const lastInputWasVoiceRef = useRef(false);
   
   // Alexa's initial context
   const initialGreeting = lang === 'ar' 
@@ -25,20 +23,19 @@ export default function AlexaConcierge() {
       {
         id: 'welcome',
         role: 'assistant',
-        content: lang === 'ar' 
-          ? "أهلاً 🌟 أنا أليكسا، كونسيرجك الشخصي في ذا فيستا. كيف أقدر أساعدك؟" 
-          : "Welcome 🌟 I'm Alexa, your personal concierge at The Vista. How may I help you today?"
+        content: initialGreeting
       }
     ],
-    onFinish: (message) => {
-      // Auto-speak ONLY if the user used the microphone for their last message
-      if (lastInputWasVoiceRef.current) {
-        speakMessage(message.content);
-      }
-    },
     onError: (err) => {
       console.error("Chat error:", err);
-      alert(lang === 'ar' ? 'فشل الاتصال. يرجى المحاولة لاحقاً.' : 'Connection failed. Please try again shortly.');
+      // Soft error message
+      append({
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: lang === 'ar' 
+          ? "عذراً، أواجه صعوبة بسيطة في الاتصال حالياً. هل يمكنك المحاولة مرة أخرى؟" 
+          : "I'm sorry, I'm having a bit of trouble connecting right now. Could you try again?"
+      });
     }
   });
 
@@ -47,68 +44,24 @@ export default function AlexaConcierge() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isLoading]);
+  }, [messages]);
 
-  // Speak using OpenAI Neural TTS (Nova Voice)
-  const speakMessage = async (text: string) => {
-    // 1. Strip Markdown, Emojis
-    const cleanText = text
-      .replace(/[\*\#\_\[\]\(\)]/g, '')
-      .replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '');
-      
-    if (activeAudio) {
-      activeAudio.pause();
-      setIsSpeaking(false);
-    }
-    
-    setIsSpeaking(true);
-    
-    try {
-      const response = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: cleanText, lang })
-      });
-      
-      if (!response.ok) throw new Error("TTS failed");
-      
-      const blob = await response.blob();
-      const audioUrl = URL.createObjectURL(blob);
-      const audio = new Audio(audioUrl);
-      
-      setActiveAudio(audio);
-      
-      audio.onended = () => setIsSpeaking(false);
-      audio.play();
-
-    } catch (e) {
-      console.error("Audio playback error:", e);
-      setIsSpeaking(false);
-    }
-  };
-
-  // Voice Input: transcribes speech and sends as text
-  const toggleListening = () => {
-    if (isListening) { setIsListening(false); return; }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) { alert("Voice input not supported. Try Chrome."); return; }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
-    recognition.interimResults = false;
-    recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (event: any) => {
+  // Handle Voice Toggle
+  const toggleListening = async () => {
+    if (isListening) {
       setIsListening(false);
-      lastInputWasVoiceRef.current = true; // Mark as voice input
-      append({ role: 'user', content: event.results[0][0].transcript });
-    };
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
-    
-    if (activeAudio) activeAudio.pause();
-    
-    recognition.start();
+      // Logic to stop MediaRecorder and send to Gemini
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        setIsListening(true);
+        // Logic to start MediaRecorder...
+        // For now, we simulate the "Live" interaction
+      } catch (err) {
+        console.error("Microphone access denied", err);
+        alert("Please allow microphone access to talk with Alexa.");
+      }
+    }
   };
 
   const toggleChat = () => setIsOpen(!isOpen);
@@ -166,26 +119,14 @@ export default function AlexaConcierge() {
               key={m.id} 
               className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className="relative group max-w-[85%]">
-                <div 
-                  className={`p-3 rounded-2xl text-sm leading-relaxed ${
-                    m.role === 'user' 
-                      ? 'bg-primary text-white rounded-tr-none shadow-lg' 
-                      : 'bg-white/5 text-white/90 border border-white/10 rounded-tl-none'
-                  }`}
-                >
-                  {m.content}
-                </div>
-                {/* Speaker button — only on Alexa messages, shown on hover */}
-                {m.role === 'assistant' && (
-                  <button
-                    onClick={() => speakMessage(m.content)}
-                    className="absolute -bottom-2 -right-2 w-6 h-6 bg-primary/20 hover:bg-primary text-primary hover:text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
-                    title="Hear Alexa speak this"
-                  >
-                    <Volume2 className="w-3 h-3" />
-                  </button>
-                )}
+              <div 
+                className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
+                  m.role === 'user' 
+                    ? 'bg-primary text-white rounded-tr-none shadow-lg' 
+                    : 'bg-white/5 text-white/90 border border-white/10 rounded-tl-none'
+                }`}
+              >
+                {m.content}
               </div>
             </div>
           ))}
@@ -215,15 +156,12 @@ export default function AlexaConcierge() {
               }`}
               title={isListening ? "Stop Listening" : "Talk to Alexa"}
             >
-              {isListening ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mic className="w-5 h-5" />}
+              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </button>
           </div>
 
           <form 
-            onSubmit={(e) => {
-              lastInputWasVoiceRef.current = false; // Keyboard input, don't auto-speak
-              handleSubmit(e);
-            }}
+            onSubmit={handleSubmit}
             className="flex items-center gap-2"
           >
             <input
@@ -234,7 +172,7 @@ export default function AlexaConcierge() {
             />
             <button 
               type="submit"
-              disabled={!input || isLoading || isListening}
+              disabled={!input || isLoading}
               className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-dark transition-colors"
             >
               <Send className="w-4 h-4" />
@@ -242,7 +180,7 @@ export default function AlexaConcierge() {
           </form>
           
           <p className="text-[9px] text-center text-white/30 font-medium uppercase tracking-tighter">
-            {lang === 'ar' ? 'أليكسا متصلة بـ Gemini 3.1 Pro' : 'Alexa powered by Gemini 3.1 Pro'}
+            {lang === 'ar' ? 'أليكسا متصلة بـ Gemini 2.0 Flash' : 'Alexa powered by Gemini 2.0 Flash'}
           </p>
         </div>
       </div>
