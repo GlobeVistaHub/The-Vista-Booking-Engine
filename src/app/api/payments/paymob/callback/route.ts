@@ -120,7 +120,8 @@ export async function GET(req: Request) {
 
   // Redirect the user to the frontend success or failure page
   if (success) {
-    return NextResponse.redirect(new URL(`/success?id=${bookingId}`, req.url));
+    const email = searchParams.get("email") || "";
+    return NextResponse.redirect(new URL(`/success?id=${bookingId}&success=true&email=${encodeURIComponent(email)}`, req.url));
   } else {
     // Preserve ALL booking context so the guest doesn't have to restart
     const propertyId = searchParams.get("propertyId");

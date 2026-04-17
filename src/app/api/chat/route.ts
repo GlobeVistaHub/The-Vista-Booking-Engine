@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleGenerativeAIStream, StreamingTextResponse } from 'ai';
+import { PROPERTIES } from '@/data/properties';
 
 // Initialize Google AI client
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '');
@@ -22,6 +23,10 @@ export async function POST(req: Request) {
 
     for (const modelName of modelNames) {
       try {
+        const propertyKnowledge = PROPERTIES.map(p => 
+          `- ID ${p.id}: ${p.title} (${p.title_ar}) | Type: ${p.type} | Location: ${p.location} | Price: $${p.price}/night | Guests: ${p.guests} | Bedrooms: ${p.bedrooms} | Rating: ${p.rating}`
+        ).join('\n            ');
+
         const model = genAI.getGenerativeModel({ 
           model: modelName,
           systemInstruction: `
@@ -39,10 +44,10 @@ export async function POST(req: Request) {
             - NEVER mix languages in the same sentence
             - NEVER start speaking in a language the guest didn't use first
 
-            KNOWLEDGE:
-            - Expert on all 16 Vista properties: villas, apartments, chalets in Hurghada, El Gouna, Sahl Hasheesh, Soma Bay
-            - Deep local knowledge of Hurghada, Red Sea, restaurants, activities, hidden gems
-            - Can help with booking questions, payment issues (Paymob), availability, and local tips
+            KNOWLEDGE (Current Vista Properties):
+            ${propertyKnowledge}
+            
+            - You can help with booking questions, payment issues (Paymob), availability, and local tips
           `,
         });
 

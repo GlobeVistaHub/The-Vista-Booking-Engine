@@ -11,6 +11,7 @@ export default function AlexaConcierge() {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastInputWasVoiceRef = useRef(false);
   
   // Alexa's initial context
   const initialGreeting = lang === 'ar' 
@@ -28,6 +29,12 @@ export default function AlexaConcierge() {
           : "Welcome 🌟 I'm Alexa, your personal concierge at The Vista. How may I help you today?"
       }
     ],
+    onFinish: (message) => {
+      // Auto-speak ONLY if the user used the microphone for their last message
+      if (lastInputWasVoiceRef.current) {
+        speakMessage(message.content);
+      }
+    },
     onError: (err) => {
       console.error("Chat error:", err);
       alert(lang === 'ar' ? 'فشل الاتصال. يرجى المحاولة لاحقاً.' : 'Connection failed. Please try again shortly.');
@@ -77,6 +84,7 @@ export default function AlexaConcierge() {
     recognition.onstart = () => setIsListening(true);
     recognition.onresult = (event: any) => {
       setIsListening(false);
+      lastInputWasVoiceRef.current = true; // Mark as voice input
       append({ role: 'user', content: event.results[0][0].transcript });
     };
     recognition.onerror = () => setIsListening(false);
@@ -194,7 +202,10 @@ export default function AlexaConcierge() {
           </div>
 
           <form 
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              lastInputWasVoiceRef.current = false; // Keyboard input, don't auto-speak
+              handleSubmit(e);
+            }}
             className="flex items-center gap-2"
           >
             <input
