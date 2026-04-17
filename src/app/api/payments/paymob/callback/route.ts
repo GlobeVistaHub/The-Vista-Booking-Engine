@@ -134,7 +134,7 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const success = searchParams.get("success") === "true";
-  const vistaId = searchParams.get("vista_id");
+  const vistaId = searchParams.get("vista_id") || searchParams.get("merchant_order_id");
   const paymobId = searchParams.get("id");
 
   // Redirect the user to the frontend success or failure page
@@ -167,7 +167,7 @@ export async function GET(req: Request) {
       } catch (e) {}
     }
     
-    return NextResponse.redirect(new URL(`/success?vista_id=${vistaId}&id=${paymobId}`, req.url));
+    return NextResponse.redirect(new URL(`/success?vista_id=${vistaId || ""}&id=${paymobId || ""}`, req.url));
   } else {
     // Preserve ALL booking context so the guest doesn't have to restart
     const propertyId = searchParams.get("propertyId");

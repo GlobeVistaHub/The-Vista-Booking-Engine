@@ -90,8 +90,8 @@ function SuccessContent() {
 
       // 4. Standard verification check
       try {
-        const vistaId = searchParams.get("vista_id");
-        const fetchUrl = `/api/bookings/verify?email=${encodeURIComponent(email)}&id=${transactionId || ""}&vista_id=${vistaId || ""}`;
+        const vistaIdFromUrl = searchParams.get("vista_id") || searchParams.get("merchant_order_id");
+        const fetchUrl = `/api/bookings/verify?email=${encodeURIComponent(email)}&id=${transactionId || ""}&vista_id=${vistaIdFromUrl || ""}`;
         
         const response = await fetch(fetchUrl);
         const data = await response.json();
