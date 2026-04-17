@@ -38,6 +38,7 @@ export class PaymobService {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ api_key: apiKey }),
+      cache: "no-store",
     });
 
     const data = await res.json();
@@ -62,6 +63,7 @@ export class PaymobService {
         currency: "EGP",
         items: items,
       }),
+      cache: "no-store",
     });
 
     const data = await res.json();
