@@ -16,7 +16,8 @@ import {
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { PROPERTIES } from "@/data/properties";
+import { getPropertyById } from "@/data/api";
+import { Property } from "@/data/properties";
 import { format, differenceInDays } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
@@ -60,7 +61,19 @@ function CheckoutContent() {
   const router = useRouter();
   const { t, lang } = useLanguage();
   const propertyId = searchParams.get("id");
-  const property = PROPERTIES.find(p => p.id === Number(propertyId));
+  const [property, setProperty] = useState<Property | null>(null);
+  const [loadingProperty, setLoadingProperty] = useState(true);
+
+  useEffect(() => {
+    if (propertyId) {
+      getPropertyById(Number(propertyId)).then(data => {
+        setProperty(data);
+        setLoadingProperty(false);
+      });
+    } else {
+      setLoadingProperty(false);
+    }
+  }, [propertyId]);
 
   // Edit States
   const { user: clerkUser } = useUser();
@@ -88,12 +101,18 @@ function CheckoutContent() {
 
   // If no property found, redirect to search
   useEffect(() => {
-    if (!property) {
+    if (!loadingProperty && !property) {
       router.push("/search");
     }
-  }, [property, router]);
+  }, [property, loadingProperty, router]);
 
-  if (!property) return null;
+  if (loadingProperty || !property) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-v-background">
+        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   const stayNights = differenceInDays(dateRange.to, dateRange.from) || 1;
   const totalGuests = adults + children;

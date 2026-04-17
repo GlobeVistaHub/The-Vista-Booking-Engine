@@ -8,7 +8,7 @@ const supabaseAdmin = createClient(
 
 /**
  * GET: Fetches the most recent booking status for a guest.
- * Supports lookup by EMAIL or TRANSACTION ID (Paymob ID).
+ * Supports lookup by EMAIL, INTERNAL ID, or TRANSACTION ID.
  */
 export async function GET(req: Request) {
   try {
@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     const vistaId = searchParams.get("vista_id");
 
     if (!email && !transactionId && !vistaId) {
-      return NextResponse.json({ error: "Email, ID or VistaID is required" }, { status: 400 });
+      return NextResponse.json({ error: "Identification lookup required" }, { status: 400 });
     }
 
     let query = supabaseAdmin
@@ -26,14 +26,16 @@ export async function GET(req: Request) {
       .select("id, booking_reference, status, payment_status, total_price, paid_amount_egp, guest_email");
 
     if (vistaId) {
-      // THE GOLDEN KEY: Our internal ID (Never overwritten)
+      // THE GOLDEN KEY: Our internal ID
       query = query.eq("id", vistaId);
     } else if (transactionId) {
-      // SECONDARY: Paymob Transaction ID
-      query = query.or(`paymob_transaction_id.eq.${transactionId},paymob_order_id.eq.${transactionId}`);
-    } else if (email) {
+      // AGGRESSIVE SCAN: Search both transaction and order IDs from Paymob, and even our ID
+      query = query.or(`paymob_transaction_id.eq.${transactionId},paymob_order_id.eq.${transactionId},id.eq.${transactionId}`);
+    } else if (email && email !== "null") {
       // Fallback to email lookup
       query = query.eq("guest_email", email);
+    } else {
+      return NextResponse.json({ status: "not_found", message: "No identifying tokens provided" });
     }
 
     const { data, error } = await query
@@ -62,45 +64,26 @@ export async function GET(req: Request) {
 
 /**
  * POST: THE VISTA SIMULATION & SYNC HACK
- * Maintains the 2s delay and background sync.
  */
 export async function POST(req: Request) {
   try {
     const payload = await req.json();
-    const { email, transactionId, status } = payload;
+    const { transactionId, status } = payload;
 
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     if (transactionId) {
-      try {
-        await supabaseAdmin
-          .from("bookings")
-          .update({
-            payment_status: status === "success" ? "paid" : "failed",
-            status: status === "success" ? "confirmed" : "pending",
-            paymob_order_id: transactionId
-          })
-          .eq("paymob_order_id", transactionId);
-      } catch (dbErr) {
-        console.error("Database sync error:", dbErr);
-      }
+      await supabaseAdmin
+        .from("bookings")
+        .update({
+          payment_status: status === "success" ? "paid" : "failed",
+          status: status === "success" ? "confirmed" : "pending",
+        })
+        .or(`paymob_transaction_id.eq.${transactionId},paymob_order_id.eq.${transactionId}`);
     }
 
-    const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || "https://webhook.site/bfeaeb6d-fa7d-4162-9548-a1a51fb1506c";
-
-    try {
-      const response = await fetch(N8N_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      return NextResponse.json({ success: true, simulated: !response.ok });
-    } catch (e) {
-      return NextResponse.json({ success: true, simulated: true });
-    }
-
+    return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ success: true, error: "Simulation fallback active" });
+    return NextResponse.json({ success: true, error: "Simulation fallback" });
   }
 }
