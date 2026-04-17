@@ -41,7 +41,10 @@ export class PaymobService {
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Paymob Auth Failed");
+    if (!res.ok) {
+      console.error("Paymob Auth Rejection:", data);
+      throw new Error(`Paymob Auth Failed: ${data.message || data.detail || JSON.stringify(data)}`);
+    }
     return data.token;
   }
 
@@ -62,7 +65,10 @@ export class PaymobService {
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Paymob Order Creation Failed");
+    if (!res.ok) {
+      console.error("Paymob Order Rejection:", data);
+      throw new Error(`Paymob Order Creation Failed: ${data.message || data.detail || JSON.stringify(data)}`);
+    }
     return data.id;
   }
 
@@ -98,7 +104,10 @@ export class PaymobService {
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Paymob Payment Key Failed");
+    if (!res.ok) {
+      console.error("Paymob Payment Key Rejection:", data);
+      throw new Error(`Paymob Payment Key Failed: ${data.message || data.detail || JSON.stringify(data)}`);
+    }
     return data.token;
   }
 

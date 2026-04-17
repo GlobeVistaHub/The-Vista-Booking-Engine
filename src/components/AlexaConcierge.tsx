@@ -53,15 +53,24 @@ export default function AlexaConcierge() {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     
-    const utterance = new SpeechSynthesisUtterance(text);
-    // Try to find the best female Arabic voice
-    const voices = window.speechSynthesis.getVoices();
-    const arabicFemale = voices.find(v => v.lang.startsWith('ar') && v.name.toLowerCase().includes('female'))
-      || voices.find(v => v.lang.startsWith('ar'))
-      || voices.find(v => v.name.toLowerCase().includes('samantha') || v.name.toLowerCase().includes('karen') || v.name.toLowerCase().includes('victoria'))
-      || null;
+    // 1. Strip Markdown, Emojis, and weird punctuation that makes TTS sound robotic
+    const cleanText = text
+      .replace(/[\*\#\_\[\]\(\)]/g, '') // remove markdown symbols
+      .replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '') // remove emojis
+      .replace(/\?/g, '.'); // Convert question marks to periods to avoid the weird rising intonation bug
+      
+    const utterance = new SpeechSynthesisUtterance(cleanText);
     
-    if (arabicFemale) utterance.voice = arabicFemale;
+    // 2. Try to find the BEST female Arabic voice (Prioritize Google's cloud voices over OS default)
+    const voices = window.speechSynthesis.getVoices();
+    const bestVoice = 
+      voices.find(v => v.name.includes('Google') && v.lang.startsWith('ar')) ||
+      voices.find(v => v.lang.startsWith('ar') && v.name.toLowerCase().includes('female')) ||
+      voices.find(v => v.lang.startsWith('ar')) ||
+      voices.find(v => v.name.toLowerCase().includes('samantha') || v.name.toLowerCase().includes('google UK English Female')) ||
+      null;
+    
+    if (bestVoice) utterance.voice = bestVoice;
     utterance.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
     utterance.pitch = 1.15;
     utterance.rate = 0.95;
