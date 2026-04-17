@@ -10,6 +10,7 @@ export default function AlexaConcierge() {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [activeAudio, setActiveAudio] = useState<HTMLAudioElement | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastInputWasVoiceRef = useRef(false);
   
@@ -48,36 +49,42 @@ export default function AlexaConcierge() {
     }
   }, [messages, isLoading]);
 
-  // Speak a specific message ONLY when user clicks the speaker icon
-  const speakMessage = (text: string) => {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    
-    // 1. Strip Markdown, Emojis, and weird punctuation that makes TTS sound robotic
+  // Speak using OpenAI Neural TTS (Nova Voice)
+  const speakMessage = async (text: string) => {
+    // 1. Strip Markdown, Emojis
     const cleanText = text
-      .replace(/[\*\#\_\[\]\(\)]/g, '') // remove markdown symbols
-      .replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '') // remove emojis
-      .replace(/\?/g, '.'); // Convert question marks to periods to avoid the weird rising intonation bug
+      .replace(/[\*\#\_\[\]\(\)]/g, '')
+      .replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '');
       
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    
-    // 2. Try to find the BEST female Arabic voice (Prioritize Google's cloud voices over OS default)
-    const voices = window.speechSynthesis.getVoices();
-    const bestVoice = 
-      voices.find(v => v.name.includes('Google') && v.lang.startsWith('ar')) ||
-      voices.find(v => v.lang.startsWith('ar') && v.name.toLowerCase().includes('female')) ||
-      voices.find(v => v.lang.startsWith('ar')) ||
-      voices.find(v => v.name.toLowerCase().includes('samantha') || v.name.toLowerCase().includes('google UK English Female')) ||
-      null;
-    
-    if (bestVoice) utterance.voice = bestVoice;
-    utterance.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
-    utterance.pitch = 1.15;
-    utterance.rate = 0.95;
+    if (activeAudio) {
+      activeAudio.pause();
+      setIsSpeaking(false);
+    }
     
     setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utterance);
+    
+    try {
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: cleanText })
+      });
+      
+      if (!response.ok) throw new Error("TTS failed");
+      
+      const blob = await response.blob();
+      const audioUrl = URL.createObjectURL(blob);
+      const audio = new Audio(audioUrl);
+      
+      setActiveAudio(audio);
+      
+      audio.onended = () => setIsSpeaking(false);
+      audio.play();
+
+    } catch (e) {
+      console.error("Audio playback error:", e);
+      setIsSpeaking(false);
+    }
   };
 
   // Voice Input: transcribes speech and sends as text
@@ -98,7 +105,9 @@ export default function AlexaConcierge() {
     };
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    
+    if (activeAudio) activeAudio.pause();
+    
     recognition.start();
   };
 
