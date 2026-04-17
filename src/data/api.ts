@@ -152,25 +152,31 @@ export type { Booking };
 
 export const getBookings = async (): Promise<Booking[]> => {
   const isDemoMode = useDemoStore.getState().isDemoMode;
-  if (isDemoMode) {
-    const bookings = useDataStore.getState().bookings;
-    const props = useDataStore.getState().properties;
-    return bookings.map(b => ({
-      ...b,
-      property: props.find(p => p.id === b.property_id)
-    }));
-  }
-
-  const { data, error } = await supabase
+  
+  // Always fetch live data to keep it in sync
+  const { data: liveData, error } = await supabase
     .from('bookings')
     .select('*, properties(*)')
     .order('created_at', { ascending: false });
 
-  if (error || !data) return [];
-  return data.map((row: any) => ({
+  const mappedLive: Booking[] = (liveData || []).map((row: any) => ({
     ...row,
     property: row.properties ? mapDatabaseToProperty(row.properties) : undefined
   })) as Booking[];
+
+  if (isDemoMode) {
+    const mockBookings = useDataStore.getState().bookings;
+    const props = useDataStore.getState().properties;
+    const mappedMocks = mockBookings.map(b => ({
+      ...b,
+      property: props.find(p => p.id === b.property_id)
+    }));
+    
+    // Merge: Live first, then Mocks
+    return [...mappedLive, ...mappedMocks];
+  }
+
+  return mappedLive;
 };
 
 export const updateBookingStatus = async (id: number, status: 'pending' | 'confirmed' | 'cancelled', paymentStatus?: 'pending' | 'paid' | 'failed'): Promise<boolean> => {

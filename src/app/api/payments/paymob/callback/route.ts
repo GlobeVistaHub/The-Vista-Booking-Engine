@@ -39,17 +39,34 @@ export async function POST(req: Request) {
     // Since we pass the guest email to Paymob, we can find the "pending" booking for that email/amount.
     // However, the most robust way is to find by internal ID if we can pass it to Paymob items.
     
-    const { data: booking, error: findError } = await supabaseAdmin
-      .from("bookings")
-      .select("*")
-      .eq("guest_email", obj.order.shipping_data.email)
-      .eq("payment_status", "pending")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
+    const merchantOrderId = obj.order.merchant_order_id;
+    
+    let booking;
+    if (merchantOrderId) {
+      // THE GOLDEN THREAD: Direct match by our internal ID
+      const { data } = await supabaseAdmin
+        .from("bookings")
+        .select("*")
+        .eq("id", merchantOrderId)
+        .single();
+      booking = data;
+    }
 
-    if (findError || !booking) {
-      console.error("Booking not found for callback:", obj.order.shipping_data.email);
+    // Fallback reconciliation (Our older email-based method)
+    if (!booking) {
+      const { data } = await supabaseAdmin
+        .from("bookings")
+        .select("*")
+        .eq("guest_email", obj.order.shipping_data.email)
+        .eq("payment_status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      booking = data;
+    }
+
+    if (!booking) {
+      console.error("Booking not found for callback:", merchantOrderId || obj.order.shipping_data.email);
       return NextResponse.json({ error: "Booking reconciliation failed" }, { status: 404 });
     }
 
@@ -122,6 +139,34 @@ export async function GET(req: Request) {
 
   // Redirect the user to the frontend success or failure page
   if (success) {
+    // OPPORTUNISTIC UPDATE: If the webhook is slow, we update foreground immediately
+    if (vistaId) {
+      await supabaseAdmin
+        .from("bookings")
+        .update({
+          payment_status: "paid",
+          status: "confirmed",
+          paymob_transaction_id: paymobId,
+        })
+        .eq("id", vistaId);
+        
+      // Also trigger n8n here for instant email gratification
+      try {
+        const n8nUrl = process.env.N8N_WEBHOOK_URL;
+        if (n8nUrl) {
+          fetch(n8nUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              event: "payment_success_direct",
+              booking_id: vistaId,
+              transaction_id: paymobId
+            })
+          });
+        }
+      } catch (e) {}
+    }
+    
     return NextResponse.redirect(new URL(`/success?vista_id=${vistaId}&id=${paymobId}`, req.url));
   } else {
     // Preserve ALL booking context so the guest doesn't have to restart

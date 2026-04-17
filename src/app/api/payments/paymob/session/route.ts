@@ -69,7 +69,8 @@ export async function POST(req: Request) {
       amountCents, 
       guestEmail, 
       guestName,
-      redirectionUrl
+      redirectionUrl,
+      booking.id // The Golden Thread (Merchant Order ID)
     );
 
     // 4. Update the booking with the Paymob metadata if possible 

@@ -49,7 +49,7 @@ export class PaymobService {
   /**
    * Step 2: Order Registration
    */
-  static async createOrder(authToken: string, amountCents: number, items: PaymobOrderItems[]): Promise<number> {
+  static async createOrder(authToken: string, amountCents: number, items: PaymobOrderItems[], merchantOrderId?: string | number): Promise<number> {
     const res = await fetch(`${PAYMOB_BASE_URL}/ecommerce/orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -59,6 +59,7 @@ export class PaymobService {
         amount_cents: amountCents,
         currency: "EGP",
         items: items,
+        merchant_order_id: merchantOrderId
       }),
     });
 
@@ -112,11 +113,11 @@ export class PaymobService {
   /**
    * Convenience method to create a full session
    */
-  static async createSession(amountCents: number, guestEmail: string, guestName: string, redirectionUrl: string): Promise<string> {
+  static async createSession(amountCents: number, guestEmail: string, guestName: string, redirectionUrl: string, merchantOrderId?: string | number): Promise<string> {
     const token = await this.authenticate();
     const orderId = await this.createOrder(token, amountCents, [
       { name: "Luxury Villa Booking", amount_cents: amountCents, description: "Booking at The Vista", quantity: 1 }
-    ]);
+    ], merchantOrderId);
 
     // Mock billing data (Paymob requires specific fields)
     const billingData: BillingData = {
