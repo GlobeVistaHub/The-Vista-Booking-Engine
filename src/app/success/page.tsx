@@ -182,7 +182,7 @@ function SuccessContent() {
 
             <div className="pt-12 border-t border-navy/5">
               <p className="text-sm text-muted font-medium">
-                Booking ID: <span className="text-navy font-bold uppercase">{bookingDetails?.id || "VST-PAYMOB-SUCCESS"}</span>
+                Booking ID: <span className="text-navy font-bold uppercase">{bookingDetails?.bookingReference || bookingDetails?.booking_reference || bookingDetails?.id || "VST-PAYMOB-SUCCESS"}</span>
               </p>
             </div>
           </>

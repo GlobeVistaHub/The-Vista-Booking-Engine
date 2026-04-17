@@ -138,8 +138,8 @@ export default function BookingsDashboard() {
                     return (
                       <tr key={booking.id} className="hover:bg-slate-50/40 transition-colors group">
                         <td className="px-6 py-5">
-                          <span className="text-xs font-mono font-bold text-navy/40 group-hover:text-primary transition-colors">
-                            #VST-{booking.id.toString().padStart(4, '0')}
+                          <span className="text-xs font-mono font-bold text-navy/40 group-hover:text-primary transition-colors uppercase">
+                            {booking.booking_reference || `#VST-${booking.id.toString().padStart(4, '0')}`}
                           </span>
                         </td>
 
@@ -229,8 +229,8 @@ export default function BookingsDashboard() {
                 return (
                   <div key={booking.id} className="p-6 space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold text-navy/40">
-                        #VST-{booking.id.toString().padStart(4, '0')}
+                      <span className="text-[10px] font-mono font-bold text-navy/40 uppercase">
+                        {booking.booking_reference || `#VST-${booking.id.toString().padStart(4, '0')}`}
                       </span>
                       <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${st.bg} ${st.text} ${st.border}`}>
                         <StatusIcon className="w-3 h-3" />
