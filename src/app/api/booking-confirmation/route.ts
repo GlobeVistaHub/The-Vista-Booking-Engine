@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
-    
+
     // -------------------------------------------------------------------------
     // THE VISTA SIMULATION: "Fake Server" Hack
     // We wait 2 seconds to simulate internet travel time (Cinematic experience)
