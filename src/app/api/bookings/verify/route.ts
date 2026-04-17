@@ -8,22 +8,31 @@ const supabaseAdmin = createClient(
 
 /**
  * GET: Fetches the most recent booking status for a guest.
- * Essential for the Success page and Dashboard to show real data.
+ * Supports lookup by EMAIL or TRANSACTION ID (Paymob ID).
  */
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const email = searchParams.get("email");
+    const transactionId = searchParams.get("id");
 
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    if (!email && !transactionId) {
+      return NextResponse.json({ error: "Email or ID is required" }, { status: 400 });
     }
 
-    // Fetch the most recent booking for this email
-    const { data, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("bookings")
-      .select("id, booking_reference, status, payment_status, total_price, paid_amount_egp")
-      .eq("guest_email", email)
+      .select("id, booking_reference, status, payment_status, total_price, paid_amount_egp, guest_email");
+
+    if (transactionId) {
+      // Prioritize the unique Paymob ID if provided
+      query = query.eq("paymob_order_id", transactionId);
+    } else if (email) {
+      // Fallback to email lookup
+      query = query.eq("guest_email", email);
+    }
+
+    const { data, error } = await query
       .order("created_at", { ascending: false })
       .limit(1)
       .single();
@@ -32,14 +41,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ status: "not_found" });
     }
 
-    // Return the Elite VST reference as the ID for the frontend display
     return NextResponse.json({
       id: data.id,
       bookingReference: data.booking_reference,
-      status: data.payment_status, // 'paid', 'pending', or 'failed'
-      originalStatus: data.status, // 'confirmed', 'pending'
+      status: data.payment_status,
+      originalStatus: data.status,
       total: data.total_price,
-      egp: data.paid_amount_egp
+      egp: data.paid_amount_egp,
+      email: data.guest_email
     });
 
   } catch (error: any) {
@@ -49,20 +58,16 @@ export async function GET(req: Request) {
 
 /**
  * POST: THE VISTA SIMULATION & SYNC HACK
- * We maintain the 2-second cinematic delay, but securely sync the DB in the background.
+ * Maintains the 2s delay and background sync.
  */
 export async function POST(req: Request) {
   try {
     const payload = await req.json();
     const { email, transactionId, status } = payload;
 
-    // -------------------------------------------------------------------------
-    // THE VISTA SIMULATION: 2-second Cinematic Delay (User Favorite)
-    // -------------------------------------------------------------------------
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // 1. SYNC TO DATABASE (If in Live Mode with Transaction ID)
-    if (email && transactionId) {
+    if (transactionId) {
       try {
         await supabaseAdmin
           .from("bookings")
@@ -71,16 +76,12 @@ export async function POST(req: Request) {
             status: status === "success" ? "confirmed" : "pending",
             paymob_order_id: transactionId
           })
-          .eq("guest_email", email)
-          .eq("payment_status", "pending")
-          .order("created_at", { ascending: false })
-          .limit(1);
+          .eq("paymob_order_id", transactionId);
       } catch (dbErr) {
-        console.error("Manual database sync skipped or failed:", dbErr);
+        console.error("Database sync error:", dbErr);
       }
     }
 
-    // 2. n8n TRIGGER FALLBACK (The "Hack" logic)
     const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || "https://webhook.site/bfeaeb6d-fa7d-4162-9548-a1a51fb1506c";
 
     try {
@@ -92,12 +93,10 @@ export async function POST(req: Request) {
 
       return NextResponse.json({ success: true, simulated: !response.ok });
     } catch (e) {
-      // Fail-safe: n8n is down but the user sees success (The Vista Guarantee)
       return NextResponse.json({ success: true, simulated: true });
     }
 
   } catch (error: any) {
-    console.error("Verification logic error:", error);
     return NextResponse.json({ success: true, error: "Simulation fallback active" });
   }
 }
