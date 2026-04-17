@@ -26,16 +26,26 @@ export default function AlexaConcierge() {
         content: initialGreeting
       }
     ],
+    onResponse: (response) => {
+       // Optional hook when model starts responding
+       setIsSpeaking(true);
+    },
+    onFinish: (message) => {
+       setIsSpeaking(false);
+       // Voice playback logic via Web Speech API
+       if (window.speechSynthesis) {
+         window.speechSynthesis.cancel(); // Stop talking if previously talking
+         const utterance = new SpeechSynthesisUtterance(message.content);
+         utterance.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
+         utterance.pitch = 1.1; // Friendly female tone
+         utterance.rate = 1.0;
+         window.speechSynthesis.speak(utterance);
+       }
+    },
     onError: (err) => {
       console.error("Chat error:", err);
-      // Soft error message
-      append({
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: lang === 'ar' 
-          ? "عذراً، أواجه صعوبة بسيطة في الاتصال حالياً. هل يمكنك المحاولة مرة أخرى؟" 
-          : "I'm sorry, I'm having a bit of trouble connecting right now. Could you try again?"
-      });
+      // We do not append here to prevent the UI infinite "jittering" bug
+      alert(lang === 'ar' ? 'فشل الاتصال بالخادم الذكي. تأكد من إعداد المفاتيح.' : 'AI Server connection failed. Please ensure keys are configured in Vercel.');
     }
   });
 
@@ -44,24 +54,46 @@ export default function AlexaConcierge() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
-  // Handle Voice Toggle
-  const toggleListening = async () => {
+  // Handle Voice Toggle using Native SpeechRecognition
+  const toggleListening = () => {
     if (isListening) {
       setIsListening(false);
-      // Logic to stop MediaRecorder and send to Gemini
-    } else {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        setIsListening(true);
-        // Logic to start MediaRecorder...
-        // For now, we simulate the "Live" interaction
-      } catch (err) {
-        console.error("Microphone access denied", err);
-        alert("Please allow microphone access to talk with Alexa.");
-      }
+      return;
     }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice recognition is not supported in this browser. Try Chrome or Safari.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => setIsListening(true);
+    
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setIsListening(false);
+      // Send the transcribed voice as a chat message
+      append({ role: 'user', content: transcript });
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech error", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => setIsListening(false);
+
+    // If Alexa is talking, interrupt her
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    
+    recognition.start();
   };
 
   const toggleChat = () => setIsOpen(!isOpen);
@@ -156,7 +188,7 @@ export default function AlexaConcierge() {
               }`}
               title={isListening ? "Stop Listening" : "Talk to Alexa"}
             >
-              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              {isListening ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mic className="w-5 h-5" />}
             </button>
           </div>
 
@@ -172,7 +204,7 @@ export default function AlexaConcierge() {
             />
             <button 
               type="submit"
-              disabled={!input || isLoading}
+              disabled={!input || isLoading || isListening}
               className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-dark transition-colors"
             >
               <Send className="w-4 h-4" />
@@ -180,7 +212,7 @@ export default function AlexaConcierge() {
           </form>
           
           <p className="text-[9px] text-center text-white/30 font-medium uppercase tracking-tighter">
-            {lang === 'ar' ? 'أليكسا متصلة بـ Gemini 2.0 Flash' : 'Alexa powered by Gemini 2.0 Flash'}
+            {lang === 'ar' ? 'أليكسا متصلة بـ Gemini 3.1 Pro' : 'Alexa powered by Gemini 3.1 Pro'}
           </p>
         </div>
       </div>
