@@ -16,7 +16,8 @@ import {
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { PROPERTIES } from "@/data/properties";
+import { getPropertyById } from "@/data/api";
+import { Property } from "@/data/properties";
 import { format, differenceInDays } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
@@ -60,13 +61,24 @@ function CheckoutContent() {
   const router = useRouter();
   const { t, lang } = useLanguage();
   const propertyId = searchParams.get("id");
-  const property = PROPERTIES.find(p => p.id === Number(propertyId));
+  const [property, setProperty] = useState<Property | null>(null);
+  const [propertyLoading, setPropertyLoading] = useState(true);
 
   // Edit States
   const { user: clerkUser } = useUser();
   const [isEditingDates, setIsEditingDates] = useState(false);
   const [isEditingGuests, setIsEditingGuests] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<"visa" | "mc" | "amex" | "apple">("visa");
+
+  // Fetch property dynamically so ALL properties work (not just mock-data IDs)
+  useEffect(() => {
+    if (!propertyId) { router.push("/search"); return; }
+    getPropertyById(Number(propertyId)).then(data => {
+      if (!data) { router.push("/search"); return; }
+      setProperty(data);
+      setPropertyLoading(false);
+    });
+  }, [propertyId, router]);
 
   // Selection states
   const urlFrom = searchParams.get("from");
@@ -86,13 +98,11 @@ function CheckoutContent() {
   // Exchange Rate from Store
   const exchangeRate = useAppStore(useAppModeStore, (s) => s.exchangeRate) as number || 50.0;
 
-  // If no property found, redirect to search
-  useEffect(() => {
-    if (!property) {
-      router.push("/search");
-    }
-  }, [property, router]);
-
+  if (propertyLoading) return (
+    <div className="min-h-screen flex items-center justify-center bg-v-background">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+    </div>
+  );
   if (!property) return null;
 
   const stayNights = differenceInDays(dateRange.to, dateRange.from) || 1;

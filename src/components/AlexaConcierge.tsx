@@ -23,29 +23,14 @@ export default function AlexaConcierge() {
       {
         id: 'welcome',
         role: 'assistant',
-        content: initialGreeting
+        content: lang === 'ar' 
+          ? "أهلاً 🌟 أنا أليكسا، كونسيرجك الشخصي في ذا فيستا. كيف أقدر أساعدك؟" 
+          : "Welcome 🌟 I'm Alexa, your personal concierge at The Vista. How may I help you today?"
       }
     ],
-    onResponse: (response) => {
-       // Optional hook when model starts responding
-       setIsSpeaking(true);
-    },
-    onFinish: (message) => {
-       setIsSpeaking(false);
-       // Voice playback logic via Web Speech API
-       if (window.speechSynthesis) {
-         window.speechSynthesis.cancel(); // Stop talking if previously talking
-         const utterance = new SpeechSynthesisUtterance(message.content);
-         utterance.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
-         utterance.pitch = 1.1; // Friendly female tone
-         utterance.rate = 1.0;
-         window.speechSynthesis.speak(utterance);
-       }
-    },
     onError: (err) => {
       console.error("Chat error:", err);
-      // We do not append here to prevent the UI infinite "jittering" bug
-      alert(lang === 'ar' ? 'فشل الاتصال بالخادم الذكي. تأكد من إعداد المفاتيح.' : 'AI Server connection failed. Please ensure keys are configured in Vercel.');
+      alert(lang === 'ar' ? 'فشل الاتصال. يرجى المحاولة لاحقاً.' : 'Connection failed. Please try again shortly.');
     }
   });
 
@@ -56,43 +41,47 @@ export default function AlexaConcierge() {
     }
   }, [messages, isLoading]);
 
-  // Handle Voice Toggle using Native SpeechRecognition
+  // Speak a specific message ONLY when user clicks the speaker icon
+  const speakMessage = (text: string) => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    // Try to find the best female Arabic voice
+    const voices = window.speechSynthesis.getVoices();
+    const arabicFemale = voices.find(v => v.lang.startsWith('ar') && v.name.toLowerCase().includes('female'))
+      || voices.find(v => v.lang.startsWith('ar'))
+      || voices.find(v => v.name.toLowerCase().includes('samantha') || v.name.toLowerCase().includes('karen') || v.name.toLowerCase().includes('victoria'))
+      || null;
+    
+    if (arabicFemale) utterance.voice = arabicFemale;
+    utterance.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
+    utterance.pitch = 1.15;
+    utterance.rate = 0.95;
+    
+    setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Voice Input: transcribes speech and sends as text
   const toggleListening = () => {
-    if (isListening) {
-      setIsListening(false);
-      return;
-    }
+    if (isListening) { setIsListening(false); return; }
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Voice recognition is not supported in this browser. Try Chrome or Safari.");
-      return;
-    }
+    if (!SpeechRecognition) { alert("Voice input not supported. Try Chrome."); return; }
 
     const recognition = new SpeechRecognition();
     recognition.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
     recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
     recognition.onstart = () => setIsListening(true);
-    
     recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
       setIsListening(false);
-      // Send the transcribed voice as a chat message
-      append({ role: 'user', content: transcript });
+      append({ role: 'user', content: event.results[0][0].transcript });
     };
-
-    recognition.onerror = (event: any) => {
-      console.error("Speech error", event.error);
-      setIsListening(false);
-    };
-
+    recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
-
-    // If Alexa is talking, interrupt her
     if (window.speechSynthesis) window.speechSynthesis.cancel();
-    
     recognition.start();
   };
 
@@ -151,14 +140,26 @@ export default function AlexaConcierge() {
               key={m.id} 
               className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div 
-                className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
-                  m.role === 'user' 
-                    ? 'bg-primary text-white rounded-tr-none shadow-lg' 
-                    : 'bg-white/5 text-white/90 border border-white/10 rounded-tl-none'
-                }`}
-              >
-                {m.content}
+              <div className="relative group max-w-[85%]">
+                <div 
+                  className={`p-3 rounded-2xl text-sm leading-relaxed ${
+                    m.role === 'user' 
+                      ? 'bg-primary text-white rounded-tr-none shadow-lg' 
+                      : 'bg-white/5 text-white/90 border border-white/10 rounded-tl-none'
+                  }`}
+                >
+                  {m.content}
+                </div>
+                {/* Speaker button — only on Alexa messages, shown on hover */}
+                {m.role === 'assistant' && (
+                  <button
+                    onClick={() => speakMessage(m.content)}
+                    className="absolute -bottom-2 -right-2 w-6 h-6 bg-primary/20 hover:bg-primary text-primary hover:text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                    title="Hear Alexa speak this"
+                  >
+                    <Volume2 className="w-3 h-3" />
+                  </button>
+                )}
               </div>
             </div>
           ))}
