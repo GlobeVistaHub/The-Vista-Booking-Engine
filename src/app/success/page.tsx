@@ -90,7 +90,10 @@ function SuccessContent() {
 
       // 4. Standard verification check
       try {
-        const response = await fetch(`/api/bookings/verify?email=${encodeURIComponent(email)}&id=${transactionId || ""}`);
+        const vistaId = searchParams.get("vista_id");
+        const fetchUrl = `/api/bookings/verify?email=${encodeURIComponent(email)}&id=${transactionId || ""}&vista_id=${vistaId || ""}`;
+        
+        const response = await fetch(fetchUrl);
         const data = await response.json();
 
         if (data.status === "paid" || data.status === "confirmed") {
@@ -101,7 +104,7 @@ function SuccessContent() {
           let attempts = 0;
           const interval = setInterval(async () => {
             attempts++;
-            const pollRes = await fetch(`/api/bookings/verify?email=${encodeURIComponent(email)}&id=${transactionId || ""}`);
+            const pollRes = await fetch(fetchUrl);
             const pollData = await pollRes.json();
             
             if (pollData.status === "paid" || pollData.status === "confirmed") {

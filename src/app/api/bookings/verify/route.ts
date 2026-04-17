@@ -15,18 +15,22 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const email = searchParams.get("email");
     const transactionId = searchParams.get("id");
+    const vistaId = searchParams.get("vista_id");
 
-    if (!email && !transactionId) {
-      return NextResponse.json({ error: "Email or ID is required" }, { status: 400 });
+    if (!email && !transactionId && !vistaId) {
+      return NextResponse.json({ error: "Email, ID or VistaID is required" }, { status: 400 });
     }
 
     let query = supabaseAdmin
       .from("bookings")
       .select("id, booking_reference, status, payment_status, total_price, paid_amount_egp, guest_email");
 
-    if (transactionId) {
-      // Prioritize the unique Paymob ID if provided
-      query = query.eq("paymob_order_id", transactionId);
+    if (vistaId) {
+      // THE GOLDEN KEY: Our internal ID (Never overwritten)
+      query = query.eq("id", vistaId);
+    } else if (transactionId) {
+      // SECONDARY: Paymob Transaction ID
+      query = query.or(`paymob_transaction_id.eq.${transactionId},paymob_order_id.eq.${transactionId}`);
     } else if (email) {
       // Fallback to email lookup
       query = query.eq("guest_email", email);

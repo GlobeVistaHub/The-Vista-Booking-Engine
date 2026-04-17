@@ -63,7 +63,7 @@ export async function POST(req: Request) {
       console.warn("⚠️ CRITICAL: NEXT_PUBLIC_APP_URL is missing in production. Paymob will likely fail to redirect.");
     }
 
-    const redirectionUrl = `${baseUrl}/api/payments/paymob/callback?id=${booking.id}&propertyId=${propertyId}&from=${checkIn}&to=${checkOut}&adults=${adults}&children=${children}`;
+    const redirectionUrl = `${baseUrl}/api/payments/paymob/callback?vista_id=${booking.id}&propertyId=${propertyId}&from=${checkIn}&to=${checkOut}&adults=${adults}&children=${children}`;
 
     const paymentToken = await PaymobService.createSession(
       amountCents, 

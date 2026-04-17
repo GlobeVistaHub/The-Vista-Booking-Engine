@@ -60,6 +60,7 @@ export async function POST(req: Request) {
         payment_status: isSuccess ? "paid" : "failed",
         status: isSuccess ? "confirmed" : "pending",
         paymob_order_id: paymobOrderId,
+        paymob_transaction_id: transactionId,
         payment_method: obj.payment_key_claims?.extra_info?.billing_data?.payment_method || "card"
       })
       .eq("id", booking.id);
@@ -116,11 +117,12 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const success = searchParams.get("success") === "true";
-  const bookingId = searchParams.get("id"); // If we passed this in the success_url
+  const vistaId = searchParams.get("vista_id");
+  const paymobId = searchParams.get("id");
 
   // Redirect the user to the frontend success or failure page
   if (success) {
-    return NextResponse.redirect(new URL(`/success?id=${bookingId}`, req.url));
+    return NextResponse.redirect(new URL(`/success?vista_id=${vistaId}&id=${paymobId}`, req.url));
   } else {
     // Preserve ALL booking context so the guest doesn't have to restart
     const propertyId = searchParams.get("propertyId");
