@@ -1,33 +1,61 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+// SECURE: Use service role key to ensure the booking is written despite RLS
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SECRET_KEY!
+);
 
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
 
-    // -------------------------------------------------------------------------
-    // THE VISTA SIMULATION: "Fake Server" Hack
-    // We wait 2 seconds to simulate internet travel time (Cinematic experience)
-    // -------------------------------------------------------------------------
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // 1. Generate a professional reference (e.g., VST-1234)
+    const bookingRef = `VST-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    const N8N_WEBHOOK_URL = "https://webhook.site/bfeaeb6d-fa7d-4162-9548-a1a51fb1506c";
+    // 2. THE REAL DEPLOYMENT: Insert into Supabase
+    const { data, error } = await supabaseAdmin
+      .from('bookings')
+      .insert([
+        {
+          property_id: payload.propertyId,
+          guest_name: payload.guestName,
+          guest_email: payload.guestEmail,
+          check_in: payload.from,
+          check_out: payload.to,
+          total_price: payload.totalPrice,
+          adults: payload.adults,
+          children: payload.children,
+          booking_reference: bookingRef,
+          payment_status: 'pending',
+          status: 'pending'
+        }
+      ])
+      .select()
+      .single();
 
-    try {
-      // We try to talk to n8n for your funnel test
-      const response = await fetch(N8N_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      // Even if n8n is slow or fails, we return success to the frontend
-      // This is the "Mock API" hack to keep the water flowing in the funnel
-      return NextResponse.json({ success: true, simulated: !response.ok });
-    } catch (e) {
-      // Fail-safe: n8n is down but the user sees success
-      return NextResponse.json({ success: true, simulated: true });
+    if (error) {
+      console.error("Supabase Error:", error.message);
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
+
+    // 3. Keep your n8n trigger active
+    const N8N_WEBHOOK_URL = "https://webhook.site/bfeaeb6d-fa7d-4162-9548-a1a51fb1506c";
+    fetch(N8N_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...data, type: "REAL_BOOKING_CREATED" }),
+    }).catch(e => console.log("n8n log suppressed"));
+
+    // 4. Return the REAL ID to the Success Page
+    return NextResponse.json({
+      success: true,
+      bookingId: data.id,
+      bookingReference: data.booking_reference
+    });
+
   } catch (error: any) {
-    return NextResponse.json({ success: true, error: "Simulation fail-safe" });
+    return NextResponse.json({ success: false, error: "Critical System Error" }, { status: 500 });
   }
 }
