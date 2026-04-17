@@ -116,7 +116,7 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const success = searchParams.get("success") === "true";
-  const bookingId = searchParams.get("id"); // If we passed this in the success_url
+  const bookingId = searchParams.get("bookingId"); // Use bookingId so it doesn't collide with Paymob's 'id'
 
   // Redirect the user to the frontend success or failure page
   if (success) {
