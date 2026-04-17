@@ -2,28 +2,21 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const { text } = await req.json();
+    const { text, lang } = await req.json();
 
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: "OpenAI API Key is missing. Cannot generate neural voice." }, { status: 500 });
-    }
+    // Use free Google Translate TTS API for extremely fast, reliable, & high quality multi-lingual output
+    // Trim text to avoid Google Translate length limits
+    const chunk = text.substring(0, 200).trim();
+    
+    // Choose voice language ('ar' for Arabic female, 'en' for English)
+    const voiceLang = lang === 'ar' ? 'ar' : 'en';
 
-    const response = await fetch('https://api.openai.com/v1/audio/speech', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'tts-1',
-        voice: 'nova', // Nova is a very natural and energetic female voice, works perfectly in Arabic & English
-        input: text,
-      }),
-    });
+    const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&q=${encodeURIComponent(chunk)}&tl=${voiceLang}`;
+
+    const response = await fetch(url);
 
     if (!response.ok) {
-      const err = await response.text();
-      console.error("OpenAI TTS Error:", err);
+      console.error("Google TTS Rejection:", response.status);
       return NextResponse.json({ error: "TTS generation failed" }, { status: response.status });
     }
 

@@ -67,7 +67,7 @@ export default function AlexaConcierge() {
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: cleanText })
+        body: JSON.stringify({ text: cleanText, lang })
       });
       
       if (!response.ok) throw new Error("TTS failed");
