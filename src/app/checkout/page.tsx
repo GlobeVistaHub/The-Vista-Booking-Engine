@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getPropertyById } from '@/data/api';
-import { Property } from '@/data/properties';
+import { Property } from '@/types';
 import CheckoutForm from '@/components/checkout/CheckoutForm';
 import { Shimmer } from '@/components/ui/Shimmer';
 import { motion, AnimatePresence } from 'framer-motion';
