@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     }
 
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-pro', // Using the extremely stable flagship model for this version
+      model: 'gemini-2.0-flash', // Verified working model on v1beta
       systemInstruction: `
         # ALEXA: THE NATIVE EGYPTIAN LUXURY CONCIERGE (PRO BRAIN)
         Role: Senior Luxury Guide & Global Booking Master for The Vista.
