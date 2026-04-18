@@ -21,11 +21,11 @@ export default function FinancialsDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { lang } = useLanguage();
-  const { isWhiteLabel, setWhiteLabel, brandName } = useAppModeStore();
+  const { isWhiteLabel, setWhiteLabel, brandName, isDemoMode } = useAppModeStore();
 
   useEffect(() => {
     fetchFinancials();
-  }, []);
+  }, [isDemoMode]);
 
   const fetchFinancials = async () => {
     setIsLoading(true);
@@ -51,7 +51,7 @@ export default function FinancialsDashboard() {
       const net = isWhiteLabel ? b.total_price : b.total_price * 0.9;
       return [
         format(parseISO(b.created_at), "MMM dd, yyyy"),
-        `TX-VST-${b.id.toString().padStart(4, "0")}`,
+        `${b.booking_reference || 'TX-VST-' + b.id.toString().padStart(4, "0")}`,
         b.property?.title || `Property #${b.property_id}`,
         b.guest_name,
         `$${b.total_price}`,
@@ -253,7 +253,7 @@ export default function FinancialsDashboard() {
                             </td>
                             <td className="px-6 py-4">
                               <span className="text-xs font-mono font-bold text-navy/40">
-                                {isFailed ? "LEAD-" : "TX-VST-"}{booking.id.toString().padStart(4, "0")}
+                                {isFailed ? "LEAD-" : ""}{booking.booking_reference || `TX-VST-${booking.id.toString().padStart(4, "0")}`}
                               </span>
                             </td>
                             <td className="px-6 py-4">
@@ -292,7 +292,7 @@ export default function FinancialsDashboard() {
                       <div key={booking.id} className="p-4 flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-mono font-bold text-navy/30">
-                            TX-VST-{booking.id.toString().padStart(4, "0")}
+                            {booking.booking_reference || `TX-VST-${booking.id.toString().padStart(4, "0")}`}
                           </span>
                           <span className="text-[10px] font-bold text-muted uppercase">
                             {format(parseISO(booking.created_at), "MMM dd")}

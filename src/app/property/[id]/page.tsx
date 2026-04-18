@@ -4,17 +4,17 @@ import { useState, Suspense, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { format, differenceInDays } from "date-fns";
 import Link from "next/link";
-import { 
-  MapPin, 
-  Users, 
-  Star, 
-  Waves, 
-  Wifi, 
-  Utensils, 
-  Car, 
-  Wind, 
-  ShieldCheck, 
-  Check, 
+import {
+  MapPin,
+  Users,
+  Star,
+  Waves,
+  Wifi,
+  Utensils,
+  Car,
+  Wind,
+  ShieldCheck,
+  Check,
   ChevronRight,
   ChevronLeft,
   Heart,
@@ -37,7 +37,8 @@ function PropertyContent() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getPropertyById(Number(id)).then(data => {
+    if (!id) return;
+    getPropertyById(id as string).then(data => {
       setProperty(data);
       setIsLoading(false);
     });
@@ -49,12 +50,12 @@ function PropertyContent() {
 
     // Tier 1: Native share sheet (mobile HTTPS)
     if (navigator.share) {
-      try { await navigator.share({ title: title || "The Vista", url }); return; } catch (_) {}
+      try { await navigator.share({ title: title || "The Vista", url }); return; } catch (_) { }
     }
 
     // Tier 2: Clipboard API (desktop HTTPS)
     if (navigator.clipboard?.writeText) {
-      try { await navigator.clipboard.writeText(url); setShared(true); setTimeout(() => setShared(false), 2000); return; } catch (_) {}
+      try { await navigator.clipboard.writeText(url); setShared(true); setTimeout(() => setShared(false), 2000); return; } catch (_) { }
     }
 
     // Tier 3: execCommand fallback — works on localhost/HTTP
@@ -122,13 +123,13 @@ function PropertyContent() {
 
   return (
     <div className="w-full bg-v-background min-h-screen">
-      
+
       {/* 1. CINEMATIC HERO SECTION (Behind Transparent Header) */}
       <div className="relative w-full h-[60vh] md:h-[70vh] -mt-20 overflow-hidden group">
         {property.images.map((img, idx) => (
-          <img 
+          <img
             key={idx}
-            src={img} 
+            src={img}
             alt={`${lang === "ar" ? property.title_ar : property.title} view ${idx + 1}`}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${idx === currentImg ? "opacity-100" : "opacity-0"}`}
           />
@@ -160,7 +161,7 @@ function PropertyContent() {
             />
           ))}
         </div>
-        
+
         {/* Top Overlay Buttons (Heart/Share) */}
         <div className="absolute bottom-8 right-8 flex gap-4 z-20">
           <button
@@ -179,7 +180,7 @@ function PropertyContent() {
               </span>
             )}
           </button>
-          <button 
+          <button
             onClick={() => toggleWishlist(property.id)}
             className="p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg hover:bg-white transition-all group"
           >
@@ -191,10 +192,10 @@ function PropertyContent() {
       {/* 2. MAIN CONTENT CONTAINER */}
       <main className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
-          
+
           {/* LEFT COLUMN: THE PITCH (2/3) */}
           <div className="lg:col-span-2 space-y-10">
-            
+
             {/* Header Info */}
             <div className="border-b border-navy/5 pb-8">
               <h1 className="text-4xl md:text-5xl font-heading font-medium text-navy tracking-tight mb-4 text-start">
@@ -279,7 +280,7 @@ function PropertyContent() {
           {/* RIGHT COLUMN: STICKY BOOKING CARD (1/3) */}
           <div className="lg:col-span-1">
             <div className="sticky top-28 bg-white rounded-3xl p-8 border border-navy/5 shadow-soft flex flex-col gap-6">
-              
+
               <div className="flex justify-between items-end">
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold text-navy">${pricePerNight}</span>
@@ -311,8 +312,8 @@ function PropertyContent() {
               </div>
 
               {/* CTA Button */}
-              <Link 
-                href={`/checkout?id=${property.id}&from=${urlFrom||''}&to=${urlTo||''}&adults=${urlAdults||2}&children=${urlChildren||0}`}
+              <Link
+                href={`/checkout?id=${property.id}&from=${urlFrom || ''}&to=${urlTo || ''}&adults=${urlAdults || 2}&children=${urlChildren || 0}`}
                 className="w-full py-4 bg-primary hover:brightness-110 text-white rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95"
               >
                 {t('reserve')}

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { getSiteContent, updateSiteLabel, SiteLabel, getBookings } from "@/data/api";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAppModeStore, AppModeState } from "@/store/appModeStore";
 import { useAppStore } from "@/hooks/useAppStore";
-import { useDemoStore } from "@/store/demoStore";
 import { 
   Loader2, 
   Plus, 
@@ -35,6 +34,7 @@ import Link from "next/link";
 
 
 export default function SettingsPage() {
+  const { lang } = useLanguage();
   const store = useAppModeStore();
   const brandName = useAppStore(useAppModeStore, (s: AppModeState) => s.brandName) as string;
   const brandLogo = useAppStore(useAppModeStore, (s: AppModeState) => s.brandLogo) as string;
@@ -42,8 +42,7 @@ export default function SettingsPage() {
   const isWhiteLabel = useAppStore(useAppModeStore, (s: AppModeState) => s.isWhiteLabel) as boolean;
   const exchangeRate = useAppStore(useAppModeStore, (s: AppModeState) => s.exchangeRate) as number;
   const supportEmail = useAppStore(useAppModeStore, (s: AppModeState) => s.supportEmail) as string;
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { isDemoMode, setDemoMode } = useDemoStore();
+  const { isDemoMode, setDemoMode } = useAppModeStore();
   const [isSimulating, setIsSimulating] = useState(false);
 
   const [localBrand, setLocalBrand] = useState(brandName);
@@ -396,36 +395,37 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{ display: 'none' }}
-                    accept="image/*"
-                    disabled={!isWhiteLabel}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        if (file.size > 2000000) {
-                          alert("Logo is too large. Please use an image under 2MB.");
-                          return;
-                        }
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          store.setBrandLogo(reader.result as string);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={!isWhiteLabel}
-                    className={`inline-flex items-center gap-2 px-4 py-2 bg-navy text-white rounded-xl text-xs font-bold cursor-pointer transition-all hover:bg-navy/90 active:scale-95 ${!isWhiteLabel && 'opacity-40 cursor-not-allowed'}`}
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    Upload Logo
-                  </button>
+                  <div className="relative group inline-block">
+                    <label
+                      htmlFor="logoUpload"
+                      className={`inline-flex items-center gap-2 px-4 py-2 bg-navy text-white rounded-xl text-xs font-bold ${!isWhiteLabel ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'cursor-pointer group-hover:bg-navy/90'}`}
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload Logo
+                    </label>
+                    {isWhiteLabel && (
+                      <input
+                        id="logoUpload"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 2000000) {
+                              alert("Logo is too large. Please use an image under 2MB.");
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              store.setBrandLogo(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    )}
+                  </div>
                   {brandLogo && (
                     <button
                       onClick={() => store.setBrandLogo('')}

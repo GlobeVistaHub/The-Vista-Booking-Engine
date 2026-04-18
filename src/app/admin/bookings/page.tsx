@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getBookings, updateBookingStatus, Booking } from "@/data/api";
 import { format, parseISO } from "date-fns";
+import { useAppModeStore } from "@/store/appModeStore";
+import SystemControlToggle from "@/components/SystemControlToggle";
 import {
   CalendarDays,
   Search,
@@ -18,23 +20,24 @@ import {
 import Link from "next/link";
 
 export default function BookingsDashboard() {
+  const { isDemoMode } = useAppModeStore();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | number | null>(null);
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     setIsLoading(true);
     const data = await getBookings();
     setBookings(data);
     setIsLoading(false);
-  };
+  }, []);
 
-  const handleStatusChange = async (id: number, newStatus: 'pending' | 'confirmed' | 'cancelled') => {
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings, isDemoMode]);
+
+  const handleStatusChange = async (id: string | number, newStatus: 'pending' | 'confirmed' | 'cancelled') => {
     // Safety check for cancellations or rejections
     const actionLabel = newStatus === 'cancelled' ? 'cancel' : 'update';
     if (!window.confirm(`Are you sure you want to ${actionLabel} this reservation? This action will notify the guest.`)) {
@@ -44,8 +47,8 @@ export default function BookingsDashboard() {
     setUpdatingId(id);
     const success = await updateBookingStatus(id, newStatus);
     if (success) {
-      // Optimistically update the UI
-      setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
+      // Optimistically update the UI (Agnostic comparison)
+      setBookings(prev => prev.map(b => String(b.id) === String(id) ? { ...b, status: newStatus } : b));
     }
     setUpdatingId(null);
   };
@@ -78,6 +81,9 @@ export default function BookingsDashboard() {
           <p className="text-muted mt-2">Manage your property bookings, approve requests, and monitor your pipeline.</p>
         </div>
       </div>
+
+      {/* System Control Toggle (Live vs Demo Mode) */}
+      <SystemControlToggle />
 
       {/* Toolbar */}
       <div className="bg-white p-4 rounded-2xl shadow-soft border border-navy/5 flex flex-col md:flex-row gap-4 justify-between items-center">
@@ -132,8 +138,9 @@ export default function BookingsDashboard() {
                 </thead>
                 <tbody className="divide-y divide-navy/5">
                   {filteredBookings.map((booking) => {
-                    const StatusIcon = getStatusConfig(booking.status).icon;
-                    const st = getStatusConfig(booking.status);
+                    const safeStatus = (booking.status ?? 'pending') as 'pending' | 'confirmed' | 'cancelled';
+                    const StatusIcon = getStatusConfig(safeStatus).icon;
+                    const st = getStatusConfig(safeStatus);
 
                     return (
                       <tr key={booking.id} className="hover:bg-slate-50/40 transition-colors group">
@@ -223,7 +230,8 @@ export default function BookingsDashboard() {
             {/* Mobile Card View */}
             <div className="md:hidden divide-y divide-navy/5">
               {filteredBookings.map((booking) => {
-                const st = getStatusConfig(booking.status);
+                const safeStatus = (booking.status ?? 'pending') as 'pending' | 'confirmed' | 'cancelled';
+                const st = getStatusConfig(safeStatus);
                 const StatusIcon = st.icon;
 
                 return (

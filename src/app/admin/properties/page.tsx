@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getProperties, togglePropertyStatus, batchCreateProperties, deleteAllProperties, deleteProperty } from "@/data/api";
 import type { Property } from "@/data/properties";
+import { useAppModeStore } from "@/store/appModeStore";
+import SystemControlToggle from "@/components/SystemControlToggle";
 import {
   Building2,
   Search,
@@ -23,36 +25,36 @@ import AddPropertyModal from "@/components/admin/AddPropertyModal";
 import { parsePropertiesCSV, generateCSVTemplate } from "@/utils/csv";
 
 export default function PropertiesDashboard() {
+  const { isDemoMode } = useAppModeStore();
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [togglingId, setTogglingId] = useState<number | null>(null);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-
+  const [togglingId, setTogglingId] = useState<string | number | null>(null);
+  const [deletingId, setDeletingId] = useState<string | number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const { lang } = useLanguage();
 
-  useEffect(() => {
-    fetchProperties();
-  }, []);
-
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async () => {
     setIsLoading(true);
     // Admin sees ALL properties including hidden ones
     const data = await getProperties({ includeHidden: true });
     setProperties(data);
     setIsLoading(false);
-  };
+  }, []);
 
-  const handleToggleStatus = async (id: number, currentStatus: boolean) => {
+  useEffect(() => {
+    fetchProperties();
+  }, [fetchProperties, isDemoMode]);
+
+  const handleToggleStatus = async (id: string | number, currentStatus: boolean) => {
     setTogglingId(id);
     const success = await togglePropertyStatus(id, currentStatus);
     if (success) {
       setProperties((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, isBooked: !currentStatus } : p))
+        prev.map((p) => (String(p.id) === String(id) ? { ...p, isBooked: !currentStatus } : p))
       );
     }
     setTogglingId(null);
@@ -73,7 +75,7 @@ export default function PropertiesDashboard() {
     setIsDeleting(false);
   };
 
-  const handleDeleteProperty = async (id: number, title: string) => {
+  const handleDeleteProperty = async (id: string | number, title: string) => {
     if (!window.confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
       return;
     }
@@ -81,7 +83,7 @@ export default function PropertiesDashboard() {
     setDeletingId(id);
     const success = await deleteProperty(id);
     if (success) {
-      setProperties((prev) => prev.filter((p) => p.id !== id));
+      setProperties((prev) => prev.filter((p) => String(p.id) !== String(id)));
     } else {
       setImportError(`Failed to delete "${title}".`);
     }
@@ -146,10 +148,10 @@ export default function PropertiesDashboard() {
       // 2. Load Master CSV from public folder
       const response = await fetch('/funnel_test_v6_enriched.csv');
       if (!response.ok) throw new Error("Could not find master CSV file.");
-      
+
       const text = await response.text();
       const parsed = parsePropertiesCSV(text);
-      
+
       // 3. Batch Create
       const success = await batchCreateProperties(parsed);
       if (success) {
@@ -187,7 +189,7 @@ export default function PropertiesDashboard() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button 
+          <button
             onClick={handleRestoreMaster}
             disabled={isImporting}
             className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-primary to-orange-400 text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg shadow-primary/20 disabled:opacity-30"
@@ -197,7 +199,7 @@ export default function PropertiesDashboard() {
             <span className="hidden md:inline">Restore Master</span>
           </button>
 
-          <button 
+          <button
             onClick={handleDeleteAll}
             disabled={isDeleting || properties.length === 0}
             className="flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-600 border border-red-100 rounded-xl font-bold hover:bg-red-100 transition-all shadow-sm disabled:opacity-30 disabled:grayscale"
@@ -207,7 +209,7 @@ export default function PropertiesDashboard() {
             <span className="hidden md:inline">Reset Portfolio</span>
           </button>
 
-          <button 
+          <button
             onClick={handleDownloadTemplate}
             className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-navy border border-navy/10 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm"
             title="Download CSV Template"
@@ -215,29 +217,31 @@ export default function PropertiesDashboard() {
             <Download className="w-4 h-4" />
             <span className="hidden md:inline">Template</span>
           </button>
-          
-          <div className="relative">
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleBulkUpload}
-              className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-              disabled={isImporting}
-            />
-            <button 
-              disabled={isImporting}
-              className={`flex items-center justify-center gap-2 px-4 py-3 bg-white text-navy border border-navy/10 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm ${isImporting ? 'opacity-50' : ''}`}
+
+          <div className="relative group">
+            <label
+              htmlFor="csv-upload"
+              className={`flex items-center justify-center gap-2 px-4 py-3 bg-white text-navy border border-navy/10 rounded-xl font-bold transition-all shadow-sm cursor-pointer ${isImporting ? 'opacity-50 pointer-events-none' : 'group-hover:bg-slate-50'}`}
             >
               {isImporting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Upload className="w-4 h-4" />
               )}
-              <span className="hidden md:inline">{isImporting ? 'Importing...' : 'Bulk Upload'}</span>
-            </button>
+              <span className="hidden md:inline font-bold">
+                {isImporting ? 'Importing...' : 'Bulk Upload'}
+              </span>
+            </label>
+            <input
+              id="csv-upload"
+              type="file"
+              accept=".csv"
+              onChange={handleBulkUpload}
+              className="hidden"
+            />
           </div>
 
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
             className="flex items-center justify-center gap-2 px-6 py-3 bg-navy text-white rounded-xl font-bold hover:bg-navy/90 transition-all shadow-soft group"
           >
@@ -253,6 +257,9 @@ export default function PropertiesDashboard() {
           <p className="text-sm font-medium">{importError}</p>
         </div>
       )}
+
+      {/* System Control Toggle (Live vs Demo Mode) */}
+      <SystemControlToggle />
 
       {/* Toolbar */}
       <div className="bg-white p-4 rounded-2xl shadow-soft border border-navy/5 flex flex-col md:flex-row gap-4 justify-between items-center">
@@ -313,9 +320,8 @@ export default function PropertiesDashboard() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute top-4 left-4">
-                      <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border ${
-                        isActive ? "bg-emerald-500 text-white border-emerald-400" : "bg-slate-500 text-white border-slate-400"
-                      }`}>
+                      <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border ${isActive ? "bg-emerald-500 text-white border-emerald-400" : "bg-slate-500 text-white border-slate-400"
+                        }`}>
                         {isActive ? "Active" : "Hidden"}
                       </div>
                     </div>
@@ -368,17 +374,15 @@ export default function PropertiesDashboard() {
                           onClick={() => handleToggleStatus(property.id, !!property.isBooked)}
                           disabled={togglingId === property.id}
                           aria-label={isActive ? "Hide property" : "Publish property"}
-                          className={`relative flex items-center justify-center w-12 h-6 rounded-full transition-colors duration-300 ${
-                            isActive ? "bg-emerald-500" : "bg-slate-300"
-                          }`}
+                          className={`relative flex items-center justify-center w-12 h-6 rounded-full transition-colors duration-300 ${isActive ? "bg-emerald-500" : "bg-slate-300"
+                            }`}
                         >
                           {togglingId === property.id ? (
                             <Loader2 className="w-3 h-3 text-white animate-spin" />
                           ) : (
                             <span
-                              className={`absolute w-4 h-4 bg-white rounded-full transition-all duration-300 shadow-sm ${
-                                isActive ? "right-1" : "left-1"
-                              }`}
+                              className={`absolute w-4 h-4 bg-white rounded-full transition-all duration-300 shadow-sm ${isActive ? "right-1" : "left-1"
+                                }`}
                             />
                           )}
                         </button>
@@ -401,20 +405,20 @@ export default function PropertiesDashboard() {
                   <div className="relative w-24 h-24 shrink-0 overflow-hidden rounded-xl">
                     <img src={property.images[0]} alt="" className="w-full h-full object-cover" />
                   </div>
-                  
+
                   <div className="flex-1 min-w-0 flex flex-col">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <h3 className="font-bold text-navy text-sm truncate">{title}</h3>
                       <div className={`shrink-0 w-2 h-2 rounded-full mt-1.5 ${isActive ? "bg-emerald-500" : "bg-slate-300"}`} />
                     </div>
-                    
+
                     <p className="text-[10px] text-muted truncate mb-3">{property.location}</p>
-                    
+
                     <div className="mt-auto flex items-center justify-between">
                       <Link href={`/property/${property.id}`} className="text-[10px] font-bold text-primary underline">
                         Details
                       </Link>
-                      
+
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => handleDeleteProperty(property.id, title)}
@@ -427,7 +431,7 @@ export default function PropertiesDashboard() {
                             <Trash2 className="w-3.5 h-3.5" />
                           )}
                         </button>
-                        
+
                         <button
                           onClick={() => handleToggleStatus(property.id, !!property.isBooked)}
                           disabled={togglingId === property.id}

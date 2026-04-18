@@ -3,9 +3,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface UserContextType {
-  wishlist: number[];
-  toggleWishlist: (id: number) => void;
-  isInWishlist: (id: number) => boolean;
+  wishlist: (string | number)[];
+  toggleWishlist: (id: string | number) => void;
+  isInWishlist: (id: string | number) => boolean;
   
   preferences: string[];
   togglePreference: (pref: string) => void;
@@ -16,7 +16,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [wishlist, setWishlist] = useState<(string | number)[]>([]);
   const [preferences, setPreferences] = useState<string[]>(["Ocean Views", "High Security"]);
   const [guestName] = useState("Vista Guest");
   // Guard: only save AFTER we've loaded from localStorage (prevents overwriting on mount)
@@ -45,13 +45,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem("vista_prefs", JSON.stringify(preferences));
   }, [preferences, hydrated]);
 
-  const toggleWishlist = (id: number) => {
+  const toggleWishlist = (id: string | number) => {
+    const stringId = String(id);
     setWishlist(prev =>
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+      prev.map(String).includes(stringId) 
+        ? prev.filter(item => String(item) !== stringId) 
+        : [...prev, id]
     );
   };
 
-  const isInWishlist = (id: number) => wishlist.includes(id);
+  const isInWishlist = (id: string | number) => wishlist.map(String).includes(String(id));
 
   const togglePreference = (pref: string) => {
     setPreferences(prev =>

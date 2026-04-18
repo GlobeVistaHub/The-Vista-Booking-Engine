@@ -3,8 +3,8 @@ import { persist } from 'zustand/middleware';
 import { PROPERTIES as MockProperties, Property } from '@/data/properties';
 
 export interface Booking {
-  id: number;
-  property_id: number;
+  id: string | number;
+  property_id: string | number;
   guest_name: string;
   guest_email: string;
   check_in: string;
@@ -32,10 +32,11 @@ interface DataStore {
   setProperties: (props: Property[]) => void;
   setBookings: (books: Booking[]) => void;
   setSiteContent: (content: any[]) => void;
-  updateProperty: (id: number, updates: Partial<Property>) => void;
+  updateProperty: (id: string | number, updates: Partial<Property>) => void;
   addProperty: (prop: Property) => void;
-  updateBooking: (id: number, updates: Partial<Booking>) => void;
+  updateBooking: (id: string | number, updates: Partial<Booking>) => void;
   addBooking: (book: Booking) => void;
+  resetToPresentationState: () => void;
 }
 
 export const useDataStore = create<DataStore>()(
@@ -47,6 +48,12 @@ export const useDataStore = create<DataStore>()(
       setProperties: (properties) => set({ properties }),
       setBookings: (bookings) => set({ bookings }),
       setSiteContent: (siteContent) => set({ siteContent }),
+      resetToPresentationState: () => {
+        set({ 
+          properties: MockProperties, 
+          bookings: INITIAL_MOCK_BOOKINGS 
+        });
+      },
       updateProperty: (id, updates) => set((state) => ({
         properties: state.properties.map(p => p.id === id ? { ...p, ...updates } : p)
       })),

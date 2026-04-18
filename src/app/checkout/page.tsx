@@ -2,11 +2,11 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
-import { 
-  ChevronLeft, 
-  Star, 
-  CreditCard, 
-  ShieldCheck, 
+import {
+  ChevronLeft,
+  Star,
+  CreditCard,
+  ShieldCheck,
   Info,
   Calendar,
   Users,
@@ -16,7 +16,8 @@ import {
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { PROPERTIES } from "@/data/properties";
+import { getPropertyById } from "@/data/api";
+import { Property } from "@/data/properties";
 import { format, differenceInDays } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
@@ -60,7 +61,9 @@ function CheckoutContent() {
   const router = useRouter();
   const { t, lang } = useLanguage();
   const propertyId = searchParams.get("id");
-  const property = PROPERTIES.find(p => p.id === Number(propertyId));
+  
+  const [property, setProperty] = useState<Property | null>(null);
+  const [isPropertyLoading, setIsPropertyLoading] = useState(true);
 
   // Edit States
   const { user: clerkUser } = useUser();
@@ -71,7 +74,8 @@ function CheckoutContent() {
   // Selection states
   const urlFrom = searchParams.get("from");
   const urlTo = searchParams.get("to");
-  const [dateRange, setDateRange] = useState<{from: Date, to: Date}>({
+  
+  const [dateRange, setDateRange] = useState<{ from: Date, to: Date }>({
     from: urlFrom ? new Date(urlFrom) : new Date(2026, 9, 12),
     to: urlTo ? new Date(urlTo) : new Date(2026, 9, 17)
   });
@@ -86,12 +90,41 @@ function CheckoutContent() {
   // Exchange Rate from Store
   const exchangeRate = useAppStore(useAppModeStore, (s) => s.exchangeRate) as number || 50.0;
 
-  // If no property found, redirect to search
   useEffect(() => {
-    if (!property) {
-      router.push("/search");
+    if (propertyId) {
+      getPropertyById(propertyId).then(data => {
+        setProperty(data || null);
+        setIsPropertyLoading(false);
+      });
+    } else {
+      setIsPropertyLoading(false);
     }
-  }, [property, router]);
+  }, [propertyId]);
+
+  useEffect(() => {
+    if (!isPropertyLoading && !property && propertyId) {
+      // Retry once after 1.5s before giving up — prevents false redirects on slow connections
+      const retryTimer = setTimeout(async () => {
+        const retryData = await getPropertyById(propertyId);
+        if (!retryData) {
+          router.push("/search");
+        } else {
+          setProperty(retryData || null);
+          setIsPropertyLoading(false);
+        }
+      }, 1500);
+      return () => clearTimeout(retryTimer);
+    }
+  }, [property, isPropertyLoading, router, propertyId]);
+
+
+  if (isPropertyLoading) {
+    return (
+      <div className="min-h-screen bg-v-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   if (!property) return null;
 
@@ -123,8 +156,8 @@ function CheckoutContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          propertyId: property.id,
-          guestName: clerkUser?.fullName || "Guest", 
+          propertyId: String(property.id),
+          guestName: clerkUser?.fullName || "Guest",
           guestEmail: clerkUser?.primaryEmailAddress?.emailAddress || "guest@example.com",
           amountUSD: total,
           exchangeRate: exchangeRate,
@@ -153,7 +186,7 @@ function CheckoutContent() {
   return (
     <div className="w-full bg-v-background min-h-screen text-start" dir={lang === "ar" ? "rtl" : "ltr"}>
       <main className="max-w-7xl mx-auto px-6 py-12 md:py-20">
-        
+
         {/* Header Navigation */}
         <div className="flex items-center gap-4 mb-10">
           <button onClick={() => window.history.back()} className="p-2 hover:bg-navy/5 rounded-full transition-colors">
@@ -178,14 +211,14 @@ function CheckoutContent() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-              <button 
+              <button
                 onClick={() => window.open(`https://wa.me/+201145551163?text=Hi, I had an issue booking ${property.title}. Can Alex help?`, '_blank')}
                 className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-rose-200 text-rose-600 rounded-2xl text-sm font-bold hover:bg-rose-100 transition-all w-full sm:w-auto"
               >
                 <MessageCircle className="w-4 h-4" />
                 Speak to Alex
               </button>
-              <button 
+              <button
                 onClick={handleConfirm}
                 className="px-8 py-3 bg-rose-500 text-white rounded-2xl text-sm font-bold hover:bg-rose-600 transition-all w-full sm:w-auto shadow-sm"
               >
@@ -196,14 +229,14 @@ function CheckoutContent() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 xl:gap-24">
-          
+
           {/* LEFT COLUMN */}
           <div className="space-y-12">
-            
+
             {/* 1. Trip Section */}
             <section className="space-y-6">
               <h2 className="text-2xl font-bold text-navy">{t('yourTrip')}</h2>
-              
+
               <div className="space-y-6">
                 <div className="flex items-center justify-between gap-4 py-2">
                   <div className="flex-grow">
@@ -240,7 +273,7 @@ function CheckoutContent() {
                   </div>
                 </div>
                 <p className="text-sm text-muted">
-                  You will pay in **Egyptian Pounds (EGP)** at a fixed exchange rate of **1 USD = {exchangeRate} EGP**. 
+                  You will pay in **Egyptian Pounds (EGP)** at a fixed exchange rate of **1 USD = {exchangeRate} EGP**.
                   One-time secure processing by Paymob.
                 </p>
               </div>
@@ -305,7 +338,7 @@ function CheckoutContent() {
                   <span>{t('serviceFee')}</span>
                   <span>${serviceFee}</span>
                 </div>
-                
+
                 <div className="pt-4 border-t border-navy/10 flex justify-between items-center text-navy font-bold">
                   <span>{t('totalLabel')} (USD)</span>
                   <span className="text-xl">${total}</span>
@@ -324,7 +357,7 @@ function CheckoutContent() {
               </div>
 
               <div className="pt-4">
-                <button 
+                <button
                   onClick={handleConfirm}
                   disabled={isProcessing}
                   className="w-full flex items-center justify-center gap-3 py-4 bg-primary text-white rounded-2xl font-bold text-center shadow-md hover:brightness-110 transition-all active:scale-95 disabled:opacity-50"
@@ -388,7 +421,7 @@ function CheckoutContent() {
                 day_today: "font-bold text-navy border border-primary/20",
               }}
             />
-            <button 
+            <button
               onClick={() => setIsEditingDates(false)}
               className="w-full mt-8 py-4 bg-primary text-white font-bold rounded-2xl shadow-md"
             >
@@ -409,7 +442,7 @@ function CheckoutContent() {
                 <X className="w-5 h-5 text-navy" />
               </button>
             </div>
-            
+
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -417,9 +450,9 @@ function CheckoutContent() {
                   <p className="text-xs text-muted">Ages 13+</p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <button onClick={() => setAdults(Math.max(1, adults - 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Minus className="w-3 h-3"/></button>
+                  <button onClick={() => setAdults(Math.max(1, adults - 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Minus className="w-3 h-3" /></button>
                   <span className="font-bold text-navy w-4 text-center">{adults}</span>
-                  <button onClick={() => setAdults(Math.min(maxGuests - children, adults + 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Plus className="w-3 h-3"/></button>
+                  <button onClick={() => setAdults(Math.min(maxGuests - children, adults + 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Plus className="w-3 h-3" /></button>
                 </div>
               </div>
               <div className="flex items-center justify-between">
@@ -428,14 +461,14 @@ function CheckoutContent() {
                   <p className="text-xs text-muted">Ages 2–12</p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <button onClick={() => setChildren(Math.max(0, children - 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Minus className="w-3 h-3"/></button>
+                  <button onClick={() => setChildren(Math.max(0, children - 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Minus className="w-3 h-3" /></button>
                   <span className="font-bold text-navy w-4 text-center">{children}</span>
-                  <button onClick={() => setChildren(Math.min(maxGuests - adults, children + 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Plus className="w-3 h-3"/></button>
+                  <button onClick={() => setChildren(Math.min(maxGuests - adults, children + 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Plus className="w-3 h-3" /></button>
                 </div>
               </div>
             </div>
 
-            <button 
+            <button
               onClick={() => setIsEditingGuests(false)}
               className="w-full mt-10 py-4 bg-primary text-white font-bold rounded-2xl shadow-md"
             >

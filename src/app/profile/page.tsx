@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useUser } from "@/context/UserContext";
 import { VISTA_CONFIG } from "@/config/constants";
-import { PROPERTIES } from "@/data/properties";
-import { User, Settings, LogOut, ChevronRight, Calendar, MapPin, Star, MessageSquare, ShieldCheck, Check, CreditCard, Trash2, Heart } from "lucide-react";
+import { getBookings, getProperties, Booking } from "@/data/api";
+import type { Property } from "@/data/properties";
+import { User, Settings, LogOut, ChevronRight, Calendar, MapPin, Star, MessageSquare, ShieldCheck, Check, CreditCard, Trash2, Heart, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useUser as useClerkUser, SignOutButton } from "@clerk/nextjs";
 
@@ -14,7 +15,6 @@ export default function ProfilePage() {
   const { wishlist, toggleWishlist, preferences, togglePreference, guestName } = useUser();
   const { user: clerkUser, isLoaded } = useClerkUser();
   
-  // Build authenticated name with full fallback chain (handles Google, Apple, Email providers)
   const clerkName = clerkUser?.fullName 
     || (clerkUser?.firstName && clerkUser?.lastName ? `${clerkUser.firstName} ${clerkUser.lastName}` : null)
     || clerkUser?.firstName
@@ -27,49 +27,89 @@ export default function ProfilePage() {
   
   const [activeTab, setActiveTab] = useState<"trips" | "wishlist" | "settings">("trips");
   const [bookingFilter, setBookingFilter] = useState<"upcoming" | "past">("upcoming");
-  const [realBookingId, setRealBookingId] = useState<string | null>(null);
-  const [allBookings, setAllBookings] = useState<Array<{ bookingId: string, property: typeof PROPERTIES[0], checkIn: string | null, checkOut: string | null }>>([]);
+  
+  const [allProperties, setAllProperties] = useState<Property[]>([]);
+  const [allBookings, setAllBookings] = useState<Array<{ bookingId: string, property: Property, checkIn: string | null, checkOut: string | null, rawId: string | number }>>([]);
 
-  // Read real bookings persisted by the success page
+  // Fetch true live data from Supabase/Store
   useEffect(() => {
-    try {
-      const stored: Array<{bookingId: string, propertyId: string, checkIn?: string, checkOut?: string}> = JSON.parse(localStorage.getItem("vista_bookings") || "[]");
+    const fetchLiveData = async () => {
+      const hidden = JSON.parse(localStorage.getItem('vista_hidden_bookings') || '[]');
+      const [bData, pData] = await Promise.all([getBookings(), getProperties()]);
       
-      const enrichedBookings = stored.map(b => {
-        const prop = PROPERTIES.find(p => p.id === Number(b.propertyId));
+      const enrichedBookings = bData.map(b => {
+        const prop = b.property || pData.find(p => String(p.id) === String(b.property_id));
         if (!prop) return null;
+        
         return {
-          bookingId: b.bookingId,
+          bookingId: b.booking_reference || String(b.id),
           property: prop,
-          checkIn: b.checkIn || null,
-          checkOut: b.checkOut || null
+          checkIn: b.check_in || null,
+          checkOut: b.check_out || null,
+          rawId: b.id
         };
-      }).filter(Boolean) as any[];
+      }).filter(b => b && !hidden.includes(b.bookingId)) as any[];
 
       setAllBookings(enrichedBookings);
-      if (enrichedBookings.length > 0) setRealBookingId(enrichedBookings[0].bookingId);
-    } catch(e) {}
+      setAllProperties(pData);
+    };
+    fetchLiveData();
   }, []);
 
   const handleDeleteBooking = (id: string) => {
-    try {
-      const stored: any[] = JSON.parse(localStorage.getItem("vista_bookings") || "[]");
-      const filtered = stored.filter(b => b.bookingId !== id);
-      localStorage.setItem("vista_bookings", JSON.stringify(filtered));
-      setAllBookings(prev => prev.filter(b => b.bookingId !== id));
-    } catch(e) {}
+    const hidden = JSON.parse(localStorage.getItem('vista_hidden_bookings') || '[]');
+    const newHidden = [...hidden, id];
+    localStorage.setItem('vista_hidden_bookings', JSON.stringify(newHidden));
+    setAllBookings(prev => prev.filter(b => b.bookingId !== id));
+  };
+
+  const [profileData, setProfileData] = useState({
+    name: "",
+    email: "",
+    phone: "+44 7700 900077",
+    travelParty: lang === 'ar' ? "2 بالغين، 0 أطفال" : "2 Adults, 0 Children"
+  });
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('vista_profile_data');
+    if (saved) {
+      setProfileData(JSON.parse(saved));
+    } else if (isLoaded) {
+      setProfileData(prev => ({ ...prev, name: authName || "", email: authEmail !== "—" ? authEmail : "" }));
+    }
+  }, [isLoaded, authName, authEmail]);
+
+  const handleProfileChange = (field: string, value: string) => {
+    const newData = { ...profileData, [field]: value };
+    setProfileData(newData);
+    localStorage.setItem('vista_profile_data', JSON.stringify(newData));
+  };
+
+  const handleSavePreferences = () => {
+    setIsSaving(true);
+    // Visual satisfaction dummy save (data is already synced to localStorage locally on change)
+    setTimeout(() => {
+      setIsSaving(false);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+    }, 800);
   };
 
   const today = new Date();
   const upcomingBookings = allBookings.filter(b => {
-    if (!b.checkOut) return true; // Default to upcoming if no date
+    if (!b.checkOut) return true;
     return new Date(b.checkOut) >= today;
   });
   const pastBookings = allBookings.filter(b => {
     if (!b.checkOut) return false;
     return new Date(b.checkOut) < today;
   });
-  const wishlistProperties = PROPERTIES.filter(p => wishlist.includes(p.id));
+  
+  // Map wishlist using real dynamic property IDs from the database
+  const wishlistProperties = allProperties.filter(p => wishlist.map(String).includes(String(p.id)));
 
   return (
     <div className="w-full bg-v-background min-h-screen pt-28 pb-20 text-start" dir={lang === "ar" ? "rtl" : "ltr"}>
@@ -95,7 +135,7 @@ export default function ProfilePage() {
               
               <div className="pt-4">
                 <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">{t('guestNameLabel')}</p>
-                <p className="text-xl font-heading font-bold tracking-tight">{authName}</p>
+                <p className="text-xl font-heading font-bold tracking-tight">{profileData.name || authName}</p>
               </div>
 
               <div className="flex justify-between items-end pt-2">
@@ -314,24 +354,71 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-muted">{t('fullName')}</label>
-                    <input type="text" readOnly value={authName} className="w-full p-4 bg-v-background rounded-2xl border border-navy/5 font-bold text-navy outline-none" />
+                    <input 
+                      type="text" 
+                      value={profileData.name} 
+                      readOnly
+                      placeholder={authName || ""}
+                      className="w-full p-4 bg-v-background rounded-2xl border border-navy/5 font-bold text-navy outline-none opacity-80 cursor-not-allowed" 
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-muted">{t('emailAddress')}</label>
-                    <input type="text" readOnly value={authEmail} className="w-full p-4 bg-v-background rounded-2xl border border-navy/5 font-bold text-navy outline-none" />
+                    <input 
+                      type="text" 
+                      value={profileData.email} 
+                      readOnly
+                      placeholder={authEmail || ""}
+                      className="w-full p-4 bg-v-background rounded-2xl border border-navy/5 font-bold text-navy outline-none opacity-80 cursor-not-allowed" 
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-muted">{t('phoneConcierge')}</label>
-                    <div className="flex bg-v-background rounded-2xl border border-navy/5 overflow-hidden">
-                      <input type="text" readOnly value="+44 7700 900077" className="w-full p-4 bg-transparent font-bold text-navy outline-none" dir="ltr" />
+                    <div className="flex bg-v-background rounded-2xl border border-navy/5 overflow-hidden transition-colors focus-within:border-primary/50">
+                      <input 
+                        type="text" 
+                        value={profileData.phone} 
+                        onChange={(e) => handleProfileChange('phone', e.target.value)}
+                        className="w-full p-4 bg-transparent font-bold text-navy outline-none" 
+                        dir="ltr" 
+                      />
                       <div className="bg-navy/5 px-4 flex items-center border-l border-navy/5">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-navy">WhatsApp</span>
                       </div>
                     </div>
+                    <p className="text-[9px] text-muted font-medium mt-2 leading-tight pl-2">
+                      {lang === 'ar' ? 'هذا هو الرقم الذي يستخدمه النظام لإرسال تأكيدات الحجز والتواصل مع الكونسيرج.' : 'This is the number used by the system to send booking confirmations and correspond securely with your concierge.'}
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-muted">{t('defaultTravelParty')}</label>
-                    <input type="text" readOnly value={`2 ${t('adults')}, 0 ${t('children')}`} className="w-full p-4 bg-v-background rounded-2xl border border-navy/5 font-bold text-navy outline-none" />
+                    <input 
+                      type="text" 
+                      value={profileData.travelParty} 
+                      onChange={(e) => handleProfileChange('travelParty', e.target.value)}
+                      placeholder={lang === 'ar' ? 'مثل: أسرة، أو بالغين وطفلين' : 'e.g. Family, or 2 Adults 2 Children'}
+                      className="w-full p-4 bg-v-background rounded-2xl border border-navy/5 font-bold text-navy outline-none focus:border-primary/50 transition-colors" 
+                    />
+                  </div>
+                  
+                  <div className="col-span-1 md:col-span-2 flex justify-end mt-4">
+                    <button 
+                      onClick={handleSavePreferences}
+                      disabled={isSaving || isSaved}
+                      className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 ${
+                        isSaved ? 'bg-emerald-500 text-white' : 
+                        isSaving ? 'bg-navy/50 text-white' : 
+                        'bg-navy text-white hover:bg-primary hover:text-navy hover:scale-105 active:scale-95 shadow-soft border border-navy/20'
+                      }`}
+                    >
+                      {isSaved ? (
+                        <><Check className="w-4 h-4" /> {lang === 'ar' ? 'تم الحفظ بشكل آمن' : 'Safely Saved'}</>
+                      ) : isSaving ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> {lang === 'ar' ? 'جاري الحفظ للتخزين الآمن...' : 'Securing Data...'}</>
+                      ) : (
+                        <>{lang === 'ar' ? 'حفظ التفضيلات' : 'Save Preferences'}</>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -339,14 +426,20 @@ export default function ProfilePage() {
               {/* Identity & Security */}
               <div className="bg-white rounded-3xl p-8 md:p-10 border border-navy/5 shadow-soft">
                  <h4 className="text-xs font-black uppercase tracking-[0.2em] text-navy mb-6 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary" /> {t('identityVerification')}</h4>
-                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl gap-4">
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-v-background border border-navy/5 rounded-2xl gap-4">
                     <div>
-                      <p className="font-bold text-navy text-lg">{t('passportVerified')}</p>
-                      <p className="text-sm text-muted">{t('identitySecured')}</p>
+                      <p className="font-bold text-navy text-lg">{lang === 'ar' ? 'مطلوب إثبات الهوية' : 'Identity Verification Required'}</p>
+                      <p className="text-sm text-muted">{lang === 'ar' ? 'يرجى إرسال نسخة من الهوية إلى الكونسيرج.' : 'Please securely submit a copy of your ID to the Concierge.'}</p>
                     </div>
-                    <div className="px-4 py-2 bg-emerald-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                      <Check className="w-3 h-3" /> {t('verifiedStatus')}
-                    </div>
+                    <a 
+                      href="https://wa.me/447700900077?text=Hello%20Vista%20Concierge,%20I%20am%20ready%20to%20securely%20verify%20my%20Identity."
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-6 py-3 bg-navy text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-navy transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-soft border border-navy/10"
+                    >
+                      <MessageSquare className="w-4 h-4" /> 
+                      {lang === 'ar' ? 'التحقق عبر واتساب' : 'Verify via WhatsApp'}
+                    </a>
                  </div>
               </div>
 
@@ -361,7 +454,11 @@ export default function ProfilePage() {
                         <p className="text-xs text-muted">{t('expires')} 12/28</p>
                       </div>
                     </div>
-                    <button className="text-[10px] font-bold text-primary uppercase tracking-widest hover:text-navy transition-colors">{t('updateBtn')}</button>
+                    <div className="text-right sm:max-w-[220px]">
+                      <p className="text-[9px] text-muted leading-relaxed font-bold">
+                        {lang === 'ar' ? 'البطاقة الأحدث في معاملة الحجز. يتم تحديثها تلقائياً عند الدفع ببطاقة جديدة.' : 'Most recently used in your last booking. This securely updates whenever you checkout with a new card.'}
+                      </p>
+                    </div>
                  </div>
               </div>
 

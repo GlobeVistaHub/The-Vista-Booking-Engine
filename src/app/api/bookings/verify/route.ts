@@ -21,32 +21,28 @@ export async function GET(req: Request) {
       return NextResponse.json({ status: "error", error: "Missing identity context" }, { status: 400 });
     }
 
-    // 1. DYNAMIC SEGMENTED QUOTED SEARCH
     let query = supabaseAdmin
       .from("bookings")
       .select("id, booking_reference, status, payment_status, total_price, paid_amount_egp, guest_email");
 
-    // Case A: We have our Golden Vista ID
-    if (vistaId && vistaId !== "null" && vistaId !== "" && !isNaN(Number(vistaId))) {
-      query = query.eq("id", Number(vistaId));
-    } 
-    // Case B: We have a Paymob Identification (The "Titanium" Quoted Scan)
-    else if (transactionId && transactionId !== "null" && transactionId !== "") {
-      const isNumber = !isNaN(Number(transactionId)) && /^\d+$/.test(transactionId);
-      
-      // TITANIUM FIX: Use double-quotes for all string comparisons in .or() 
-      // This prevents the PostgREST syntax error on live databases.
-      let orFilter = `paymob_transaction_id.eq."${transactionId}",transaction_id.eq."${transactionId}"`;
-      if (isNumber) {
-        orFilter += `,id.eq.${transactionId},paymob_order_id.eq.${transactionId}`;
+    // Case A: vistaId is our Supabase internal row ID — always numeric
+    if (vistaId && vistaId !== "null" && vistaId !== "") {
+      const numericVistaId = Number(vistaId);
+      if (!isNaN(numericVistaId)) {
+        query = query.eq("id", numericVistaId);
       }
-      
-      query = query.or(orFilter);
-    } 
+    }
+    // Case B: Paymob transaction ID fallback
+    else if (transactionId && transactionId !== "null" && transactionId !== "") {
+      query = query.or(
+        `paymob_transaction_id.eq.${transactionId},transaction_id.eq.${transactionId}`
+      );
+    }
     // Case C: Email-only lookup
     else if (email && email !== "null" && email !== "") {
       query = query.eq("guest_email", email);
     }
+
 
     const { data, error } = await query
       .order("created_at", { ascending: false })

@@ -25,9 +25,7 @@ function SuccessContent() {
   const email = searchParams.get("email") || "guest@example.com"; // We can pass this in success_url
 
   useEffect(() => {
-    // -------------------------------------------------------------------------
-    // FRAME-BUSTER: If this page is stuck in an iframe, break out to top level!
-    // -------------------------------------------------------------------------
+    // Frame-buster: If this page is stuck in an iframe, break out to top level
     if (window.top !== window.self) {
       window.top!.location.href = window.location.href;
       return;
@@ -38,93 +36,47 @@ function SuccessContent() {
       return;
     }
 
+    const paymobTxId = searchParams.get("id");          // Paymob transaction id
+    const vistaId    = searchParams.get("vista_id");     // Our Supabase row ID (the Golden Thread)
+    const emailParam = searchParams.get("email") || "";
+
     const verifyBooking = async () => {
-      // -------------------------------------------------------------------------
-      // FULL-STACK DASHBOARD SYNC (Localhost / Demo Bridge)
-      // -------------------------------------------------------------------------
-      if (searchParams.get("success") === "true") {
-        const transactionId = searchParams.get("id");
-        const propertyId = searchParams.get("propertyId");
-        const checkIn = searchParams.get("checkIn");
-        const checkOut = searchParams.get("checkOut");
+      // Build the verify URL — vista_id is the primary key, tx id is the fallback
+      const fetchUrl = `/api/bookings/verify?vista_id=${vistaId || ""}&id=${paymobTxId || ""}&email=${encodeURIComponent(emailParam)}`;
 
-        // 1. Mark as SUCCESS immediately for UI
-        setStatus("success");
-
-        // 2. Persist to Local Storage for "My Trips" dashboard
-        if (propertyId) {
-          try {
-            const existingBookings = JSON.parse(localStorage.getItem("vista_bookings") || "[]");
-            const newBookingRecord = {
-              bookingId: transactionId || `VST-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-              propertyId: propertyId,
-              checkIn: checkIn,
-              checkOut: checkOut,
-              verifiedAt: new Date().toISOString()
-            };
-            
-            // Avoid duplicates
-            if (!existingBookings.find((b: any) => b.bookingId === newBookingRecord.bookingId)) {
-               localStorage.setItem("vista_bookings", JSON.stringify([newBookingRecord, ...existingBookings]));
-            }
-          } catch (e) {
-            console.error("LocalStorage Sync Failed:", e);
-          }
-        }
-
-        // 3. SECURE SYNC: Update Database via POST (Bypasses missing webhook on localhost)
+      const poll = async (): Promise<boolean> => {
         try {
-          await fetch("/api/bookings/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: email,
-              transactionId: transactionId,
-              status: "success"
-            })
-          });
-        } catch (e) {
-          console.error("Database Manual Sync Failed:", e);
-        }
-      }
+          const res  = await fetch(fetchUrl);
+          const data = await res.json();
+          if (data.status === "paid" || data.status === "confirmed") {
+            setBookingDetails(data);
+            setStatus("success");
+            return true;
+          }
+        } catch (_) { /* network hiccup — keep polling */ }
+        return false;
+      };
 
-      // 4. Standard verification check
-      try {
-        const vistaIdFromUrl = searchParams.get("vista_id") || searchParams.get("merchant_order_id");
-        const fetchUrl = `/api/bookings/verify?email=${encodeURIComponent(email)}&id=${transactionId || ""}&vista_id=${vistaIdFromUrl || ""}`;
-        
-        const response = await fetch(fetchUrl);
-        const data = await response.json();
+      // First immediate check (DB should already be updated by the callback handler)
+      const found = await poll();
+      if (found) return;
 
-        if (data.status === "paid" || data.status === "confirmed") {
-          setBookingDetails(data);
-          setStatus("success");
-        } else if ((status as string) !== "success") {
-          // Fallback polling for slow database updates
-          let attempts = 0;
-          const interval = setInterval(async () => {
-            attempts++;
-            const pollRes = await fetch(fetchUrl);
-            const pollData = await pollRes.json();
-            
-            if (pollData.status === "paid" || pollData.status === "confirmed") {
-              setBookingDetails(pollData);
-              setStatus("success");
-              clearInterval(interval);
-            } else if (attempts >= 5) {
-              if ((status as string) !== "success") setStatus("pending");
-              clearInterval(interval);
-            }
-          }, 3000);
+      // Poll up to 5 more times × 3 s = 15 s total window
+      let attempts = 0;
+      const interval = setInterval(async () => {
+        attempts++;
+        const confirmed = await poll();
+        if (confirmed || attempts >= 5) {
+          clearInterval(interval);
+          if (!confirmed) setStatus("pending"); // Show "still processing" UI gracefully
         }
-      } catch (err) {
-        console.error("Verification failed:", err);
-        if ((status as string) !== "success") setStatus("pending");
-      }
+      }, 3000);
     };
 
     verifyBooking();
-  }, [isCanceled, email]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   if (isCanceled) {
     return (

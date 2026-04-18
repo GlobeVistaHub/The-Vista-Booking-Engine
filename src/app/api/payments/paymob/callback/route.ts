@@ -48,37 +48,36 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const success = searchParams.get("success") === "true";
-  const vistaId = searchParams.get("vista_id") || searchParams.get("merchant_order_id");
-  const paymobId = searchParams.get("id");
+  const vistaId       = searchParams.get("vista_id");          // Our custom param (may be stripped)
+  const merchantId    = searchParams.get("merchant_order_id"); // Paymob always echoes this back
+  const paymobTxId    = searchParams.get("id");                // Paymob transaction ID
+
+  // Resolve the actual Supabase row ID — prefer our custom param, fall back to merchant_order_id
+  const resolvedId = vistaId || merchantId;
 
   if (success) {
-    // TITANIUM SYNC: We perform the update in the foreground so the Success Page 'sees' it instantly.
-    if (vistaId && !isNaN(Number(vistaId))) {
-      await supabaseAdmin
-        .from("bookings")
-        .update({
-          payment_status: "paid",
-          status: "confirmed",
-          paymob_transaction_id: String(paymobId),
-          transaction_id: String(paymobId)
-        })
-        .eq("id", Number(vistaId));
-    } else if (paymobId) {
-      // Fallback: If we don't have vistaId, try to find by Paymob Transaction ID
-      await supabaseAdmin
-        .from("bookings")
-        .update({
-          payment_status: "paid",
-          status: "confirmed",
-          paymob_transaction_id: String(paymobId),
-          transaction_id: String(paymobId)
-        })
-        .eq("paymob_transaction_id", String(paymobId));
+    if (resolvedId && resolvedId !== "null" && resolvedId !== "") {
+      const numericId = Number(resolvedId);
+      if (!isNaN(numericId)) {
+        const { error } = await supabaseAdmin
+          .from("bookings")
+          .update({
+            payment_status: "paid",
+            status: "confirmed",
+            paymob_transaction_id: paymobTxId ? String(paymobTxId) : null,
+            transaction_id: paymobTxId ? String(paymobTxId) : null,
+          })
+          .eq("id", numericId);
+
+        if (error) console.error("[CALLBACK GET] DB update error:", error.message);
+      }
     }
-    
-    return NextResponse.redirect(new URL(`/success?vista_id=${vistaId || ""}&id=${paymobId || ""}`, req.url));
+
+    return NextResponse.redirect(
+      new URL(`/success?vista_id=${resolvedId || ""}&id=${paymobTxId || ""}`, req.url)
+    );
   } else {
-    // Payment failure redirect
     return NextResponse.redirect(new URL(`/checkout?error=payment_failed`, req.url));
   }
 }
+

@@ -7,7 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useUser } from "@/context/UserContext";
 
 interface Property {
-  id: number;
+  id: string | number;
   title: string;
   title_ar: string;
   type: string;

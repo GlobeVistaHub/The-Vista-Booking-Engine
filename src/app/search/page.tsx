@@ -28,9 +28,9 @@ function SearchContent() {
 
   // ── Read URL params from the Search Widget ──────────────────────────────
   const urlLocation = searchParams.get("location") ?? "";
-  const urlFrom     = searchParams.get("from") ?? "";
-  const urlTo       = searchParams.get("to") ?? "";
-  const urlAdults   = Number(searchParams.get("adults") ?? 0);
+  const urlFrom = searchParams.get("from") ?? "";
+  const urlTo = searchParams.get("to") ?? "";
+  const urlAdults = Number(searchParams.get("adults") ?? 0);
   const urlChildren = Number(searchParams.get("children") ?? 0);
   const totalGuests = urlAdults + urlChildren;
 
@@ -71,7 +71,7 @@ function SearchContent() {
   // ── Dynamic header subtitle ──────────────────────────────────────────────
   const formatStays = (count: number, lang: string) => {
     if (lang !== 'ar') return `${count} ${count === 1 ? "stay" : "stays"}`;
-    
+
     // Arabic Pluralization Rules (simplified for UI)
     if (count === 1) return "إقامة واحدة";
     if (count === 2) return "إقامتان مختارتان";
@@ -141,11 +141,10 @@ function SearchContent() {
                 <button
                   id="type-filter-btn"
                   onClick={() => { setIsTypeOpen(!isTypeOpen); setIsPriceOpen(false); }}
-                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
-                    selectedTypes.length > 0
+                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${selectedTypes.length > 0
                       ? "bg-navy text-white border-navy shadow-lg shadow-navy/20"
                       : "bg-white text-navy border-navy/10 hover:border-navy hover:bg-navy/[0.02]"
-                  }`}
+                    }`}
                 >
                   {t("typeOfPlace")}
                 </button>
@@ -154,11 +153,10 @@ function SearchContent() {
                 <button
                   id="price-filter-btn"
                   onClick={() => { setIsPriceOpen(!isPriceOpen); setIsTypeOpen(false); }}
-                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
-                    priceRange.min > 0 || priceRange.max < 2000
+                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${priceRange.min > 0 || priceRange.max < 2000
                       ? "bg-navy text-white border-navy shadow-lg shadow-navy/20"
                       : "bg-white text-navy border-navy/10 hover:border-navy hover:bg-navy/[0.02]"
-                  }`}
+                    }`}
                 >
                   {t("price")}
                 </button>
@@ -166,11 +164,10 @@ function SearchContent() {
                 {/* INSTANT BOOK BUTTON */}
                 <button
                   onClick={() => setInstantBookOnly(!instantBookOnly)}
-                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 flex items-center gap-2 ${
-                    instantBookOnly
+                  className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 flex items-center gap-2 ${instantBookOnly
                       ? "bg-navy text-white border-navy shadow-lg shadow-navy/30"
                       : "bg-white text-navy/40 border-navy/10 hover:border-navy/30 hover:bg-navy/5"
-                  }`}
+                    }`}
                 >
                   <Zap className={`w-3.5 h-3.5 ${instantBookOnly ? "fill-current" : "text-primary"}`} />
                   {t("instantBook")}
@@ -245,11 +242,11 @@ function SearchContent() {
           {/* PROPERTY LIST */}
           <div className="px-4 sm:px-6 lg:px-12 py-8 flex-1">
             {isLoading ? (
-               <div className="w-full py-24 flex justify-center items-center gap-2">
-                 <div className="w-2.5 h-2.5 bg-primary/40 rounded-full animate-pulse"></div>
-                 <div className="w-2.5 h-2.5 bg-primary/70 rounded-full animate-pulse delay-75"></div>
-                 <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse delay-150"></div>
-               </div>
+              <div className="w-full py-24 flex justify-center items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-primary/40 rounded-full animate-pulse"></div>
+                <div className="w-2.5 h-2.5 bg-primary/70 rounded-full animate-pulse delay-75"></div>
+                <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse delay-150"></div>
+              </div>
             ) : filteredProperties.length > 0 ? (
               <div className="flex flex-col">
                 {filteredProperties.map((property, idx) => (
@@ -270,12 +267,7 @@ function SearchContent() {
                   <h3 className="text-xl font-bold text-navy tracking-tight">{t("noResultsFound")}</h3>
                   <p className="text-sm text-navy/40 max-w-xs mx-auto leading-relaxed">{t("noResultsDesc")}</p>
                 </div>
-                <button
-                  onClick={resetAll}
-                  className="px-8 py-3 bg-navy text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-navy/90 transition-all hover:scale-[1.05] active:scale-95 shadow-lg shadow-navy/10"
-                >
-                  {t("clearAllFilters")}
-                </button>
+
               </div>
             )}
           </div>

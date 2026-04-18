@@ -1,5 +1,5 @@
 export interface Property {
-  id: number;
+  id: string | number;
   title: string;
   title_ar: string;
   guests: string;      // max guests

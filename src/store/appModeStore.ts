@@ -9,7 +9,9 @@ export interface AppModeState {
   ownerName: string;
   exchangeRate: number;
   supportEmail: string;
+  isDemoMode: boolean;
   setWhiteLabel: (val: boolean) => void;
+  setDemoMode: (val: boolean) => void;
   setBrandName: (name: string) => void;
   setBrandLogo: (logo: string) => void;
   setBrandColor: (color: string) => void;
@@ -28,7 +30,9 @@ export const useAppModeStore = create<AppModeState>()(
       ownerName: 'Concierge',
       exchangeRate: 50.0,
       supportEmail: 'support@globevistahub.com',
+      isDemoMode: true,
       setWhiteLabel: (val) => set({ isWhiteLabel: val }),
+      setDemoMode: (val) => set({ isDemoMode: val }),
       setBrandName: (name) => set({ brandName: name }),
       setBrandLogo: (logo) => set({ brandLogo: logo }),
       setBrandColor: (color) => set({ brandColor: color }),

@@ -1,17 +1,27 @@
-"use client";
-
-import { useDemoStore } from "@/store/demoStore";
-import { Database, LayoutTemplate } from "lucide-react";
+import { useAppModeStore } from "@/store/appModeStore";
+import { useDataStore } from "@/store/dataStore";
+import { Database, LayoutTemplate, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function SystemControlToggle() {
-  const { isDemoMode, setDemoMode } = useDemoStore();
+  const { isDemoMode, setDemoMode } = useAppModeStore();
+  const { resetToPresentationState } = useDataStore();
   const [mounted, setMounted] = useState(false);
+  const [showSyncSuccess, setShowSyncSuccess] = useState(false);
 
   // Prevent hydration mismatch since it relies on localStorage under the hood
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handlePresentationReset = () => {
+    resetToPresentationState();
+    setShowSyncSuccess(true);
+    // Force a reload to ensure all components and local states re-sync with the restored data
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  };
 
   if (!mounted) return null;
 
@@ -33,6 +43,19 @@ export default function SystemControlToggle() {
               ? "Currently displaying high-end static mock data for luxury sales presentations. Database queries are paused." 
               : "Currently displaying live data directly from the Supabase PostgreSQL database. All bookings trigger live writes."}
           </p>
+          
+          {/* SALES DECK RESTORE ACTION (Visible only in demo mode) */}
+          {isDemoMode && (
+            <button 
+              onClick={handlePresentationReset}
+              className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:text-navy transition-all group"
+            >
+              <RotateCcw className={`w-3 h-3 group-hover:rotate-180 transition-transform duration-500 ${showSyncSuccess ? 'text-emerald-500' : ''}`} />
+              <span className={showSyncSuccess ? 'text-emerald-500' : ''}>
+                {showSyncSuccess ? 'Sales Deck Restored' : 'Restore Sales Presentation Deck'}
+              </span>
+            </button>
+          )}
         </div>
 
         {/* The beautiful glassmorphism toggle switch */}

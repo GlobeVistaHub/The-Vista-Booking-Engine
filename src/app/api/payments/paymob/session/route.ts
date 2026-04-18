@@ -28,7 +28,11 @@ export async function POST(req: Request) {
     const amountEGP = Math.round(amountUSD * rate);
     const amountCents = amountEGP * 100;
 
-    // 2. Create the "Pending" booking in Supabase first
+    // 2. Generate VST reference and create the "Pending" booking in Supabase
+    const currentYear = new Date().getFullYear();
+    const randomID = Math.floor(10000 + Math.random() * 90000);
+    const bookingReference = `VST-${currentYear}-${randomID}`;
+
     const { data: booking, error: dbError } = await supabaseAdmin
       .from("bookings")
       .insert([
@@ -44,7 +48,8 @@ export async function POST(req: Request) {
           status: "pending",
           payment_status: "pending",
           paid_amount_egp: amountEGP,
-          conversion_rate_used: rate
+          conversion_rate_used: rate,
+          booking_reference: bookingReference
         }
       ])
       .select()
@@ -55,15 +60,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to create pending booking" }, { status: 500 });
     }
 
-    // 3. Initiate Paymob handshake with dynamic Redirection URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    
-    // Safety check for production
-    if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_APP_URL) {
-      console.warn("⚠️ CRITICAL: NEXT_PUBLIC_APP_URL is missing in production. Paymob will likely fail to redirect.");
-    }
+    // 3. Initiate Paymob handshake — auto-detect base URL from request host
+    // This works on localhost, Vercel preview, and production with zero config
+    const requestUrl = new URL(req.url);
+    const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
 
-    const redirectionUrl = `${baseUrl}/api/payments/paymob/callback?vista_id=${booking.id}&propertyId=${propertyId}&from=${checkIn}&to=${checkOut}&adults=${adults}&children=${children}`;
+    // vista_id is the Supabase row ID — Paymob will echo this back in the GET callback
+    const redirectionUrl = `${baseUrl}/api/payments/paymob/callback?vista_id=${booking.id}`;
 
     const paymentToken = await PaymobService.createSession(
       amountCents, 

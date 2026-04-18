@@ -12,7 +12,7 @@ import { supabase } from "@/lib/supabase";
 
 export default function AdminPage() {
   const { lang } = useLanguage();
-  const { isWhiteLabel, ownerName } = useAppModeStore();
+  const { isWhiteLabel, ownerName, isDemoMode } = useAppModeStore();
   
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [totalProperties, setTotalProperties] = useState(0);
@@ -39,7 +39,7 @@ export default function AdminPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [isDemoMode]);
 
   const fetchDashboardData = async () => {
     setIsLoading(true);

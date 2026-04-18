@@ -4,31 +4,41 @@ import { Property } from "@/data/properties";
  * Professional CSV Parser for Vista Booking Engine
  * Handles quotes, commas, and multi-line descriptions.
  */
+/**
+ * Professional CSV Parser for Vista Booking Engine
+ * Handles quoted commas, escaped characters, and multi-line fields.
+ */
 export function parsePropertiesCSV(csvText: string): Partial<Property>[] {
   const lines = csvText.split(/\r?\n/);
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+  // Robust regex for splitting CSV lines while respecting quoted values
+  const splitLine = (text: string) => {
+    const regex = /(".*?"|[^",]+|(?<=,)(?=,)|(?<=^)(?=,)|(?<=,)(?=$))/g;
+    return (text.match(regex) || []).map(val => val.trim().replace(/^"|"$/g, "").replace(/""/g, '"'));
+  };
+
+  const headers = splitLine(lines[0]).map(h => h.trim().toLowerCase());
   const results: Partial<Property>[] = [];
 
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
 
-    // Basic CSV splitting (handling quotes would be better, but this is a start)
-    // For a production-ready system, we'd use a regex or library like PapaParse
-    const values = line.split(",").map(v => v.trim().replace(/^"|"$/g, ""));
+    const values = splitLine(line);
     const property: any = {};
 
     headers.forEach((header, index) => {
       const val = values[index];
-      if (val === undefined || val === "") return;
+      if (val === undefined) return;
 
-      // Map snake_case headers from CSV to camelCase Property keys
+      // Map headers correctly (handling snake_case to camelCase)
       let key = header;
       if (header === "base_guests") key = "baseGuests";
-      if (header === "owner_phone") key = "ownerPhone";
+      if (header === "owner_phone" || header === "ownerphone") key = "ownerPhone";
+      if (header === "owner_email" || header === "owneremail") key = "ownerEmail";
       if (header === "is_instant_bookable") key = "isInstantBookable";
+      if (header === "is_booked") key = "isBooked";
 
       if (header === "price" || header === "rating" || header === "reviews" || header === "base_guests") {
         const num = Number(val);
@@ -37,7 +47,8 @@ export function parsePropertiesCSV(csvText: string): Partial<Property>[] {
         const flt = parseFloat(val);
         property[key] = isNaN(flt) ? 0 : flt;
       } else if (header === "images" || header === "tags") {
-        property[key] = val.split(";").map(s => s.trim()).filter(Boolean);
+        // Support both semicolon and pipe separators
+        property[key] = val.split(/[;|]/).map(s => s.trim()).filter(Boolean);
       } else if (header === "is_instant_bookable" || header === "is_booked") {
         property[key] = val.toLowerCase() === "true";
       } else {
@@ -52,23 +63,26 @@ export function parsePropertiesCSV(csvText: string): Partial<Property>[] {
 }
 
 /**
- * Generates a template CSV string with all required headers.
+ * Generates a template CSV string with all 19 required headers.
  * Includes UTF-8 BOM for Excel compatibility with Arabic characters.
  */
 export function generateCSVTemplate(): string {
   const BOM = "\ufeff";
   const headers = [
-    "title", "title_ar", "type", "location", "location_ar", "price", 
-    "base_guests", "guests", "bedrooms", "images", "tags", 
-    "description_en", "description_ar", "lat", "lng", 
-    "owner_phone", "is_instant_bookable"
+    "id", "title", "title_ar", "type", "price", "location", "location_ar", 
+    "guests", "bedrooms", "description_en", "description_ar", "is_booked", 
+    "is_instant_bookable", "images", "tags", "lat", "lng", 
+    "ownerPhone", "ownerEmail"
   ];
   const example = [
-    "Villa Serenity", "فيلا سيرينيتي", "Villa", "El Gouna", "الجونة", "450",
-    "4", "8", "4", "https://image1.jpg;https://image2.jpg", "tagPool;tagSeaView",
-    "English description here", "وصف باللغة العربية هنا", "27.39", "33.68",
-    "+201145551163", "true"
+    "V-101", "Sea Breeze Sanctuary", "ملاذ نسيم البحر", "Villa", "450", "El Gouna", "الجونة", 
+    "8", "4", "A stunning villa with private pool.", "فيلا رائعة مع مسبح خاص.", "false", 
+    "true", "https://image1.jpg|https://image2.jpg", "tagPool|tagSeaView", "27.39", "33.68", 
+    "+201145551163", "support@globevistahub.com"
   ];
-  
-  return BOM + [headers.join(","), example.join(",")].join("\n");
+
+  // Properly quote the example values
+  const quotedExample = example.map(val => `"${val.replace(/"/g, '""')}"`);
+
+  return BOM + [headers.join(","), quotedExample.join(",")].join("\n");
 }
