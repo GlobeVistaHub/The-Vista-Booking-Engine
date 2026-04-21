@@ -11,7 +11,7 @@ import { useAppStore } from "@/hooks/useAppStore";
 
 export default function Header() {
   const pathname = usePathname();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
   const isHome = pathname === "/";
   const isProperty = pathname.startsWith("/property/");
   const isTransparentBase = isHome || isProperty;
@@ -76,7 +76,9 @@ export default function Header() {
             <span>{lang === "en" ? "العربية" : "English"}</span>
           </button>
 
-          {!isSignedIn ? (
+          {!isLoaded ? (
+            <div className="w-24 h-9 bg-navy/5 rounded-full animate-pulse" />
+          ) : !isSignedIn ? (
             <SignInButton mode="modal">
               <button className="px-6 py-2.5 bg-primary text-white rounded-full text-sm font-bold shadow-soft hover:shadow-hover hover:-translate-y-0.5 transition-all outline-none">
                 {t('signIn')}

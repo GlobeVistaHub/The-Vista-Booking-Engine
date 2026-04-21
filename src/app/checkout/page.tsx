@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { getPropertyById } from "@/data/api";
 import { Property } from "@/data/properties";
+import { getPricingSettings } from "@/data/pricing_overrides";
 import { format, differenceInDays } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
@@ -75,9 +76,13 @@ function CheckoutContent() {
   const urlFrom = searchParams.get("from");
   const urlTo = searchParams.get("to");
   
+  const today = new Date();
+  const defaultCheckOut = new Date();
+  defaultCheckOut.setDate(today.getDate() + 5);
+
   const [dateRange, setDateRange] = useState<{ from: Date, to: Date }>({
-    from: urlFrom ? new Date(urlFrom) : new Date(2026, 9, 12),
-    to: urlTo ? new Date(urlTo) : new Date(2026, 9, 17)
+    from: urlFrom ? new Date(urlFrom) : today,
+    to: urlTo ? new Date(urlTo) : defaultCheckOut
   });
   const [adults, setAdults] = useState(Number(searchParams.get("adults")) || 2);
   const [children, setChildren] = useState(Number(searchParams.get("children")) || 0);
@@ -130,13 +135,22 @@ function CheckoutContent() {
 
   const stayNights = differenceInDays(dateRange.to, dateRange.from) || 1;
   const totalGuests = adults + children;
-  const maxGuests = Number(property.guests) || 8;
-  const extraGuestFee = 75;
-  const extraGuests = Math.max(0, totalGuests - property.baseGuests);
+  
+  // CLEAN GUEST LIMITS (Regex extracts first number found in string)
+  const guestsMatch = String(property.guests).match(/\d+/);
+  const dataMaxGuests = guestsMatch ? parseInt(guestsMatch[0]) : 8;
+  
+  // LOGIC FIX: baseGuests is the threshold for charges, maxGuests is the counter limit.
+  const pricing = getPricingSettings(property);
+  const baseGuests = pricing.baseGuests;
+  const maxGuests = pricing.maxGuests;
+
+  const extraGuestFee = pricing.extraGuestFee;
+  const extraGuests = Math.max(0, totalGuests - baseGuests);
   const extraGuestTotal = extraGuests * extraGuestFee * stayNights;
   const pricePerNight = property.price;
-  const cleaningFee = 150;
-  const serviceFee = Math.round((pricePerNight * stayNights + extraGuestTotal) * 0.1);
+  const cleaningFee = pricing.cleaningFee;
+  const serviceFee = Math.round((pricePerNight * stayNights + extraGuestTotal) * pricing.serviceFeeRate);
   const total = pricePerNight * stayNights + extraGuestTotal + cleaningFee + serviceFee;
   const amountEGP = Math.round(total * exchangeRate);
 
@@ -168,7 +182,16 @@ function CheckoutContent() {
         }),
       });
 
-      const data = await response.json();
+      // Safe JSON parse: If API returns HTML error page instead of JSON, show friendly message
+      const responseText = await response.text();
+      let data: any;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        console.error("Payment API returned non-JSON:", responseText.slice(0, 200));
+        throw new Error("Payment service is temporarily unavailable. Please try again.");
+      }
+
       if (!response.ok) throw new Error(data.error || "Failed to initiate payment");
 
       if (data.paymentToken) {
@@ -452,7 +475,7 @@ function CheckoutContent() {
                 <div className="flex items-center gap-4">
                   <button onClick={() => setAdults(Math.max(1, adults - 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Minus className="w-3 h-3" /></button>
                   <span className="font-bold text-navy w-4 text-center">{adults}</span>
-                  <button onClick={() => setAdults(Math.min(maxGuests - children, adults + 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Plus className="w-3 h-3" /></button>
+                  <button onClick={() => setAdults(Math.min(pricing.maxGuests - children, adults + 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Plus className="w-3 h-3" /></button>
                 </div>
               </div>
               <div className="flex items-center justify-between">
@@ -463,7 +486,7 @@ function CheckoutContent() {
                 <div className="flex items-center gap-4">
                   <button onClick={() => setChildren(Math.max(0, children - 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Minus className="w-3 h-3" /></button>
                   <span className="font-bold text-navy w-4 text-center">{children}</span>
-                  <button onClick={() => setChildren(Math.min(maxGuests - adults, children + 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Plus className="w-3 h-3" /></button>
+                  <button onClick={() => setChildren(Math.min(pricing.maxGuests - adults, children + 1))} className="w-8 h-8 rounded-full border border-navy/20 flex items-center justify-center"><Plus className="w-3 h-3" /></button>
                 </div>
               </div>
             </div>

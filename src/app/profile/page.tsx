@@ -6,7 +6,7 @@ import { useUser } from "@/context/UserContext";
 import { VISTA_CONFIG } from "@/config/constants";
 import { getBookings, getProperties, Booking } from "@/data/api";
 import type { Property } from "@/data/properties";
-import { User, Settings, LogOut, ChevronRight, Calendar, MapPin, Star, MessageSquare, ShieldCheck, Check, CreditCard, Trash2, Heart, Loader2 } from "lucide-react";
+import { User, Settings, LogOut, ChevronRight, Calendar, MapPin, Star, MessageSquare, ShieldCheck, Check, CreditCard, Trash2, Heart, Loader2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useUser as useClerkUser, SignOutButton } from "@clerk/nextjs";
 
@@ -14,24 +14,31 @@ export default function ProfilePage() {
   const { t, lang } = useLanguage();
   const { wishlist, toggleWishlist, preferences, togglePreference, guestName } = useUser();
   const { user: clerkUser, isLoaded } = useClerkUser();
-  
-  const clerkName = clerkUser?.fullName 
-    || (clerkUser?.firstName && clerkUser?.lastName ? `${clerkUser.firstName} ${clerkUser.lastName}` : null)
-    || clerkUser?.firstName
-    || clerkUser?.username
-    || guestName;
-  const authName = isLoaded ? clerkName : guestName;
-  const authEmail = isLoaded 
-    ? (clerkUser?.primaryEmailAddress?.emailAddress || "—")
-    : "—";
-  
+
+  // ALL useState hooks must be declared before any conditional return
   const [activeTab, setActiveTab] = useState<"trips" | "wishlist" | "settings">("trips");
   const [bookingFilter, setBookingFilter] = useState<"upcoming" | "past">("upcoming");
-  
   const [allProperties, setAllProperties] = useState<Property[]>([]);
-  const [allBookings, setAllBookings] = useState<Array<{ bookingId: string, property: Property, checkIn: string | null, checkOut: string | null, rawId: string | number }>>([]);
+  const [allBookings, setAllBookings] = useState<Array<{ 
+    bookingId: string, 
+    property: Property, 
+    checkIn: string | null, 
+    checkOut: string | null, 
+    paymentStatus: string,
+    rawId: string | number,
+    adults: number,
+    children: number
+  }>>([]);
+  const [profileData, setProfileData] = useState({
+    name: "",
+    email: "",
+    phone: "+44 7700 900077",
+    travelParty: lang === 'ar' ? "2 بالغين، 0 أطفال" : "2 Adults, 0 Children"
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
-  // Fetch true live data from Supabase/Store
+  // Fetch live data — only runs once Clerk has confirmed identity
   useEffect(() => {
     const fetchLiveData = async () => {
       const hidden = JSON.parse(localStorage.getItem('vista_hidden_bookings') || '[]');
@@ -40,21 +47,68 @@ export default function ProfilePage() {
       const enrichedBookings = bData.map(b => {
         const prop = b.property || pData.find(p => String(p.id) === String(b.property_id));
         if (!prop) return null;
-        
         return {
           bookingId: b.booking_reference || String(b.id),
           property: prop,
           checkIn: b.check_in || null,
           checkOut: b.check_out || null,
-          rawId: b.id
+          paymentStatus: b.payment_status || 'pending',
+          rawId: b.id,
+          adults: b.adults,
+          children: b.children
         };
       }).filter(b => b && !hidden.includes(b.bookingId)) as any[];
 
-      setAllBookings(enrichedBookings);
+      // SMART FILTER: Hide 'failed' bookings if a 'paid' booking covers the same property/date
+      const filteredBookings = enrichedBookings.filter(current => {
+        if (current.paymentStatus !== 'failed') return true;
+        return !enrichedBookings.some(other => 
+          other.paymentStatus === 'paid' && 
+          String(other.property.id) === String(current.property.id) &&
+          other.checkIn === current.checkIn
+        );
+      });
+
+      setAllBookings(filteredBookings);
       setAllProperties(pData);
     };
-    fetchLiveData();
-  }, []);
+    
+    if (isLoaded && clerkUser) {
+      fetchLiveData();
+    }
+  }, [isLoaded, clerkUser?.id]);
+
+  const clerkName = clerkUser?.fullName 
+    || (clerkUser?.firstName && clerkUser?.lastName ? `${clerkUser.firstName} ${clerkUser.lastName}` : null)
+    || clerkUser?.firstName
+    || clerkUser?.username
+    || guestName;
+
+  const authName = clerkName || guestName;
+  const authEmail = clerkUser?.primaryEmailAddress?.emailAddress || "—";
+
+  useEffect(() => {
+    const saved = localStorage.getItem('vista_profile_data');
+    if (saved) {
+      setProfileData(JSON.parse(saved));
+    } else if (isLoaded && clerkUser) {
+      setProfileData(prev => ({ ...prev, name: authName || "", email: authEmail !== "—" ? authEmail : "" }));
+    }
+  }, [isLoaded, clerkUser?.id, authName, authEmail]);
+
+  // LOADING GUARD: Must come AFTER all hooks
+  if (!isLoaded || !clerkUser) {
+    return (
+      <div className="w-full min-h-screen bg-v-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <p className="text-navy/40 text-xs font-bold uppercase tracking-widest animate-pulse">
+            Securely Verifying Session...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleDeleteBooking = (id: string) => {
     const hidden = JSON.parse(localStorage.getItem('vista_hidden_bookings') || '[]');
@@ -62,25 +116,6 @@ export default function ProfilePage() {
     localStorage.setItem('vista_hidden_bookings', JSON.stringify(newHidden));
     setAllBookings(prev => prev.filter(b => b.bookingId !== id));
   };
-
-  const [profileData, setProfileData] = useState({
-    name: "",
-    email: "",
-    phone: "+44 7700 900077",
-    travelParty: lang === 'ar' ? "2 بالغين، 0 أطفال" : "2 Adults, 0 Children"
-  });
-
-  const [isSaving, setIsSaving] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('vista_profile_data');
-    if (saved) {
-      setProfileData(JSON.parse(saved));
-    } else if (isLoaded) {
-      setProfileData(prev => ({ ...prev, name: authName || "", email: authEmail !== "—" ? authEmail : "" }));
-    }
-  }, [isLoaded, authName, authEmail]);
 
   const handleProfileChange = (field: string, value: string) => {
     const newData = { ...profileData, [field]: value };
@@ -90,7 +125,6 @@ export default function ProfilePage() {
 
   const handleSavePreferences = () => {
     setIsSaving(true);
-    // Visual satisfaction dummy save (data is already synced to localStorage locally on change)
     setTimeout(() => {
       setIsSaving(false);
       setIsSaved(true);
@@ -228,7 +262,41 @@ export default function ProfilePage() {
 
           {/* TAB CONTENT: TRIPS */}
           {activeTab === "trips" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-8">
+              {/* RETENTION: ROSE FAILURE BANNER */}
+              {upcomingBookings.some(b => b.paymentStatus === 'failed') && (
+                <div className="bg-rose-50 border border-rose-100 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 animate-shake shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-rose-500" />
+                  <div className="flex items-start gap-5 text-start">
+                    <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                      <AlertTriangle className="w-6 h-6 text-rose-500" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-bold text-navy">Action Required: Booking Interrupted</h3>
+                      <p className="text-navy/60 text-sm max-w-xl leading-relaxed">
+                        Your booking for **{upcomingBookings.find(b => b.paymentStatus === 'failed')?.property.title}** was not completed. We have held your dates, but action is needed to secure them.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                    <button
+                      onClick={() => window.open(VISTA_CONFIG.concierge.whatsappLink("Hi Concierge, my booking was interrupted. Can you help me secure my dates?"), '_blank')}
+                      className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-rose-200 text-rose-600 rounded-2xl text-sm font-bold hover:bg-rose-100 transition-all w-full sm:w-auto"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Speak to Concierge
+                    </button>
+                    <Link
+                      href={`/checkout?id=${upcomingBookings.find(b => b.paymentStatus === 'failed')?.property.id}&adults=${upcomingBookings.find(b => b.paymentStatus === 'failed')?.adults || 2}&children=${upcomingBookings.find(b => b.paymentStatus === 'failed')?.children || 0}&from=${upcomingBookings.find(b => b.paymentStatus === 'failed')?.checkIn}&to=${upcomingBookings.find(b => b.paymentStatus === 'failed')?.checkOut}`}
+                      className="px-8 py-3 bg-rose-500 text-white rounded-2xl text-sm font-bold hover:bg-rose-600 transition-all w-full sm:w-auto shadow-sm text-center"
+                    >
+                      Complete Payment
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                {(bookingFilter === "upcoming" ? upcomingBookings : pastBookings).length > 0 ? (
                 (bookingFilter === "upcoming" ? upcomingBookings : pastBookings).map((booking) => {
                   const property = booking.property;
@@ -300,6 +368,7 @@ export default function ProfilePage() {
                       <p className="text-muted font-medium">{t('noBookings')}</p>
                   </div>
               )}
+              </div>
             </div>
           )}
 

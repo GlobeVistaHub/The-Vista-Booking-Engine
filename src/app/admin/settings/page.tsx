@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSiteContent, updateSiteLabel, SiteLabel, getBookings } from "@/data/api";
+import { getSiteContent, updateSiteLabel, SiteLabel, getBookings, getProperties } from "@/data/api";
 import { supabase } from "@/lib/supabase";
+import { triggerN8NFailRecovery } from "@/lib/n8n";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAppModeStore, AppModeState } from "@/store/appModeStore";
 import { useAppStore } from "@/hooks/useAppStore";
@@ -84,12 +85,14 @@ export default function SettingsPage() {
     setIsSimulating(true);
     try {
       // 1. Fetch the most recent booking
-      const bookings = await getBookings();
+      const [bookings, properties] = await Promise.all([getBookings(), getProperties()]);
+      
       if (bookings.length === 0) {
         alert("No bookings found to simulate failure on. Please create a booking first.");
         return;
       }
       const target = bookings[0]; // Most recent
+      const property = properties.find(p => String(p.id) === String(target.property_id));
 
       // 2. Inject 'failed' status into the db using the existing supabase client
       const { error } = await supabase
@@ -98,6 +101,9 @@ export default function SettingsPage() {
         .eq('id', target.id);
 
       if (error) throw error;
+
+      // 3. Trigger the Retention Automation (Step 4 Handshake)
+      await triggerN8NFailRecovery(target, property);
       
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);

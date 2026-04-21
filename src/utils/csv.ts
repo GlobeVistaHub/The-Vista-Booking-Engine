@@ -70,13 +70,13 @@ export function generateCSVTemplate(): string {
   const BOM = "\ufeff";
   const headers = [
     "id", "title", "title_ar", "type", "price", "location", "location_ar", 
-    "guests", "bedrooms", "description_en", "description_ar", "is_booked", 
+    "guests", "base_guests", "bedrooms", "description_en", "description_ar", "is_booked", 
     "is_instant_bookable", "images", "tags", "lat", "lng", 
     "ownerPhone", "ownerEmail"
   ];
   const example = [
     "V-101", "Sea Breeze Sanctuary", "ملاذ نسيم البحر", "Villa", "450", "El Gouna", "الجونة", 
-    "8", "4", "A stunning villa with private pool.", "فيلا رائعة مع مسبح خاص.", "false", 
+    "8", "4", "4", "A stunning villa with private pool.", "فيلا رائعة مع مسبح خاص.", "false", 
     "true", "https://image1.jpg|https://image2.jpg", "tagPool|tagSeaView", "27.39", "33.68", 
     "+201145551163", "support@globevistahub.com"
   ];

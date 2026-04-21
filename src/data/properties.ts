@@ -110,7 +110,7 @@ export const PROPERTIES: Property[] = [
     title_ar: "شقة ملكية بإطلالة بحرية",
     type: "Apartment",
     guests: "4",
-    baseGuests: 2,
+    baseGuests: 4,
     bedrooms: "2",
     location: "Alexandria",
     location_ar: "الإسكندرية",

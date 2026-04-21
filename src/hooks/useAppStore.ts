@@ -10,7 +10,9 @@ export function useAppStore<T, F>(
   callback: (state: T) => F
 ) {
   const result = store(callback);
-  const [data, setData] = useState<F>();
+  // No more useState lag — return result directly if we are on the client
+  // or use a very simple state for hydration safety.
+  const [data, setData] = useState<F>(result);
 
   useEffect(() => {
     setData(result);

@@ -14,7 +14,15 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Language>("en");
+  // Synchronous initialization to prevent navigation flickering
+  const [lang, setLang] = useState<Language>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("vista_lang") as Language;
+      return (saved === "ar" || saved === "en") ? saved : "en";
+    }
+    return "en";
+  });
+  
   const [dbLabels, setDbLabels] = useState<Record<string, SiteLabel>>({});
 
   const refreshLabels = useCallback(async () => {
@@ -31,17 +39,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // 1. Load saved language preference
-    const savedLang = localStorage.getItem("vista_lang") as Language;
-    if (savedLang === "ar" || savedLang === "en") {
-      setLang(savedLang);
-      document.documentElement.lang = savedLang;
-      document.documentElement.dir = savedLang === "ar" ? "rtl" : "ltr";
-    }
-
-    // 2. Fetch remote labels
+    // Sync document attributes
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    
+    // Fetch remote labels
     refreshLabels();
-  }, [refreshLabels]);
+  }, [lang, refreshLabels]);
 
   const toggleLanguage = () => {
     const newLang = lang === "en" ? "ar" : "en";

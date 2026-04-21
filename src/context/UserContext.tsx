@@ -16,20 +16,48 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [wishlist, setWishlist] = useState<(string | number)[]>([]);
-  const [preferences, setPreferences] = useState<string[]>(["Ocean Views", "High Security"]);
+  // Synchronous lazy initialization to eliminate navigation-induced data loss
+  const [wishlist, setWishlist] = useState<(string | number)[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("vista_wishlist");
+      try {
+        const parsed = JSON.parse(saved || "[]");
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) { return []; }
+    }
+    return [];
+  });
+
+  const [preferences, setPreferences] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("vista_prefs");
+      try {
+        const parsed = JSON.parse(saved || '["Ocean Views", "High Security"]');
+        return Array.isArray(parsed) ? parsed : ["Ocean Views", "High Security"];
+      } catch (e) { return ["Ocean Views", "High Security"]; }
+    }
+    return ["Ocean Views", "High Security"];
+  });
+
   const [guestName] = useState("Vista Guest");
-  // Guard: only save AFTER we've loaded from localStorage (prevents overwriting on mount)
   const [hydrated, setHydrated] = useState(false);
 
-  // LOAD from localStorage on mount
+  // Synchronous initial load to prevent navigation flicker
   useEffect(() => {
     try {
       const savedWishlist = localStorage.getItem("vista_wishlist");
       const savedPrefs = localStorage.getItem("vista_prefs");
-      if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
-      if (savedPrefs) setPreferences(JSON.parse(savedPrefs));
-    } catch (e) {}
+      if (savedWishlist) {
+        const parsed = JSON.parse(savedWishlist);
+        if (Array.isArray(parsed)) setWishlist(parsed);
+      }
+      if (savedPrefs) {
+        const parsed = JSON.parse(savedPrefs);
+        if (Array.isArray(parsed)) setPreferences(parsed);
+      }
+    } catch (e) {
+      console.error("UserContext: Load failed", e);
+    }
     setHydrated(true);
   }, []);
 

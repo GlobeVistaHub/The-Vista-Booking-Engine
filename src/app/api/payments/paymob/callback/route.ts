@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { triggerN8NDossier } from "@/lib/n8n-server";
 
 // Initialize Supabase Admin for system-level overrides
 const supabaseAdmin = createClient(
@@ -35,6 +36,34 @@ export async function POST(req: Request) {
 
     if (updateError) console.error("[PAYMOB CALLBACK POST ERROR]", updateError);
 
+    // [INTEGRATION] Trigger N8N Automations on Successful Database Sync
+    if (isSuccess && !updateError) {
+      const { data: bookingRecord } = await supabaseAdmin
+        .from("bookings")
+        .select(`*, properties(*)`)
+        .or(`id.eq.${merchantOrderId},paymob_order_id.eq.${paymobOrderId}`)
+        .limit(1)
+        .single();
+
+      if (bookingRecord) {
+        // Fire & Forget: We do not await this to guarantee microsecond callback resolution
+        triggerN8NDossier(bookingRecord, bookingRecord.properties).catch(e => console.error("[N8N Hook Error]:", e));
+      }
+    }
+
+    // Update: Handle Recovery Outreach on Failure
+    if (!isSuccess && !updateError) {
+      const { data: bookingRecord } = await supabaseAdmin
+        .from("bookings")
+        .select(`*, properties(*)`)
+        .or(`id.eq.${merchantOrderId},paymob_order_id.eq.${paymobOrderId}`)
+        .limit(1)
+        .single();
+      if (bookingRecord) {
+        triggerN8NRecovery(bookingRecord, bookingRecord.properties).catch(e => console.error("[N8N Recovery Error]:", e));
+      }
+    }
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -69,7 +98,20 @@ export async function GET(req: Request) {
           })
           .eq("id", numericId);
 
-        if (error) console.error("[CALLBACK GET] DB update error:", error.message);
+        if (error) {
+          console.error("[CALLBACK GET] DB update error:", error.message);
+        } else {
+          // [HANDS-FREE AUTOMATION] Trigger N8N on Redirect Callback
+          const { data: bookingRecord } = await supabaseAdmin
+            .from("bookings")
+            .select(`*, properties(*)`)
+            .eq("id", numericId)
+            .single();
+
+          if (bookingRecord) {
+            triggerN8NDossier(bookingRecord, bookingRecord.properties).catch(e => console.error("[N8N GET Hook Error]:", e));
+          }
+        }
       }
     }
 
@@ -77,6 +119,20 @@ export async function GET(req: Request) {
       new URL(`/success?vista_id=${resolvedId || ""}&id=${paymobTxId || ""}`, req.url)
     );
   } else {
+    // [HANDS-FREE RECOVERY] Trigger N8N on Failure Redirect
+    if (resolvedId && resolvedId !== "null" && resolvedId !== "") {
+      const numericId = Number(resolvedId);
+      if (!isNaN(numericId)) {
+        const { data: bookingRecord } = await supabaseAdmin
+          .from("bookings")
+          .select(`*, properties(*)`)
+          .eq("id", numericId)
+          .single();
+        if (bookingRecord) {
+          triggerN8NRecovery(bookingRecord, bookingRecord.properties).catch(e => console.error("[N8N GET Recovery Error]:", e));
+        }
+      }
+    }
     return NextResponse.redirect(new URL(`/checkout?error=payment_failed`, req.url));
   }
 }

@@ -18,11 +18,17 @@ import {
   Download,
   AlertCircle,
   Trash2,
+  DollarSign,
+  Coins,
+  Settings2,
+  X as CloseIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { motion, AnimatePresence } from "framer-motion";
 import AddPropertyModal from "@/components/admin/AddPropertyModal";
 import { parsePropertiesCSV, generateCSVTemplate } from "@/utils/csv";
+import { getPricingSettings, VISTA_DEFAULTS } from "@/data/pricing_overrides";
 
 export default function PropertiesDashboard() {
   const { isDemoMode } = useAppModeStore();
@@ -35,7 +41,11 @@ export default function PropertiesDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
-  const { lang } = useLanguage();
+  const [pricingProperty, setPricingProperty] = useState<Property | null>(null);
+  const [customCleaning, setCustomCleaning] = useState<string>("");
+  const [customService, setCustomService] = useState<string>("");
+  const [customExtra, setCustomExtra] = useState<string>("");
+  const { lang, t } = useLanguage();
 
   const fetchProperties = useCallback(async () => {
     setIsLoading(true);
@@ -88,6 +98,27 @@ export default function PropertiesDashboard() {
       setImportError(`Failed to delete "${title}".`);
     }
     setDeletingId(null);
+  };
+
+  const handleClearPricing = () => {
+    if (!pricingProperty) return;
+    localStorage.removeItem(`pricing_override_${pricingProperty.id}`);
+    setPricingProperty(null);
+    fetchProperties(); // Refresh local list
+  };
+
+  const handleSavePricing = () => {
+    if (!pricingProperty) return;
+    
+    const overrides = {
+      cleaningFee: Number(customCleaning),
+      serviceFeeRate: Number(customService) / 100,
+      extraGuestFee: Number(customExtra)
+    };
+    
+    localStorage.setItem(`pricing_override_${pricingProperty.id}`, JSON.stringify(overrides));
+    setPricingProperty(null);
+    fetchProperties(); // Refresh local list
   };
 
   const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -358,6 +389,20 @@ export default function PropertiesDashboard() {
 
                       <div className="flex items-center gap-4">
                         <button
+                          onClick={() => {
+                            const settings = getPricingSettings(property);
+                            setPricingProperty(property);
+                            setCustomCleaning(String(settings.cleaningFee));
+                            setCustomService(String(settings.serviceFeeRate * 100)); // Show as 10 instead of 0.1
+                            setCustomExtra(String(settings.extraGuestFee));
+                          }}
+                          className="p-1 px-2 text-primary hover:bg-gold/10 rounded-lg transition-all"
+                          title="Advanced Pricing"
+                        >
+                          <DollarSign className="w-4 h-4" />
+                        </button>
+
+                        <button
                           onClick={() => handleDeleteProperty(property.id, title)}
                           disabled={deletingId === property.id}
                           className="p-1 px-2 text-red-500/40 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
@@ -421,6 +466,20 @@ export default function PropertiesDashboard() {
 
                       <div className="flex items-center gap-3">
                         <button
+                          onClick={() => {
+                            const settings = getPricingSettings(property);
+                            setPricingProperty(property);
+                            setCustomCleaning(String(settings.cleaningFee));
+                            setCustomService(String(settings.serviceFeeRate * 100)); // Show as 10 instead of 0.1
+                            setCustomExtra(String(settings.extraGuestFee));
+                          }}
+                          className="p-1 text-primary hover:bg-gold/10 rounded-lg transition-all"
+                          title="Advanced Pricing"
+                        >
+                          <DollarSign className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
                           onClick={() => handleDeleteProperty(property.id, title)}
                           disabled={deletingId === property.id}
                           className="text-red-400 p-1"
@@ -454,6 +513,116 @@ export default function PropertiesDashboard() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={() => fetchProperties()}
       />
+
+      {/* Advanced Pricing Modal */}
+      <AnimatePresence>
+        {pricingProperty && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setPricingProperty(null)}
+              className="absolute inset-0 bg-navy/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-navy/10"
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-navy/5 flex justify-between items-center bg-navy/[0.02]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-navy">Advanced Pricing</h3>
+                    <p className="text-[10px] text-muted tracking-wide uppercase font-bold">{pricingProperty.title}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setPricingProperty(null)}
+                  className="p-2 hover:bg-navy/5 rounded-full text-muted transition-colors"
+                >
+                  <CloseIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-8 space-y-6">
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-bold text-navy">Cleaning Fee</label>
+                    <span className="text-[10px] font-bold text-muted uppercase tracking-tight">Default: ${VISTA_DEFAULTS.cleaningFee}</span>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-bold text-sm">$</div>
+                    <input 
+                      type="number"
+                      value={customCleaning}
+                      onChange={(e) => setCustomCleaning(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-navy/10 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-navy"
+                      placeholder={String(VISTA_DEFAULTS.cleaningFee)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-bold text-navy">Service Fee %</label>
+                    <span className="text-[10px] font-bold text-muted uppercase tracking-tight">Default: {VISTA_DEFAULTS.serviceFeeRate * 100}%</span>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted font-bold text-sm">%</div>
+                    <input 
+                      type="number"
+                      value={customService}
+                      onChange={(e) => setCustomService(e.target.value)}
+                      className="w-full pl-4 pr-10 py-3 bg-slate-50 border border-navy/10 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-navy"
+                      placeholder={String(VISTA_DEFAULTS.serviceFeeRate * 100)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-bold text-navy">Extra Guest Fee</label>
+                    <span className="text-[10px] font-bold text-muted uppercase tracking-tight">Default: ${VISTA_DEFAULTS.extraGuestFee}</span>
+                  </div>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-bold text-sm">$</div>
+                    <input 
+                      type="number"
+                      value={customExtra}
+                      onChange={(e) => setCustomExtra(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-navy/10 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-navy"
+                      placeholder={String(VISTA_DEFAULTS.extraGuestFee)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 bg-slate-50 border-t border-navy/5 flex gap-3">
+                <button
+                  onClick={handleClearPricing}
+                  className="flex-1 py-3 px-4 rounded-2xl border border-navy/10 text-navy font-bold text-sm hover:bg-white transition-all"
+                >
+                  Reset Overrides
+                </button>
+                <button
+                  onClick={handleSavePricing}
+                  className="flex-1 py-3 px-4 bg-primary text-white rounded-2xl font-bold text-sm hover:brightness-110 shadow-lg shadow-primary/20 transition-all font-bold"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
