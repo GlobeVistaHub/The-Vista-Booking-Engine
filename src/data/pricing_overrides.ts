@@ -9,6 +9,7 @@ export interface PricingOverride {
   cleaningFee?: number;
   serviceFeeRate?: number;
   extraGuestFee?: number;
+  baseGuests?: number;
 }
 
 // THE GHOST MAP: Property ID -> Overrides
