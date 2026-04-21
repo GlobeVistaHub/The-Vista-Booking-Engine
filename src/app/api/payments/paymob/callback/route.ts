@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { triggerN8NDossier } from "@/lib/n8n-server";
+import { triggerN8NDossier, triggerN8NRecovery } from "@/lib/n8n-server";
 
 // Initialize Supabase Admin for system-level overrides
 const supabaseAdmin = createClient(
