@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { getProperties, togglePropertyStatus, batchCreateProperties, deleteAllProperties, deleteProperty } from "@/data/api";
+import { getProperties, togglePropertyStatus, batchCreateProperties, deleteAllProperties, deleteProperty, updatePropertyOverrides } from "@/data/api";
 import type { Property } from "@/data/properties";
-import { useSession } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { useAppModeStore } from "@/store/appModeStore";
 import SystemControlToggle from "@/components/SystemControlToggle";
 import {
@@ -32,7 +32,7 @@ import { parsePropertiesCSV, generateCSVTemplate } from "@/utils/csv";
 import { getPricingSettings, VISTA_DEFAULTS } from "@/data/pricing_overrides";
 
 export default function PropertiesDashboard() {
-  const { session } = useSession();
+  const { getToken } = useAuth();
   const { isDemoMode } = useAppModeStore();
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,11 +52,11 @@ export default function PropertiesDashboard() {
   const fetchProperties = useCallback(async () => {
     setIsLoading(true);
     // Admin sees ALL properties including hidden ones
-    const token = await session?.getToken({ template: 'supabase' }) || undefined;
+    const token = await getToken({ template: 'supabase' }) || undefined;
     const data = await getProperties({ includeHidden: true }, token);
     setProperties(data);
     setIsLoading(false);
-  }, [session]);
+  }, [getToken]);
 
   useEffect(() => {
     fetchProperties();
@@ -64,7 +64,7 @@ export default function PropertiesDashboard() {
 
   const handleToggleStatus = async (id: string | number, currentStatus: boolean) => {
     setTogglingId(id);
-    const token = await session?.getToken({ template: 'supabase' }) || undefined;
+    const token = await getToken({ template: 'supabase' }) || undefined;
     const success = await togglePropertyStatus(id, currentStatus, token);
     if (success) {
       setProperties((prev) =>
@@ -80,7 +80,7 @@ export default function PropertiesDashboard() {
     }
 
     setIsDeleting(true);
-    const token = await session?.getToken({ template: 'supabase' }) || undefined;
+    const token = await getToken({ template: 'supabase' }) || undefined;
     const success = await deleteAllProperties(token);
     if (success) {
       setProperties([]);
@@ -96,7 +96,7 @@ export default function PropertiesDashboard() {
     }
 
     setDeletingId(id);
-    const token = await session?.getToken({ template: 'supabase' }) || undefined;
+    const token = await getToken({ template: 'supabase' }) || undefined;
     const success = await deleteProperty(id, token);
     if (success) {
       setProperties((prev) => prev.filter((p) => String(p.id) !== String(id)));
@@ -116,13 +116,13 @@ export default function PropertiesDashboard() {
 
   const handleSavePricing = async () => {
     if (!pricingProperty) return;
-    
+
     const overrides = {
       cleaningFee: Number(customCleaning),
       serviceFeeRate: Number(customService) / 100,
       extraGuestFee: Number(customExtra)
     };
-    
+
     const token = await getToken({ template: 'supabase' }) || undefined;
     await updatePropertyOverrides(pricingProperty.id, overrides, token);
     setPricingProperty(null);
@@ -143,7 +143,7 @@ export default function PropertiesDashboard() {
         throw new Error("No valid properties found in CSV.");
       }
 
-      const token = await session?.getToken({ template: 'supabase' }) || undefined;
+      const token = await getToken({ template: 'supabase' }) || undefined;
       const success = await batchCreateProperties(parsed, token);
       if (success) {
         await fetchProperties();
@@ -193,7 +193,7 @@ export default function PropertiesDashboard() {
       const parsed = parsePropertiesCSV(text);
 
       // 3. Batch Create
-      const token = await session?.getToken({ template: 'supabase' }) || undefined;
+      const token = await getToken({ template: 'supabase' }) || undefined;
       const success = await batchCreateProperties(parsed, token);
       if (success) {
         await fetchProperties();
@@ -552,7 +552,7 @@ export default function PropertiesDashboard() {
                     <p className="text-[10px] text-muted tracking-wide uppercase font-bold">{pricingProperty.title}</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setPricingProperty(null)}
                   className="p-2 hover:bg-navy/5 rounded-full text-muted transition-colors"
                 >
@@ -569,7 +569,7 @@ export default function PropertiesDashboard() {
                   </div>
                   <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-bold text-sm">$</div>
-                    <input 
+                    <input
                       type="number"
                       value={customCleaning}
                       onChange={(e) => setCustomCleaning(e.target.value)}
@@ -586,7 +586,7 @@ export default function PropertiesDashboard() {
                   </div>
                   <div className="relative">
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted font-bold text-sm">%</div>
-                    <input 
+                    <input
                       type="number"
                       value={customService}
                       onChange={(e) => setCustomService(e.target.value)}
@@ -603,7 +603,7 @@ export default function PropertiesDashboard() {
                   </div>
                   <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-bold text-sm">$</div>
-                    <input 
+                    <input
                       type="number"
                       value={customExtra}
                       onChange={(e) => setCustomExtra(e.target.value)}
