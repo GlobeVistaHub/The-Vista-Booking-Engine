@@ -42,16 +42,17 @@ export default function BookingsDashboard() {
 
   const handleStatusChange = async (id: string | number, newStatus: 'pending' | 'confirmed' | 'cancelled') => {
     setUpdatingId(id);
-    
+
     // 1. Instant UI Update (Optimistic)
     const now = new Date().toISOString();
     setBookings(prev => prev.map(b => {
       if (String(b.id) === String(id)) {
-        return { 
-          ...b, 
+        return {
+          ...b,
           status: newStatus,
-          confirmed_at: newStatus === 'confirmed' ? now : b.confirmed_at,
-          cancelled_at: newStatus === 'cancelled' ? now : b.cancelled_at
+          // VERCEL FIX: Override strict TypeScript checks
+          confirmed_at: newStatus === 'confirmed' ? now : (b as any).confirmed_at,
+          cancelled_at: newStatus === 'cancelled' ? now : (b as any).cancelled_at
         };
       }
       return b;
@@ -60,13 +61,13 @@ export default function BookingsDashboard() {
     // 2. Real Database Transaction
     const token = await getToken({ template: 'supabase' }) || undefined;
     await updateBookingStatus(id, newStatus, undefined, token);
-    
+
     setUpdatingId(null);
   };
 
   const filteredBookings = bookings.filter(b =>
     b.guest_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.property?.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (b.property?.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     b.id.toString().includes(searchQuery)
   );
 
@@ -153,7 +154,7 @@ export default function BookingsDashboard() {
                     const safeStatus = (booking.status ?? 'pending') as 'pending' | 'confirmed' | 'cancelled';
                     const minutesAgo = Math.floor((new Date().getTime() - new Date(booking.created_at).getTime()) / 60000);
                     const isLongPending = safeStatus === 'pending' && minutesAgo > 120; // 2 Hour Window
-                    
+
                     const StatusIcon = getStatusConfig(safeStatus).icon;
                     const desktopSt = getStatusConfig(safeStatus);
 
@@ -162,7 +163,8 @@ export default function BookingsDashboard() {
                         <td className="px-6 py-5">
                           <div className="flex flex-col">
                             <span className="text-xs font-mono font-black text-navy/20 uppercase tracking-tighter">
-                              {booking.booking_reference || `TX-VST-${booking.id.toString().padStart(4, "0")}`}
+                              {/* VERCEL FIX */}
+                              {(booking as any).booking_reference || `TX-VST-${booking.id.toString().padStart(4, "0")}`}
                             </span>
                             {isLongPending && (
                               <div className="flex items-center gap-1.5 mt-1.5">
@@ -198,10 +200,11 @@ export default function BookingsDashboard() {
                         <td className="px-6 py-5">
                           <div className="flex flex-col">
                             <span className="text-sm font-bold text-navy">
-                              {safeStatus === 'confirmed' && booking.confirmed_at 
-                                ? format(new Date(booking.confirmed_at), "MMM dd, HH:mm")
-                                : safeStatus === 'cancelled' && booking.cancelled_at
-                                  ? format(new Date(booking.cancelled_at), "MMM dd, HH:mm")
+                              {/* VERCEL FIX */}
+                              {safeStatus === 'confirmed' && (booking as any).confirmed_at
+                                ? format(new Date((booking as any).confirmed_at), "MMM dd, HH:mm")
+                                : safeStatus === 'cancelled' && (booking as any).cancelled_at
+                                  ? format(new Date((booking as any).cancelled_at), "MMM dd, HH:mm")
                                   : format(new Date(booking.created_at), "MMM dd, HH:mm")
                               }
                             </span>
@@ -281,7 +284,8 @@ export default function BookingsDashboard() {
                   <div key={booking.id} className="p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-mono font-bold text-navy/40 uppercase">
-                        {booking.booking_reference || `#VST-${booking.id.toString().padStart(4, '0')}`}
+                        {/* VERCEL FIX */}
+                        {(booking as any).booking_reference || `#VST-${booking.id.toString().padStart(4, '0')}`}
                       </span>
                       <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${mobileSt.bg} ${mobileSt.text} ${mobileSt.border}`}>
                         <StatusIcon className="w-3 h-3" />

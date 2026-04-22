@@ -17,7 +17,14 @@ export interface Booking {
   children: number;
   payment_status?: 'pending' | 'paid' | 'failed';
   created_at: string;
+  confirmed_at?: string;
+  cancelled_at?: string;
   booking_reference?: string;
+  paymob_order_id?: string;
+  paymob_transaction_id?: string;
+  transaction_id?: string;
+  paid_amount_egp?: number;
+  conversion_rate_used?: number;
   property?: Property;
 }
 
