@@ -9,6 +9,7 @@ import PropertyCard from "@/components/PropertyCard";
 import MapWrapper from "@/components/MapWrapper";
 import { useLanguage } from "@/context/LanguageContext";
 import { getProperties } from "@/data/api";
+import { getPublicOccupancyServer } from "@/app/actions/bookings";
 import { Property } from "@/data/properties";
 
 // ─── Inner component (needs useSearchParams inside Suspense) ────────────────
@@ -19,12 +20,18 @@ function SearchContent() {
   const [allProperties, setAllProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [bookings, setBookings] = useState<any[]>([]);
+
   useEffect(() => {
-    getProperties({ includeHidden: false }).then(data => {
-      setAllProperties(data);
-      setIsLoading(false);
-    });
+    getProperties({ includeHidden: false }).then(setAllProperties);
+    // Ghost Bridge: Fetch secure occupancy dates via Server Action (bypasses RLS)
+    getPublicOccupancyServer().then(setBookings).finally(() => setIsLoading(false));
   }, []);
+
+  // Filter out manually hidden properties (Switch OFF)
+  const filteredAvailable = useMemo(() => {
+    return allProperties.filter(p => !p.isBooked);
+  }, [allProperties]);
 
   // ── Read URL params from the Search Widget ──────────────────────────────
   const urlLocation = searchParams.get("location") ?? "";
@@ -249,14 +256,42 @@ function SearchContent() {
               </div>
             ) : filteredProperties.length > 0 ? (
               <div className="flex flex-col">
-                {filteredProperties.map((property, idx) => (
-                  <PropertyCard
-                    key={property.id}
-                    property={property}
-                    delayIndex={idx % 10}
-                    searchContext={{ from: urlFrom, to: urlTo, adults: urlAdults, children: urlChildren }}
-                  />
-                ))}
+                {filteredProperties.map((property, idx) => {
+                  const propertyBookings = bookings.filter(b => String(b.property_id) === String(property.id));
+                  
+                  // Hybrid Ribbon Logic: Check search dates OR default to "Today" if no dates searched
+                  const isOccupied = propertyBookings.some(b => {
+                    const start2 = b.check_in;
+                    const end2 = b.check_out;
+
+                    if (urlFrom && urlTo) {
+                      // Case A: Guest is searching for a future range
+                      const start1 = urlFrom;
+                      const end1 = urlTo;
+                      return start1 < end2 && start2 < end1;
+                    } else {
+                      // Case B: No search dates - default to "Today" (consistency with home page)
+                      const now = new Date();
+                      const year = now.getFullYear();
+                      const month = String(now.getMonth() + 1).padStart(2, '0');
+                      const day = String(now.getDate()).padStart(2, '0');
+                      const todayStr = `${year}-${month}-${day}`;
+                      return todayStr >= start2 && todayStr < end2;
+                    }
+                  });
+
+                  return (
+                    <PropertyCard
+                      key={property.id}
+                      property={{
+                        ...property,
+                        isBooked: property.isBooked || !!isOccupied
+                      }}
+                      delayIndex={idx % 10}
+                      searchContext={{ from: urlFrom, to: urlTo, adults: urlAdults, children: urlChildren }}
+                    />
+                  );
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-24 text-center space-y-6">

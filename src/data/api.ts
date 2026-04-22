@@ -1,4 +1,5 @@
-import { supabase } from '@/lib/supabase';
+import { supabase as defaultSupabase } from '@/lib/supabase';
+import { createClerkSupabaseClient } from '@/utils/supabaseClient';
 import type { Property } from './properties';
 import { useDataStore } from '@/store/dataStore';
 import { useAppModeStore } from '@/store/appModeStore';
@@ -27,13 +28,16 @@ export interface SiteLabel {
   value_ar: string;
 }
 
-export const getSiteContent = async (): Promise<SiteLabel[]> => {
+export const getSiteContent = async (clerkToken?: string): Promise<SiteLabel[]> => {
+  const supabase = clerkToken ? createClerkSupabaseClient(clerkToken) : defaultSupabase;
   const { data, error } = await supabase.from('site_content').select('*').order('key');
   return error ? [] : data || [];
 };
 
-export const updateSiteLabel = async (label: SiteLabel): Promise<boolean> => {
-  const { error } = await supabase.from('site_content').upsert(label).eq('key', label.key);
+export const updateSiteLabel = async (label: SiteLabel, clerkToken?: string): Promise<boolean> => {
+  const supabase = createClerkSupabaseClient(clerkToken);
+  const { error } = await supabase.from('site_content').upsert(label);
+  if (error) console.error("updateSiteLabel Error:", error);
   return !error;
 };
 
@@ -41,47 +45,54 @@ export const updateSiteLabel = async (label: SiteLabel): Promise<boolean> => {
 // Properties API
 // -------------------------------------------------------------------------
 
-export const addProperty = async (property: Partial<Property>): Promise<boolean> => {
+export const addProperty = async (property: Partial<Property>, clerkToken?: string): Promise<boolean> => {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
   if (isDemoMode) {
     const id = Math.floor(Math.random() * 1000000);
     useDataStore.getState().addProperty({ ...property, id } as Property);
     return true;
   }
+  const supabase = createClerkSupabaseClient(clerkToken);
   const { error } = await supabase.from('properties').insert([property]);
   return !error;
 };
 
-export const getProperties = async (options?: { includeHidden?: boolean }): Promise<Property[]> => {
+export const getProperties = async (options?: { includeHidden?: boolean }, clerkToken?: string): Promise<Property[]> => {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
 
   if (isDemoMode) {
-    // Return properties from local persistent store
-    return useDataStore.getState().properties;
+    const props = useDataStore.getState().properties;
+    if (!options?.includeHidden) {
+      return props.filter(p => !p.isBooked);
+    }
+    return props;
   }
 
-  const { data, error } = await supabase
-    .from('properties')
-    .select('*')
-    .order('created_at', { ascending: false });
+  const supabase = clerkToken ? createClerkSupabaseClient(clerkToken) : defaultSupabase;
+  // We fetch all properties. The UI will handle the 'Booked' banner logic.
+  let query = supabase.from('properties').select('*');
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching properties:', error);
     return [];
   }
 
-  // Map snake_case to camelCase
   return (data || []).map(p => ({
     ...p,
     baseGuests: p.base_guests,
     ownerPhone: p.owner_phone,
     ownerEmail: p.owner_email,
     isInstantBookable: p.is_instant_bookable,
-    isBooked: p.is_booked
+    isBooked: p.is_booked,
+    cleaningFeeOverride: p.cleaning_fee_override,
+    serviceFeeOverride: p.service_fee_override,
+    extraGuestFeeOverride: p.extra_guest_fee_override
   }));
 };
 
-export const getPropertyById = async (id: string | number): Promise<Property | null> => {
+export const getPropertyById = async (id: string | number, options?: { includeHidden?: boolean }, clerkToken?: string): Promise<Property | null> => {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
 
   if (isDemoMode) {
@@ -89,15 +100,20 @@ export const getPropertyById = async (id: string | number): Promise<Property | n
     return props.find(p => String(p.id) === String(id)) || null;
   }
 
-  // Supabase integer columns need a numeric value — cast when possible
   const numericId = Number(id);
   const lookupId = !isNaN(numericId) ? numericId : id;
 
-  const { data, error } = await supabase
+  const supabase = clerkToken ? createClerkSupabaseClient(clerkToken) : defaultSupabase;
+  let query = supabase
     .from('properties')
     .select('*')
-    .eq('id', lookupId)
-    .maybeSingle(); // maybeSingle returns null instead of throwing on 0 rows
+    .eq('id', lookupId);
+
+  if (options?.includeHidden === false) {
+    query = query.eq('is_booked', false);
+  }
+
+  const { data, error } = await query.maybeSingle();
 
   if (error) {
     console.error('[getPropertyById] Supabase error:', error.message);
@@ -119,46 +135,82 @@ export const getPropertyById = async (id: string | number): Promise<Property | n
 // Bookings API
 // -------------------------------------------------------------------------
 
-export const getBookings = async (): Promise<Booking[]> => {
+export const getBookings = async (clerkToken?: string): Promise<Booking[]> => {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
-
-  const { data: liveBookings, error } = await supabase
-    .from('bookings')
-    .select('*, property:properties(*)')
-    .order('created_at', { ascending: false });
-
-  if (error) console.error('Error fetching live bookings:', error);
-
-  const mappedLive = (liveBookings || []).map(b => ({
-    ...b,
-    status: (b.status ?? 'pending') as Booking['status'],
-    payment_status: (b.payment_status ?? 'pending') as Booking['payment_status'],
-    property: b.property ? {
-      ...b.property,
-      baseGuests: b.property.base_guests,
-      ownerPhone: b.property.owner_phone,
-      ownerEmail: b.property.owner_email,
-      isInstantBookable: b.property.is_instant_bookable,
-      isBooked: b.property.is_booked
-    } : undefined
-  }));
-
 
   if (isDemoMode) {
     const mockBookings = useDataStore.getState().bookings;
     const props = useDataStore.getState().properties;
-    const mappedMocks = mockBookings.map(b => ({
+    return mockBookings.map(b => ({
       ...b,
       property: props.find(p => String(p.id) === String(b.property_id))
     }));
-
-    return mappedMocks;
   }
 
-  return mappedLive;
+  const supabase = createClerkSupabaseClient(clerkToken);
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*, property:properties(*)')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[getBookings] Supabase error:', error.message);
+    return [];
+  }
+
+  return (data || []).map(b => {
+    const propData = Array.isArray(b.property) ? b.property[0] : b.property;
+    return {
+      ...b,
+      status: (b.status ?? 'pending') as Booking['status'],
+      payment_status: (b.payment_status ?? 'pending') as Booking['payment_status'],
+      property: propData ? {
+        ...propData,
+        baseGuests: propData.base_guests,
+        ownerPhone: propData.owner_phone,
+        ownerEmail: propData.owner_email,
+        isInstantBookable: propData.is_instant_bookable,
+        isBooked: propData.is_booked
+      } : undefined
+    };
+  });
 };
 
-export const updateBookingStatus = async (id: string | number, status: 'pending' | 'confirmed' | 'cancelled', paymentStatus?: 'pending' | 'paid' | 'failed'): Promise<boolean> => {
+/**
+ * Privacy Shield: Returns only basic occupancy data for public site.
+ * No guest names, no emails. Just ID + Dates.
+ */
+export const getPublicOccupiedDates = async (): Promise<{ property_id: string | number, check_in: string, check_out: string }[]> => {
+  const isDemoMode = useAppModeStore.getState().isDemoMode;
+  if (isDemoMode) {
+    return useDataStore.getState().bookings
+      .filter(b => b.status === 'confirmed')
+      .map(b => ({ property_id: b.property_id, check_in: b.check_in, check_out: b.check_out }));
+  }
+
+  try {
+    const { data, error } = await defaultSupabase
+      .from('bookings')
+      .select('property_id, check_in, check_out')
+      .eq('status', 'confirmed');
+
+    if (error) {
+      console.warn('[Vista-Diagnostics] Security block on public bookings:', error.message);
+      return [];
+    }
+    
+    if (!data || data.length === 0) {
+      console.log('[Vista-Diagnostics] Public occupancy query returned 0 results. Checking if this is an RLS issue...');
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('[Vista-Diagnostics] Fatal failure in public date query:', err);
+    return [];
+  }
+};
+
+export const updateBookingStatus = async (id: string | number, status: 'pending' | 'confirmed' | 'cancelled', paymentStatus?: 'pending' | 'paid' | 'failed', clerkToken?: string): Promise<boolean> => {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
   if (isDemoMode) {
     useDataStore.getState().updateBooking(id, { status, ...(paymentStatus && { payment_status: paymentStatus }) });
@@ -166,22 +218,49 @@ export const updateBookingStatus = async (id: string | number, status: 'pending'
   }
   const updateData: any = { status };
   if (paymentStatus) updateData.payment_status = paymentStatus;
+  
+  if (status === 'confirmed') updateData.confirmed_at = new Date().toISOString();
+  if (status === 'cancelled') updateData.cancelled_at = new Date().toISOString();
 
+  const supabase = createClerkSupabaseClient(clerkToken);
   const { error } = await supabase.from('bookings').update(updateData).eq('id', id);
   return !error;
 };
 
-export const togglePropertyStatus = async (id: string | number, currentStatus: boolean): Promise<boolean> => {
+export const updatePropertyOverrides = async (id: string | number, overrides: { cleaningFee?: number, serviceFeeRate?: number, extraGuestFee?: number }, clerkToken?: string): Promise<boolean> => {
+  const isDemoMode = useAppModeStore.getState().isDemoMode;
+  if (isDemoMode) {
+    useDataStore.getState().updateProperty(id, {
+      cleaningFeeOverride: overrides.cleaningFee,
+      serviceFeeOverride: overrides.serviceFeeRate,
+      extraGuestFeeOverride: overrides.extraGuestFee
+    });
+    return true;
+  }
+  
+  const updateData = {
+    cleaning_fee_override: overrides.cleaningFee,
+    service_fee_override: overrides.serviceFeeRate,
+    extra_guest_fee_override: overrides.extraGuestFee
+  };
+
+  const supabase = createClerkSupabaseClient(clerkToken);
+  const { error } = await supabase.from('properties').update(updateData).eq('id', id);
+  return !error;
+};
+
+export const togglePropertyStatus = async (id: string | number, currentStatus: boolean, clerkToken?: string): Promise<boolean> => {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
   if (isDemoMode) {
     useDataStore.getState().updateProperty(id, { isBooked: !currentStatus });
     return true;
   }
+  const supabase = createClerkSupabaseClient(clerkToken);
   const { error } = await supabase.from('properties').update({ is_booked: !currentStatus }).eq('id', id);
   return !error;
 };
 
-export async function batchCreateProperties(properties: Partial<Property>[]) {
+export async function batchCreateProperties(properties: Partial<Property>[], clerkToken?: string) {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
 
   // Prepare the data for both modes
@@ -235,6 +314,7 @@ export async function batchCreateProperties(properties: Partial<Property>[]) {
 
   // LIVE MODE: Strip IDs to let Supabase handle the auto-increment
   // This prevents the "ID is text" rejection error
+  const supabase = createClerkSupabaseClient(clerkToken);
   const { error } = await supabase.from('properties').insert(baseMappedProps);
   
   if (error) {
@@ -244,7 +324,7 @@ export async function batchCreateProperties(properties: Partial<Property>[]) {
   return true;
 }
 
-export const deleteAllProperties = async (): Promise<boolean> => {
+export const deleteAllProperties = async (clerkToken?: string): Promise<boolean> => {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
 
   if (isDemoMode) {
@@ -252,11 +332,12 @@ export const deleteAllProperties = async (): Promise<boolean> => {
     return true;
   }
 
+  const supabase = createClerkSupabaseClient(clerkToken);
   const { error } = await supabase.from('properties').delete().neq('id', '0');
   return !error;
 };
 
-export const deleteProperty = async (id: string | number): Promise<boolean> => {
+export const deleteProperty = async (id: string | number, clerkToken?: string): Promise<boolean> => {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
 
   if (isDemoMode) {
@@ -265,23 +346,32 @@ export const deleteProperty = async (id: string | number): Promise<boolean> => {
     return true;
   }
 
+  const supabase = createClerkSupabaseClient(clerkToken);
   const { error } = await supabase.from('properties').delete().eq('id', id);
   return !error;
 };
 
-export async function createBooking(booking: Omit<Booking, 'id'>) {
+export const createBooking = async (booking: Omit<Booking, "id" | "booking_reference" | "created_at">, clerkToken?: string): Promise<Booking | null> => {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
 
   if (isDemoMode) {
-    const bookingId = Math.floor(Math.random() * 1000000);
     const newBooking: Booking = {
       ...booking,
-      id: bookingId,
+      id: Math.floor(Math.random() * 10000),
+      booking_reference: `BK-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
       created_at: new Date().toISOString()
     };
     useDataStore.getState().addBooking(newBooking as any);
-    return { data: newBooking, error: null };
+    return newBooking;
   }
 
-  return await supabase.from('bookings').insert([booking]).select().single();
-}
+  try {
+    const supabase = clerkToken ? createClerkSupabaseClient(clerkToken) : defaultSupabase;
+    const { data, error } = await supabase.from('bookings').insert([booking]).select().single();
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    console.error("Supabase createBooking error:", err);
+    return null;
+  }
+};

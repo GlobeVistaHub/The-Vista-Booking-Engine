@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getBookings, updateBookingStatus, Booking } from "@/data/api";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, formatDistanceToNow } from "date-fns";
+import { useAuth } from "@clerk/nextjs";
 import { useAppModeStore } from "@/store/appModeStore";
 import SystemControlToggle from "@/components/SystemControlToggle";
 import {
@@ -21,6 +22,7 @@ import Link from "next/link";
 
 export default function BookingsDashboard() {
   const { isDemoMode } = useAppModeStore();
+  const { getToken } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,28 +30,37 @@ export default function BookingsDashboard() {
 
   const fetchBookings = useCallback(async () => {
     setIsLoading(true);
-    const data = await getBookings();
+    const token = await getToken({ template: 'supabase' });
+    const data = await getBookings(token || undefined);
     setBookings(data);
     setIsLoading(false);
-  }, []);
+  }, [getToken]);
 
   useEffect(() => {
     fetchBookings();
   }, [fetchBookings, isDemoMode]);
 
   const handleStatusChange = async (id: string | number, newStatus: 'pending' | 'confirmed' | 'cancelled') => {
-    // Safety check for cancellations or rejections
-    const actionLabel = newStatus === 'cancelled' ? 'cancel' : 'update';
-    if (!window.confirm(`Are you sure you want to ${actionLabel} this reservation? This action will notify the guest.`)) {
-      return;
-    }
-
     setUpdatingId(id);
-    const success = await updateBookingStatus(id, newStatus);
-    if (success) {
-      // Optimistically update the UI (Agnostic comparison)
-      setBookings(prev => prev.map(b => String(b.id) === String(id) ? { ...b, status: newStatus } : b));
-    }
+    
+    // 1. Instant UI Update (Optimistic)
+    const now = new Date().toISOString();
+    setBookings(prev => prev.map(b => {
+      if (String(b.id) === String(id)) {
+        return { 
+          ...b, 
+          status: newStatus,
+          confirmed_at: newStatus === 'confirmed' ? now : b.confirmed_at,
+          cancelled_at: newStatus === 'cancelled' ? now : b.cancelled_at
+        };
+      }
+      return b;
+    }));
+
+    // 2. Real Database Transaction
+    const token = await getToken({ template: 'supabase' }) || undefined;
+    await updateBookingStatus(id, newStatus, undefined, token);
+    
     setUpdatingId(null);
   };
 
@@ -130,24 +141,38 @@ export default function BookingsDashboard() {
                   <tr className="bg-slate-50/80 text-navy border-b border-navy/5">
                     <th className="px-6 py-5 font-bold text-[11px] uppercase tracking-wider text-muted">Guest ID</th>
                     <th className="px-6 py-5 font-bold text-[11px] uppercase tracking-wider text-muted">Property / Guest</th>
+                    <th className="px-6 py-5 font-bold text-[11px] uppercase tracking-wider text-muted">Reserved At</th>
                     <th className="px-6 py-5 font-bold text-[11px] uppercase tracking-wider text-muted">Trip Dates</th>
                     <th className="px-6 py-5 font-bold text-[11px] uppercase tracking-wider text-muted">Financials</th>
-                    <th className="px-6 py-5 font-bold text-[11px] uppercase tracking-wider text-muted">Status</th>
-                    <th className="px-6 py-5 font-bold text-[11px] uppercase tracking-wider text-muted text-right">Actions</th>
+                    <th className="px-6 py-5 font-bold text-[11px] uppercase tracking-wider text-muted text-right pr-12">Status</th>
+                    <th className="px-6 py-5 font-bold text-[11px] uppercase tracking-wider text-muted text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-navy/5">
                   {filteredBookings.map((booking) => {
                     const safeStatus = (booking.status ?? 'pending') as 'pending' | 'confirmed' | 'cancelled';
+                    const minutesAgo = Math.floor((new Date().getTime() - new Date(booking.created_at).getTime()) / 60000);
+                    const isLongPending = safeStatus === 'pending' && minutesAgo > 120; // 2 Hour Window
+                    
                     const StatusIcon = getStatusConfig(safeStatus).icon;
-                    const st = getStatusConfig(safeStatus);
+                    const desktopSt = getStatusConfig(safeStatus);
 
                     return (
-                      <tr key={booking.id} className="hover:bg-slate-50/40 transition-colors group">
+                      <tr key={booking.id} className={`hover:bg-slate-50/40 transition-colors group ${isLongPending ? "bg-primary/[0.02]" : ""}`}>
                         <td className="px-6 py-5">
-                          <span className="text-xs font-mono font-bold text-navy/40 group-hover:text-primary transition-colors uppercase">
-                            {booking.booking_reference || `#VST-${booking.id.toString().padStart(4, '0')}`}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="text-xs font-mono font-black text-navy/20 uppercase tracking-tighter">
+                              {booking.booking_reference || `TX-VST-${booking.id.toString().padStart(4, "0")}`}
+                            </span>
+                            {isLongPending && (
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <Clock className="w-3.5 h-3.5 text-primary" />
+                                <span className="text-[9px] font-black text-primary uppercase tracking-widest">
+                                  Recovery Window
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </td>
 
                         <td className="px-6 py-5">
@@ -171,6 +196,22 @@ export default function BookingsDashboard() {
                         </td>
 
                         <td className="px-6 py-5">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-bold text-navy">
+                              {safeStatus === 'confirmed' && booking.confirmed_at 
+                                ? format(new Date(booking.confirmed_at), "MMM dd, HH:mm")
+                                : safeStatus === 'cancelled' && booking.cancelled_at
+                                  ? format(new Date(booking.cancelled_at), "MMM dd, HH:mm")
+                                  : format(new Date(booking.created_at), "MMM dd, HH:mm")
+                              }
+                            </span>
+                            <span className="text-[10px] text-muted font-black uppercase tracking-widest mt-1">
+                              {safeStatus === 'confirmed' ? 'Confirmed At' : safeStatus === 'cancelled' ? 'Cancelled At' : 'Reserved At'}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-5">
                           <div className="flex flex-col gap-1">
                             <span className="text-sm font-bold text-navy bg-navy/5 px-2 py-0.5 rounded w-fit">
                               {format(parseISO(booking.check_in), "MMM d")} - {format(parseISO(booking.check_out), "MMM d")}
@@ -188,31 +229,33 @@ export default function BookingsDashboard() {
                           </div>
                         </td>
 
-                        <td className="px-6 py-5">
-                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${st.bg} ${st.text} ${st.border}`}>
+                        <td className="px-6 py-5 text-right pr-6">
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest shadow-sm ${desktopSt.bg} ${desktopSt.text} ${desktopSt.border}`}>
                             <StatusIcon className="w-3.5 h-3.5" />
-                            <span className="text-xs font-bold tracking-wide uppercase">{st.label}</span>
+                            {desktopSt.label}
                           </div>
                         </td>
 
-                        <td className="px-6 py-5 text-right">
-                          <div className="relative inline-block opacity-0 group-hover:opacity-100 transition-opacity">
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-3">
                             {updatingId === booking.id ? (
-                              <Loader2 className="w-5 h-5 animate-spin text-primary mr-4" />
+                              <Loader2 className="w-4 h-4 text-primary animate-spin" />
                             ) : (
-                              <div className="flex items-center justify-end gap-2">
-                                {booking.status === 'pending' && (
+                              <div className="flex items-center gap-2">
+                                {/* PENDING -> APPROVE or REJECT */}
+                                {safeStatus === 'pending' && (
                                   <>
-                                    <button onClick={() => handleStatusChange(booking.id, 'confirmed')} className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-lg transition-all" title="Approve">
+                                    <button onClick={() => handleStatusChange(booking.id, 'confirmed')} className="px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-lg transition-all" title="Approve">
                                       <CheckCircle2 className="w-4 h-4" />
                                     </button>
-                                    <button onClick={() => handleStatusChange(booking.id, 'cancelled')} className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg transition-all" title="Reject">
+                                    <button onClick={() => handleStatusChange(booking.id, 'cancelled')} className="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg transition-all" title="Reject">
                                       <XCircle className="w-4 h-4" />
                                     </button>
                                   </>
                                 )}
-                                {booking.status === 'confirmed' && (
-                                  <button onClick={() => handleStatusChange(booking.id, 'cancelled')} className="p-2 bg-slate-50 text-muted hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all" title="Cancel Booking">
+                                {/* CONFIRMED -> REJECT/CANCEL Only */}
+                                {safeStatus === 'confirmed' && (
+                                  <button onClick={() => handleStatusChange(booking.id, 'cancelled')} className="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg transition-all" title="Cancel Booking">
                                     <XCircle className="w-4 h-4" />
                                   </button>
                                 )}
@@ -231,8 +274,8 @@ export default function BookingsDashboard() {
             <div className="md:hidden divide-y divide-navy/5">
               {filteredBookings.map((booking) => {
                 const safeStatus = (booking.status ?? 'pending') as 'pending' | 'confirmed' | 'cancelled';
-                const st = getStatusConfig(safeStatus);
-                const StatusIcon = st.icon;
+                const mobileSt = getStatusConfig(safeStatus);
+                const StatusIcon = mobileSt.icon;
 
                 return (
                   <div key={booking.id} className="p-6 space-y-4">
@@ -240,9 +283,9 @@ export default function BookingsDashboard() {
                       <span className="text-[10px] font-mono font-bold text-navy/40 uppercase">
                         {booking.booking_reference || `#VST-${booking.id.toString().padStart(4, '0')}`}
                       </span>
-                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${st.bg} ${st.text} ${st.border}`}>
+                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${mobileSt.bg} ${mobileSt.text} ${mobileSt.border}`}>
                         <StatusIcon className="w-3 h-3" />
-                        {st.label}
+                        {mobileSt.label}
                       </div>
                     </div>
 
@@ -253,7 +296,7 @@ export default function BookingsDashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-navy truncate">{booking.guest_name}</p>
                         <p className="text-xs text-primary font-medium truncate">{booking.property?.title}</p>
-                        <p className="text-[10px] text-muted mt-1 truncate">{booking.guest_email}</p>
+                        <p className="text-xs text-muted mt-1 leading-relaxed max-w-[150px] truncate">{booking.guest_email}</p>
                       </div>
                     </div>
 

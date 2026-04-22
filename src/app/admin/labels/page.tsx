@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "@clerk/nextjs";
 import { getSiteContent, updateSiteLabel, SiteLabel } from "@/data/api";
 import { useLanguage } from "@/context/LanguageContext";
 import { 
@@ -12,7 +13,8 @@ import {
 import Link from "next/link";
 
 export default function LabelsManagerPage() {
-  const { refreshLabels } = useLanguage();
+  const { session } = useSession();
+  const { lang, refreshLabels } = useLanguage();
   const [labels, setLabels] = useState<SiteLabel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -25,22 +27,22 @@ export default function LabelsManagerPage() {
 
   const fetchLabels = async () => {
     setIsLoading(true);
-    const data = await getSiteContent();
+    const token = await session?.getToken({ template: 'supabase' }) || undefined;
+    const data = await getSiteContent(token);
     // Default keys to ensure are always manageable - REMOVED nStays
     const essentialKeys = [
-      'stays', 
-      'properties', 
-      'ourStory', 
-      'signIn', 
-      'pinnacleTitle', 
-      'pinnacleSub',
+      'heroTitle', 
+      'heroSubtitle',
       'curatedTitle',
       'curatedSub',
       'socialInsta',
       'socialFB',
       'socialX',
       'footerTagline', 
-      'footerCopyright'
+      'footerCopyright',
+      'footerPrivacy',
+      'footerTerms',
+      'footerContact'
     ];
     
     // Merge remote labels with essential keys if missing
@@ -51,8 +53,8 @@ export default function LabelsManagerPage() {
       }
     });
     
-    // Filter out nStays if it somehow made it into the persistent data
-    setLabels(merged.filter(l => l.key !== 'nStays'));
+    // Filter out nStays and brandName to prevent database conflicts or branding overrides
+    setLabels(merged.filter(l => l.key !== 'nStays' && l.key !== 'brandName'));
     setIsLoading(false);
   };
 
@@ -63,11 +65,15 @@ export default function LabelsManagerPage() {
 
   const handleSave = async (key: string) => {
     setIsSaving(true);
-    const success = await updateSiteLabel({ key, ...editValues });
+    const token = await session?.getToken({ template: 'supabase' }) || undefined;
+    const success = await updateSiteLabel({ key, ...editValues }, token);
     if (success) {
       setLabels(prev => prev.map(l => l.key === key ? { key, ...editValues } : l));
       setEditingKey(null);
       await refreshLabels();
+      alert("Label updated successfully!");
+    } else {
+      alert("Failed to update label. Please check your database permissions.");
     }
     setIsSaving(false);
   };

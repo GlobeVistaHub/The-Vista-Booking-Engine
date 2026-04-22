@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { getProperties, togglePropertyStatus, batchCreateProperties, deleteAllProperties, deleteProperty } from "@/data/api";
 import type { Property } from "@/data/properties";
+import { useSession } from "@clerk/nextjs";
 import { useAppModeStore } from "@/store/appModeStore";
 import SystemControlToggle from "@/components/SystemControlToggle";
 import {
@@ -31,6 +32,7 @@ import { parsePropertiesCSV, generateCSVTemplate } from "@/utils/csv";
 import { getPricingSettings, VISTA_DEFAULTS } from "@/data/pricing_overrides";
 
 export default function PropertiesDashboard() {
+  const { session } = useSession();
   const { isDemoMode } = useAppModeStore();
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,10 +52,11 @@ export default function PropertiesDashboard() {
   const fetchProperties = useCallback(async () => {
     setIsLoading(true);
     // Admin sees ALL properties including hidden ones
-    const data = await getProperties({ includeHidden: true });
+    const token = await session?.getToken({ template: 'supabase' }) || undefined;
+    const data = await getProperties({ includeHidden: true }, token);
     setProperties(data);
     setIsLoading(false);
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     fetchProperties();
@@ -61,7 +64,8 @@ export default function PropertiesDashboard() {
 
   const handleToggleStatus = async (id: string | number, currentStatus: boolean) => {
     setTogglingId(id);
-    const success = await togglePropertyStatus(id, currentStatus);
+    const token = await session?.getToken({ template: 'supabase' }) || undefined;
+    const success = await togglePropertyStatus(id, currentStatus, token);
     if (success) {
       setProperties((prev) =>
         prev.map((p) => (String(p.id) === String(id) ? { ...p, isBooked: !currentStatus } : p))
@@ -76,7 +80,8 @@ export default function PropertiesDashboard() {
     }
 
     setIsDeleting(true);
-    const success = await deleteAllProperties();
+    const token = await session?.getToken({ template: 'supabase' }) || undefined;
+    const success = await deleteAllProperties(token);
     if (success) {
       setProperties([]);
     } else {
@@ -91,7 +96,8 @@ export default function PropertiesDashboard() {
     }
 
     setDeletingId(id);
-    const success = await deleteProperty(id);
+    const token = await session?.getToken({ template: 'supabase' }) || undefined;
+    const success = await deleteProperty(id, token);
     if (success) {
       setProperties((prev) => prev.filter((p) => String(p.id) !== String(id)));
     } else {
@@ -100,14 +106,15 @@ export default function PropertiesDashboard() {
     setDeletingId(null);
   };
 
-  const handleClearPricing = () => {
+  const handleClearPricing = async () => {
     if (!pricingProperty) return;
-    localStorage.removeItem(`pricing_override_${pricingProperty.id}`);
+    const token = await getToken({ template: 'supabase' }) || undefined;
+    await updatePropertyOverrides(pricingProperty.id, {}, token);
     setPricingProperty(null);
-    fetchProperties(); // Refresh local list
+    fetchProperties(); // Refresh live list
   };
 
-  const handleSavePricing = () => {
+  const handleSavePricing = async () => {
     if (!pricingProperty) return;
     
     const overrides = {
@@ -116,9 +123,10 @@ export default function PropertiesDashboard() {
       extraGuestFee: Number(customExtra)
     };
     
-    localStorage.setItem(`pricing_override_${pricingProperty.id}`, JSON.stringify(overrides));
+    const token = await getToken({ template: 'supabase' }) || undefined;
+    await updatePropertyOverrides(pricingProperty.id, overrides, token);
     setPricingProperty(null);
-    fetchProperties(); // Refresh local list
+    fetchProperties(); // Refresh live list
   };
 
   const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,7 +143,8 @@ export default function PropertiesDashboard() {
         throw new Error("No valid properties found in CSV.");
       }
 
-      const success = await batchCreateProperties(parsed);
+      const token = await session?.getToken({ template: 'supabase' }) || undefined;
+      const success = await batchCreateProperties(parsed, token);
       if (success) {
         await fetchProperties();
       } else {
@@ -184,7 +193,8 @@ export default function PropertiesDashboard() {
       const parsed = parsePropertiesCSV(text);
 
       // 3. Batch Create
-      const success = await batchCreateProperties(parsed);
+      const token = await session?.getToken({ template: 'supabase' }) || undefined;
+      const success = await batchCreateProperties(parsed, token);
       if (success) {
         await fetchProperties();
       } else {

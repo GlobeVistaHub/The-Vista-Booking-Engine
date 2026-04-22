@@ -14,14 +14,17 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  // Synchronous initialization to prevent navigation flickering
-  const [lang, setLang] = useState<Language>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("vista_lang") as Language;
-      return (saved === "ar" || saved === "en") ? saved : "en";
+  // Initialize to 'en' for SSR consistency
+  const [lang, setLang] = useState<Language>("en");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    const saved = localStorage.getItem("vista_lang") as Language;
+    if (saved === "ar" || saved === "en") {
+      setLang(saved);
     }
-    return "en";
-  });
+  }, []);
   
   const [dbLabels, setDbLabels] = useState<Record<string, SiteLabel>>({});
 
@@ -58,7 +61,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const t = (key: string): string => {
     // 1. Try DB first (CMS Override)
     if (dbLabels[key]) {
-      return lang === 'ar' ? dbLabels[key].value_ar : dbLabels[key].value_en;
+      const primary = lang === 'ar' ? dbLabels[key].value_ar : dbLabels[key].value_en;
+      const secondary = lang === 'ar' ? dbLabels[key].value_en : dbLabels[key].value_ar;
+      return primary || secondary || "";
     }
 
     // 2. Fallback to static dictionaries

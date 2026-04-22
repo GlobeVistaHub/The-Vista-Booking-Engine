@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { TrendingUp, Plus, Loader2, CalendarDays, Wallet, Clock } from "lucide-react";
 import SystemControlToggle from "@/components/SystemControlToggle";
+import { useAuth } from "@clerk/nextjs";
 import { getBookings, getProperties, Booking } from "@/data/api";
 import { format, parseISO } from "date-fns";
 import { useLanguage } from "@/context/LanguageContext";
@@ -12,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 
 export default function AdminPage() {
   const { lang } = useLanguage();
+  const { getToken } = useAuth();
   const { isWhiteLabel, ownerName, isDemoMode } = useAppModeStore();
   
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -43,9 +45,10 @@ export default function AdminPage() {
 
   const fetchDashboardData = async () => {
     setIsLoading(true);
+    const token = await getToken({ template: 'supabase' });
     const [bookingsData, propertiesData] = await Promise.all([
-      getBookings(),
-      getProperties({ includeHidden: true })
+      getBookings(token || undefined),
+      getProperties({ includeHidden: true }, token || undefined)
     ]);
     setBookings(bookingsData);
     setTotalProperties(propertiesData.length);

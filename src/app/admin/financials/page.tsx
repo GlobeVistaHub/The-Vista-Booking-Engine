@@ -15,12 +15,14 @@ import {
   Store
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@clerk/nextjs";
 import { useAppModeStore } from "@/store/appModeStore";
 
 export default function FinancialsDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { lang } = useLanguage();
+  const { getToken } = useAuth();
   const { isWhiteLabel, setWhiteLabel, brandName, isDemoMode } = useAppModeStore();
 
   useEffect(() => {
@@ -29,7 +31,8 @@ export default function FinancialsDashboard() {
 
   const fetchFinancials = async () => {
     setIsLoading(true);
-    const data = await getBookings();
+    const token = await getToken({ template: 'supabase' });
+    const data = await getBookings(token || undefined);
     setBookings(data);
     setIsLoading(false);
   };

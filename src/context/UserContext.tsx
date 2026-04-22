@@ -16,28 +16,10 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Synchronous lazy initialization to eliminate navigation-induced data loss
-  const [wishlist, setWishlist] = useState<(string | number)[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("vista_wishlist");
-      try {
-        const parsed = JSON.parse(saved || "[]");
-        return Array.isArray(parsed) ? parsed : [];
-      } catch (e) { return []; }
-    }
-    return [];
-  });
+  // Standard initialization to match SSR
+  const [wishlist, setWishlist] = useState<(string | number)[]>([]);
 
-  const [preferences, setPreferences] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("vista_prefs");
-      try {
-        const parsed = JSON.parse(saved || '["Ocean Views", "High Security"]');
-        return Array.isArray(parsed) ? parsed : ["Ocean Views", "High Security"];
-      } catch (e) { return ["Ocean Views", "High Security"]; }
-    }
-    return ["Ocean Views", "High Security"];
-  });
+  const [preferences, setPreferences] = useState<string[]>(["Ocean Views", "High Security"]);
 
   const [guestName] = useState("Vista Guest");
   const [hydrated, setHydrated] = useState(false);

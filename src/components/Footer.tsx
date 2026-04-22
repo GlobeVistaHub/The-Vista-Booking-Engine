@@ -10,6 +10,14 @@ export default function Footer() {
   const isWhiteLabel = useAppStore(useAppModeStore, (s) => s.isWhiteLabel);
   const brandName = useAppStore(useAppModeStore, (s) => s.brandName) as string;
 
+  const ensureAbsoluteUrl = (url: string) => {
+    if (!url || url === "#" || url === "socialInsta" || url === "socialFB" || url === "socialX") return "#";
+    if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("mailto:") || url.startsWith("tel:")) {
+      return url;
+    }
+    return `https://${url}`;
+  };
+
   return (
     <footer className="w-full bg-v-background border-t border-navy/5 pt-16 pb-12 mt-auto" dir={lang === "ar" ? "rtl" : "ltr"}>
       <div className="max-w-7xl mx-auto px-6 space-y-8">
@@ -26,7 +34,7 @@ export default function Footer() {
           {/* SOCIALS */}
           <div className="flex items-center gap-6 md:order-2">
             <a 
-              href={t('socialInsta') !== 'socialInsta' ? t('socialInsta') : "#"} 
+              href={ensureAbsoluteUrl(t('socialInsta'))} 
               target="_blank" 
               rel="noopener noreferrer"
               aria-label="Instagram" 
@@ -39,7 +47,7 @@ export default function Footer() {
               </svg>
             </a>
             <a 
-              href={t('socialFB') !== 'socialFB' ? t('socialFB') : "#"} 
+              href={ensureAbsoluteUrl(t('socialFB'))} 
               target="_blank" 
               rel="noopener noreferrer"
               aria-label="Facebook" 
@@ -50,7 +58,7 @@ export default function Footer() {
               </svg>
             </a>
             <a 
-              href={t('socialX') !== 'socialX' ? t('socialX') : "#"} 
+              href={ensureAbsoluteUrl(t('socialX'))} 
               target="_blank" 
               rel="noopener noreferrer"
               aria-label="X" 

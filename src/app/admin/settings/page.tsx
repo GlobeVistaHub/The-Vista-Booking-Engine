@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getSiteContent, updateSiteLabel, SiteLabel, getBookings, getProperties } from "@/data/api";
-import { supabase } from "@/lib/supabase";
+import React, { useState, useEffect } from "react";
+import { getSiteContent, updateSiteLabel, SiteLabel, getBookings, getProperties, updateBookingStatus } from "@/data/api";
+import { useSession } from "@clerk/nextjs";
+import { createClerkSupabaseClient } from "@/utils/supabaseClient";
+import { supabase as defaultSupabase } from "@/lib/supabase";
 import { triggerN8NFailRecovery } from "@/lib/n8n";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAppModeStore, AppModeState } from "@/store/appModeStore";
@@ -35,6 +37,7 @@ import Link from "next/link";
 
 
 export default function SettingsPage() {
+  const { session } = useSession();
   const { lang } = useLanguage();
   const store = useAppModeStore();
   const brandName = useAppStore(useAppModeStore, (s: AppModeState) => s.brandName) as string;
@@ -71,10 +74,12 @@ export default function SettingsPage() {
     }
 
     // Also update site_content in Supabase for backend access
-    updateSiteLabel({ 
-      key: 'support_email', 
-      value_en: localEmail || 'support@globevistahub.com', 
-      value_ar: localEmail || 'support@globevistahub.com' 
+    session?.getToken({ template: 'supabase' }).then(token => {
+      updateSiteLabel({ 
+        key: 'support_email', 
+        value_en: localEmail || 'support@globevistahub.com', 
+        value_ar: localEmail || 'support@globevistahub.com' 
+      }, token || undefined);
     });
 
     setSaved(true);
@@ -85,7 +90,11 @@ export default function SettingsPage() {
     setIsSimulating(true);
     try {
       // 1. Fetch the most recent booking
-      const [bookings, properties] = await Promise.all([getBookings(), getProperties()]);
+      const token = await session?.getToken({ template: 'supabase' }) || undefined;
+      const [bookings, properties] = await Promise.all([
+        getBookings(token), 
+        getProperties({ includeHidden: true }, token)
+      ]);
       
       if (bookings.length === 0) {
         alert("No bookings found to simulate failure on. Please create a booking first.");
@@ -94,13 +103,10 @@ export default function SettingsPage() {
       const target = bookings[0]; // Most recent
       const property = properties.find(p => String(p.id) === String(target.property_id));
 
-      // 2. Inject 'failed' status into the db using the existing supabase client
-      const { error } = await supabase
-        .from('bookings')
-        .update({ payment_status: 'failed', status: 'pending' })
-        .eq('id', target.id);
+      // 2. Inject 'failed' status into the db
+      const success = await updateBookingStatus(target.id, 'pending', 'failed', token);
 
-      if (error) throw error;
+      if (!success) throw new Error("Failed to update booking status via API.");
 
       // 3. Trigger the Retention Automation (Step 4 Handshake)
       await triggerN8NFailRecovery(target, property);

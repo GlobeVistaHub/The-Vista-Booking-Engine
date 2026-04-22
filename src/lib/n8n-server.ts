@@ -90,7 +90,7 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
               <div class="grid">
                 <div class="col"><div class="label">Reference ID</div><div class="value" style="letter-spacing: 1px;">${formattedRef}</div></div>
                 <div class="col"><div class="label">Status</div><div class="value" style="color: #10B981;">SECURE & CONFIRMED</div></div>
-                <div class="col"><div class="label">Total Paid</div><div class="value">USD ${Number(booking.total_price).toLocaleString()}</div></div>
+                <div class="col"><div class="label">Total Paid</div><div class="value">USD ${Number(booking.total_price || 0).toLocaleString()}</div></div>
                 <div class="col"><div class="label">Transaction ID</div><div class="value">${booking.paymob_transaction_id || "N/A"}</div></div>
               </div>
             </div>
@@ -102,8 +102,8 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
                   <div class="value" style="font-size: 20px; color: #0A1128;">${property?.title_en || property?.title || "Vista Signature Property"}</div>
                   <div class="brief">${propertyBrief}</div>
                   <div class="grid" style="margin-top: 20px;">
-                    <div class="col" style="width: 50%;"><div class="label">Check In</div><div class="value">${new Date(booking.check_in).toLocaleDateString()}</div></div>
-                    <div class="col" style="width: 50%;"><div class="label">Check Out</div><div class="value">${new Date(booking.check_out).toLocaleDateString()}</div></div>
+                    <div class="col" style="width: 50%;"><div class="label">Check In</div><div class="value">${booking.check_in ? new Date(booking.check_in).toLocaleDateString() : 'N/A'}</div></div>
+                    <div class="col" style="width: 50%;"><div class="label">Check Out</div><div class="value">${booking.check_out ? new Date(booking.check_out).toLocaleDateString() : 'N/A'}</div></div>
                   </div>
                 </div>
                 <div class="property-img-wrap">
@@ -114,9 +114,9 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
             <div class="section">
               <h2 class="section-title">Guest Profile</h2>
               <div class="grid">
-                <div class="col"><div class="label">Primary Guest</div><div class="value">${booking.guest_name}</div></div>
-                <div class="col"><div class="label">Encrypted Contact</div><div class="value">${booking.guest_email}</div></div>
-                <div class="col"><div class="label">Travel Party</div><div class="value">${booking.adults} Adults, ${booking.children} Children</div></div>
+                <div class="col"><div class="label">Primary Guest</div><div class="value">${booking.guest_name || 'Guest'}</div></div>
+                <div class="col"><div class="label">Encrypted Contact</div><div class="value">${booking.guest_email || 'Secured'}</div></div>
+                <div class="col"><div class="label">Travel Party</div><div class="value">${booking.adults || 2} Adults, ${booking.children || 0} Children</div></div>
               </div>
             </div>
           </div>
@@ -156,7 +156,7 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
     const gName = isAwkwardName ? (booking.guest_email?.split('@')[0] || "Vista Guest") : rawName;
     
     formData.append('guestName', gName);
-    formData.append('guestEmail', booking.guest_email);
+    formData.append('guestEmail', booking.guest_email || "support@globevistahub.com");
     
     // 1. CLEAN PHONES: UltraMsg requires country code but NO '+' sign
     const cleanPhone = (p: string) => {
@@ -172,7 +172,7 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
     formData.append('phoneNumber', gPhone);
     formData.append('propertyName', prop?.title_en || prop?.title || "Vista Property");
     
-    const formattedAmount = `USD ${Number(booking.total_price).toLocaleString()}`;
+    const formattedAmount = `USD ${Number(booking.total_price || 0).toLocaleString()}`;
     formData.append('amount', formattedAmount);
 
     const waMsg = `Welcome to The Vista, ${gName}! 🥂 Your luxury dossier for ${prop?.title_en || 'your property'} (Ref: ${formattedRef}) has just landed in your inbox. We look forward to your arrival.`;
@@ -228,11 +228,11 @@ export const triggerN8NRecovery = async (booking: any, property: any) => {
   formData.append('status', 'FAILURE');
   formData.append('bookingRef', formattedRef);
   formData.append('guestName', gName);
-  formData.append('guestEmail', booking.guest_email);
+  formData.append('guestEmail', booking.guest_email || "support@globevistahub.com");
   formData.append('propertyName', prop?.title_en || prop?.title || "Vista Property");
-  formData.append('amount', `USD ${Number(booking.total_price).toLocaleString()}`);
-  formData.append('checkIn', new Date(booking.check_in).toLocaleDateString());
-  formData.append('checkOut', new Date(booking.check_out).toLocaleDateString());
+  formData.append('amount', `USD ${Number(booking.total_price || 0).toLocaleString()}`);
+  formData.append('checkIn', booking.check_in ? new Date(booking.check_in).toLocaleDateString() : 'N/A');
+  formData.append('checkOut', booking.check_out ? new Date(booking.check_out).toLocaleDateString() : 'N/A');
 
   const recoveryNote = `⚠️ PAYMENT INTERRUPTED
 

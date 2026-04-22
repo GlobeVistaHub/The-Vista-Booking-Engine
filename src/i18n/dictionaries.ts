@@ -17,13 +17,13 @@ export const dictionaries: Dictionary = {
   // Homepage Hero
   heroTitle: { en: "The Pinnacle of Riviera Living", ar: "قمة المعيشة في الريفييرا" },
   heroSubtitle: {
-    en: "Curated luxury properties in Hurghada and the Mediterranean.",
-    ar: "عقارات فاخرة مختارة في الغردقة والبحر المتوسط."
+    en: "Curated luxury properties in Hurghada and the Mediterranean",
+    ar: "عقارات فاخرة مختارة في الغردقة والبحر المتوسط"
   },
 
   // Homepage Curated
   curatedTitle: { en: "Curated For You", ar: "مختارات من أجلك" },
-  curatedSubtitle: { en: "Exceptional homes in the most sought-after Red Sea locations.", ar: "منازل استثنائية في أكثر مواقع البحر الأحمر رواجاً." },
+  curatedSub: { en: "Exceptional homes in the most sought-after Red Sea locations.", ar: "منازل استثنائية في أكثر مواقع البحر الأحمر رواجاً." },
   viewPortfolio: { en: "View the Portfolio", ar: "عرض محفظة العقارات" },
 
   // Booking Widget
@@ -49,7 +49,7 @@ export const dictionaries: Dictionary = {
   typeOfPlace: { en: "Type of Place", ar: "نوع المكان" },
   price: { en: "Price", ar: "السعر" },
   instantBook: { en: "Instant Book", ar: "حجز فوري" },
-  fullyBooked: { en: "Booked", ar: "محجوز" },
+  fullyBooked: { en: "BOOKED", ar: "محجوز" },
   selectCategories: { en: "Select Categories", ar: "اختر الفئات" },
   priceRange: { en: "Price Range", ar: "نطاق السعر" },
 
@@ -118,6 +118,9 @@ export const dictionaries: Dictionary = {
   footerTerms: { en: "Terms", ar: "الشروط" },
   footerContact: { en: "Contact", ar: "اتصل بنا" },
   footerCopyright: { en: "© 2026 THE VISTA. All rights reserved.", ar: "جميع الحقوق محفوظة © 2026 ذا فيستا." },
+  socialInsta: { en: "#", ar: "#" },
+  socialFB: { en: "#", ar: "#" },
+  socialX: { en: "#", ar: "#" },
 
   // Property Details Page (General Labels)
   hostedBy: { en: "Hosted by The Vista Concierge", ar: "بإدارة ذا فيستا كونسيرج" },

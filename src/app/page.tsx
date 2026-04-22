@@ -7,16 +7,25 @@ import BookingWidget from "@/components/BookingWidget";
 import { useLanguage } from "@/context/LanguageContext";
 import { useUser } from "@/context/UserContext";
 import { getProperties } from "@/data/api";
+import { getPublicOccupancyServer } from "@/app/actions/bookings";
 import { Property } from "@/data/properties";
 
 export default function Home() {
   const { t, lang } = useLanguage();
   const { toggleWishlist, isInWishlist } = useUser();
   const [properties, setProperties] = useState<Property[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
 
   useEffect(() => {
+    // 1. Fetch properties that aren't manually hidden
     getProperties({ includeHidden: false }).then(setProperties);
+    
+    // 2. Ghost Bridge: Fetch secure occupancy dates via Server Action (bypasses RLS)
+    getPublicOccupancyServer().then(setBookings);
   }, []);
+
+  // Filter properties: ON is visible, OFF is invisible
+  const visibleProperties = properties.filter(p => !p.isBooked);
 
   return (
     <main className="w-full min-h-screen pb-24">
@@ -32,16 +41,16 @@ export default function Home() {
         {/* HERO TYPOGRAPHY */}
         <div className="relative z-20 text-center px-6 pb-24 md:pb-32 mt-10 md:mt-0">
           <h1 className="text-5xl md:text-7xl font-heading font-medium text-white tracking-tight drop-shadow-lg max-w-4xl mx-auto">
-            {t('pinnacleTitle') !== 'pinnacleTitle' ? t('pinnacleTitle') : t('heroTitle')}
+            {t('heroTitle')}
           </h1>
           <p className="mt-6 text-lg md:text-xl font-body text-white/90 font-light drop-shadow-md max-w-2xl mx-auto">
-            {t('pinnacleSub') !== 'pinnacleSub' ? t('pinnacleSub') : t('heroSubtitle')}
+            {t('heroSubtitle')}
           </p>
         </div>
 
         {/* THE BOOKING WIDGET (INTERACTIVE CLIENT COMPONENT) */}
         <div className="absolute -bottom-8 md:-bottom-[4.5rem] z-30 w-full flex justify-center px-4">
-          <BookingWidget properties={properties} />
+          <BookingWidget properties={visibleProperties} />
         </div>
       </div>
 
@@ -50,10 +59,10 @@ export default function Home() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
           <div>
             <h2 className="text-3xl md:text-4xl font-heading font-medium text-navy tracking-tight">
-              {t('curatedTitle') !== 'curatedTitle' ? t('curatedTitle') : "Curated for You"}
+              {t('curatedTitle')}
             </h2>
             <p className="mt-2 text-muted font-body text-lg">
-              {t('curatedSub') !== 'curatedSub' ? t('curatedSub') : "Exceptional homes in the most sought-after destinations."}
+              {t('curatedSub')}
             </p>
           </div>
           <Link href="/search" className="mt-4 md:mt-0 self-start md:self-auto">
@@ -65,13 +74,13 @@ export default function Home() {
 
         {/* CSS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {properties.length === 0 ? (
+          {visibleProperties.length === 0 ? (
              <div className="col-span-full py-24 flex justify-center items-center gap-2">
                <div className="w-2.5 h-2.5 bg-primary/40 rounded-full animate-pulse"></div>
                <div className="w-2.5 h-2.5 bg-primary/70 rounded-full animate-pulse delay-75"></div>
                <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse delay-150"></div>
              </div>
-          ) : properties.map((property) => (
+          ) : visibleProperties.map((property) => (
             <Link href={`/property/${property.id}`} key={property.id}>
               <article 
                 className="group bg-surface rounded-2xl overflow-hidden cursor-pointer h-full"
@@ -84,6 +93,25 @@ export default function Home() {
                     alt={property.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
                   />
+                  {/* Automated Booked Ribbon - Checks live dates against confirmed bookings */}
+                  {(() => {
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const todayStr = `${year}-${month}-${day}`;
+                    
+                    const isOccupancyToday = bookings.some(b => 
+                      String(b.property_id) === String(property.id) && 
+                      todayStr >= b.check_in && 
+                      todayStr < b.check_out
+                    );
+                    return isOccupancyToday ? (
+                      <div className="absolute top-0 left-0 z-30 bg-navy text-white px-3 py-1 rounded-br-xl text-[10px] font-black uppercase tracking-widest border-r border-b border-white/10">
+                        {t('fullyBooked')}
+                      </div>
+                    ) : null;
+                  })()}
                   <button 
                     onClick={(e) => { 
                       e.preventDefault();

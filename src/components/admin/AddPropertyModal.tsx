@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, Plus, Trash2, Loader2, CheckCircle } from "lucide-react";
 import { addProperty } from "@/data/api";
 import { Property } from "@/data/properties";
+import { useSession } from "@clerk/nextjs";
 
 const PROPERTY_TYPES = [
   "Villa", 
@@ -79,6 +80,7 @@ interface Props {
 }
 
 export default function AddPropertyModal({ isOpen, onClose, onSuccess }: Props) {
+  const { session } = useSession();
   const [form, setForm] = useState<FormData>(initialForm);
   const [isLoading, setIsLoading] = useState(false);
   const [isDone, setIsDone] = useState(false);
@@ -147,7 +149,8 @@ export default function AddPropertyModal({ isOpen, onClose, onSuccess }: Props) 
       isInstantBookable: form.isInstantBookable,
     };
 
-    const result = await addProperty(payload);
+    const token = await session?.getToken({ template: 'supabase' }) || undefined;
+    const result = await addProperty(payload, token);
     setIsLoading(false);
     if (result) {
       setIsDone(true);

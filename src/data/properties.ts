@@ -21,6 +21,9 @@ export interface Property {
   ownerEmail: string;
   isBooked?: boolean;
   isInstantBookable?: boolean;
+  cleaningFeeOverride?: number;
+  serviceFeeOverride?: number;
+  extraGuestFeeOverride?: number;
 }
 
 export const PROPERTIES: Property[] = [

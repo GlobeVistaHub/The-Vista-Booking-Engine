@@ -30,7 +30,7 @@ export const useAppModeStore = create<AppModeState>()(
       ownerName: 'Concierge',
       exchangeRate: 50.0,
       supportEmail: 'support@globevistahub.com',
-      isDemoMode: true,
+      isDemoMode: false,
       setWhiteLabel: (val) => set({ isWhiteLabel: val }),
       setDemoMode: (val) => set({ isDemoMode: val }),
       setBrandName: (name) => set({ brandName: name }),
