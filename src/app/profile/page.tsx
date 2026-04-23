@@ -25,6 +25,7 @@ export default function ProfilePage() {
     checkIn: string | null, 
     checkOut: string | null, 
     paymentStatus: string,
+    status: string,
     rawId: string | number,
     adults: number,
     children: number
@@ -42,34 +43,40 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchLiveData = async () => {
       const hidden = JSON.parse(localStorage.getItem('vista_hidden_bookings') || '[]');
+      
+      // 1. Fetch from Real DB
       const [bData, pData] = await Promise.all([getBookings(), getProperties()]);
       
-      const enrichedBookings = bData.map(b => {
-        const prop = b.property || pData.find(p => String(p.id) === String(b.property_id));
-        if (!prop) return null;
-        return {
-          bookingId: b.booking_reference || String(b.id),
-          property: prop,
-          checkIn: b.check_in || null,
-          checkOut: b.check_out || null,
-          paymentStatus: b.payment_status || 'pending',
-          rawId: b.id,
-          adults: b.adults,
-          children: b.children
-        };
-      }).filter(b => b && !hidden.includes(b.bookingId)) as any[];
-
-      // SMART FILTER: Hide 'failed' bookings if a 'paid' booking covers the same property/date
-      const filteredBookings = enrichedBookings.filter(current => {
-        if (current.paymentStatus !== 'failed') return true;
-        return !enrichedBookings.some(other => 
-          other.paymentStatus === 'paid' && 
-          String(other.property.id) === String(current.property.id) &&
-          other.checkIn === current.checkIn
-        );
+      // 2. Fetch from Simulation Store (Zustand)
+      const { useDataStore } = await import('@/store/dataStore');
+      const simBookings = useDataStore.getState().bookings;
+      
+      // 3. Merge Real + Simulated (Deduplicate by ID)
+      const mergedBookings = [...bData];
+      simBookings.forEach(sim => {
+        if (!mergedBookings.some(b => String(b.id) === String(sim.id))) {
+          mergedBookings.push(sim);
+        }
       });
+      
+      const enrichedBookings = mergedBookings
+        .map(b => {
+          const prop = b.property || pData.find(p => String(p.id) === String(b.property_id));
+          if (!prop) return null;
+          return {
+            bookingId: b.booking_reference || String(b.id),
+            property: prop,
+            checkIn: b.check_in || null,
+            checkOut: b.check_out || null,
+            paymentStatus: b.payment_status || 'pending',
+            status: b.status || 'pending',
+            rawId: b.id,
+            adults: b.adults,
+            children: b.children
+          };
+        }).filter(b => b && !hidden.includes(b.bookingId)) as any[];
 
-      setAllBookings(filteredBookings);
+      setAllBookings(enrichedBookings);
       setAllProperties(pData);
     };
     
@@ -306,8 +313,14 @@ export default function ProfilePage() {
                         <img src={property.images[0]} alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute top-4 right-4 flex gap-2">
                           {bookingFilter === "upcoming" && (
-                            <div className="px-3 py-1 bg-emerald-500 rounded-full text-[10px] font-bold text-white shadow-sm uppercase tracking-wider">
-                                Confirmed
+                            <div className={`px-3 py-1 rounded-full text-[10px] font-bold text-white shadow-sm uppercase tracking-wider ${
+                              booking.status === 'confirmed' ? "bg-emerald-500" :
+                              booking.status === 'cancelled' ? "bg-slate-400" :
+                              "bg-amber-500"
+                            }`}>
+                                {booking.status === 'confirmed' ? "Confirmed" : 
+                                 booking.status === 'cancelled' ? "Cancelled" : 
+                                 "Reserved"}
                             </div>
                           )}
                           <button 

@@ -26,7 +26,8 @@ export async function POST(req: Request) {
     const safeMerchantId = merchantOrderId || "0";
     const safePaymobId = paymobOrderId || "0";
 
-    const { error: updateError } = await supabaseAdmin
+    // UPDATE: Atomic Flip - only update if status is still 'pending'
+    const { data: updatedRows, error: updateError } = await supabaseAdmin
       .from("bookings")
       .update({
         payment_status: isSuccess ? "paid" : "failed",
@@ -35,25 +36,23 @@ export async function POST(req: Request) {
         paymob_transaction_id: transactionId,
         transaction_id: transactionId,
       })
-      .or(`id.eq.${safeMerchantId},paymob_order_id.eq.${safePaymobId}`);
+      .or(`id.eq.${safeMerchantId},paymob_order_id.eq.${safePaymobId}`)
+      .eq('status', 'pending') // THE LOCK: Only if it hasn't been confirmed yet
+      .select();
 
     if (updateError) console.error("[PAYMOB CALLBACK POST ERROR]", updateError);
 
-    // [INTEGRATION] Atomic Winner Trigger: Only fire if we actually changed the status to confirmed
-    if (isSuccess && !updateError) {
+    // Only fire n8n if THIS request was the one that successfully flipped it to 'confirmed'
+    const wasFlippedNow = isSuccess && !updateError && updatedRows && updatedRows.length > 0;
+    
+    if (wasFlippedNow) {
       const { data: bookingRecord } = await supabaseAdmin
         .from("bookings")
         .select(`*, property:properties(*)`)
-        .or(`id.eq.${safeMerchantId},paymob_order_id.eq.${safePaymobId}`)
-        .eq('status', 'confirmed') // Only if it's already confirmed (after our update)
-        .limit(1)
+        .eq('id', updatedRows[0].id)
         .single();
 
       if (bookingRecord) {
-        // We add a 'processed' flag check or just rely on the fact that N8N is idempotent?
-        // Actually, the best way is to only fire if the record was JUST updated.
-        // For now, we fire and let N8N handle deduplication if needed, 
-        // but the GET side will now have the same check.
         await triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Hook Error]:", e));
       }
     }
@@ -92,40 +91,38 @@ export async function GET(req: Request) {
   const resolvedId = vistaId || merchantId;
 
   if (success) {
-    if (resolvedId && resolvedId !== "null" && resolvedId !== "") {
-      const numericId = Number(resolvedId);
-      if (!isNaN(numericId)) {
-        const { error } = await supabaseAdmin
-          .from("bookings")
-          .update({
-            payment_status: "paid",
-            status: "confirmed",
-            paymob_transaction_id: paymobTxId ? String(paymobTxId) : null,
-            transaction_id: paymobTxId ? String(paymobTxId) : null,
-          })
-          .eq("id", numericId);
-
-        if (error) {
-          console.error("[CALLBACK GET] DB update error:", error.message);
-        } else {
-          // [SAFETY NET] The 'First Responder' Check
-          // We check if the booking is currently 'confirmed' AND if we should send the dossier.
-          const { data: bookingRecord } = await supabaseAdmin
+      if (resolvedId && resolvedId !== "null" && resolvedId !== "") {
+        const numericId = Number(resolvedId);
+        if (!isNaN(numericId)) {
+          // Atomic Safety Net: Only update if background POST hasn't already done it
+          const { data: updatedRows, error } = await supabaseAdmin
             .from("bookings")
-            .select(`*, property:properties(*)`)
+            .update({
+              payment_status: "paid",
+              status: "confirmed",
+              paymob_transaction_id: paymobTxId ? String(paymobTxId) : null,
+              transaction_id: paymobTxId ? String(paymobTxId) : null,
+            })
             .eq("id", numericId)
-            .single();
+            .eq("status", "pending") // THE LOCK: Only flip if still pending
+            .select();
 
-          if (bookingRecord && bookingRecord.status === 'confirmed') {
-             // In a perfect world, we'd have a 'dossier_sent' flag in the DB.
-             // For now, if the background POST failed, this GET will bail it out.
-             // To prevent double-fire IF the POST arrived a millisecond ago, 
-             // we'd need a flag. Let's add the logic to be safe.
-             await triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N GET Bailout Error]:", e));
+          if (error) {
+            console.error("[CALLBACK GET] DB update error:", error.message);
+          } else if (updatedRows && updatedRows.length > 0) {
+            // This GET request was the 'First Responder' (POST was slow or failed)
+            const { data: bookingRecord } = await supabaseAdmin
+              .from("bookings")
+              .select(`*, property:properties(*)`)
+              .eq("id", numericId)
+              .single();
+
+            if (bookingRecord) {
+               await triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N GET Bailout Error]:", e));
+            }
           }
         }
       }
-    }
 
     return NextResponse.redirect(
       new URL(`/success?vista_id=${resolvedId || ""}&id=${paymobTxId || ""}`, req.url)

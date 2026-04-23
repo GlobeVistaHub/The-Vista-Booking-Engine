@@ -60,7 +60,7 @@ export default function PropertyCard({
       dir={lang === "ar" ? "rtl" : "ltr"}
     >
       {/* 1. INTERACTIVE ZONE: IMAGE & CAROUSEL (NO LINK) */}
-      <div className="relative w-full sm:w-72 h-56 sm:h-56 rounded-2xl overflow-hidden flex-shrink-0 bg-navy/5 shadow-sm">
+      <div className={`relative w-full sm:w-72 h-56 sm:h-56 rounded-2xl overflow-hidden flex-shrink-0 bg-navy/5 shadow-sm ${property.isBooked ? 'opacity-60 grayscale-[0.2]' : ''}`}>
         {/* Images */}
         <div className="relative w-full h-full">
           {property.images.map((img, idx) => (
@@ -118,7 +118,7 @@ export default function PropertyCard({
       {/* 2. NAVIGATION ZONE: DETAILS (WRAPPED IN LINK) */}
       <Link 
         href={linkHref}
-        className="flex flex-col flex-1 py-1 min-h-[180px] group/details"
+        className={`flex flex-col flex-1 py-1 min-h-[180px] group/details ${property.isBooked ? 'pointer-events-none opacity-60 grayscale-[0.2]' : ''}`}
       >
         <div className="flex justify-between items-start">
           <div className="space-y-1">

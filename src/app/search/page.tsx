@@ -8,8 +8,7 @@ import { parseISO } from "date-fns";
 import PropertyCard from "@/components/PropertyCard";
 import MapWrapper from "@/components/MapWrapper";
 import { useLanguage } from "@/context/LanguageContext";
-import { getProperties } from "@/data/api";
-import { getPublicOccupancyServer } from "@/app/actions/bookings";
+import { getProperties, getPublicOccupiedDates } from "@/data/api";
 import { Property } from "@/data/properties";
 
 // ─── Inner component (needs useSearchParams inside Suspense) ────────────────
@@ -24,8 +23,11 @@ function SearchContent() {
 
   useEffect(() => {
     getProperties({ includeHidden: false }).then(setAllProperties);
-    // Ghost Bridge: Fetch secure occupancy dates via Server Action (bypasses RLS)
-    getPublicOccupancyServer().then(setBookings).finally(() => setIsLoading(false));
+    // Smart Fetch: Get occupancy dates (handles Demo vs Real automatically)
+    getPublicOccupiedDates().then(data => {
+      console.log(`[Vista-Search] Syncing occupancy data... Found ${data.length} records.`);
+      setBookings(data);
+    }).finally(() => setIsLoading(false));
   }, []);
 
   // Filter out manually hidden properties (Switch OFF)
@@ -51,7 +53,7 @@ function SearchContent() {
 
   // ── Step 1: Apply URL-level filters (location + guests) ──────────────────
   const urlFilteredProperties = useMemo(() => {
-    return allProperties.filter(p => {
+    return filteredAvailable.filter(p => {
       if (urlLocation && p.location !== urlLocation) return false;
       if (totalGuests > 0 && Number(p.guests) < totalGuests) return false;
       return true;
@@ -126,7 +128,7 @@ function SearchContent() {
           </div>
 
           {/* FILTER BAR */}
-          <div className="border-b border-navy/5 bg-white sticky top-20 z-[100] relative">
+          <div className="border-b border-navy/5 bg-white sticky top-20 z-[200] relative">
 
             {/* SLIDER ROW */}
             <div
@@ -149,8 +151,8 @@ function SearchContent() {
                   id="type-filter-btn"
                   onClick={() => { setIsTypeOpen(!isTypeOpen); setIsPriceOpen(false); }}
                   className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${selectedTypes.length > 0
-                      ? "bg-navy text-white border-navy shadow-lg shadow-navy/20"
-                      : "bg-white text-navy border-navy/10 hover:border-navy hover:bg-navy/[0.02]"
+                    ? "bg-navy text-white border-navy shadow-lg shadow-navy/20"
+                    : "bg-white text-navy border-navy/10 hover:border-navy hover:bg-navy/[0.02]"
                     }`}
                 >
                   {t("typeOfPlace")}
@@ -161,8 +163,8 @@ function SearchContent() {
                   id="price-filter-btn"
                   onClick={() => { setIsPriceOpen(!isPriceOpen); setIsTypeOpen(false); }}
                   className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${priceRange.min > 0 || priceRange.max < 2000
-                      ? "bg-navy text-white border-navy shadow-lg shadow-navy/20"
-                      : "bg-white text-navy border-navy/10 hover:border-navy hover:bg-navy/[0.02]"
+                    ? "bg-navy text-white border-navy shadow-lg shadow-navy/20"
+                    : "bg-white text-navy border-navy/10 hover:border-navy hover:bg-navy/[0.02]"
                     }`}
                 >
                   {t("price")}
@@ -172,8 +174,8 @@ function SearchContent() {
                 <button
                   onClick={() => setInstantBookOnly(!instantBookOnly)}
                   className={`flex-shrink-0 px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 flex items-center gap-2 ${instantBookOnly
-                      ? "bg-navy text-white border-navy shadow-lg shadow-navy/30"
-                      : "bg-white text-navy/40 border-navy/10 hover:border-navy/30 hover:bg-navy/5"
+                    ? "bg-navy text-white border-navy shadow-lg shadow-navy/30"
+                    : "bg-white text-navy/40 border-navy/10 hover:border-navy/30 hover:bg-navy/5"
                     }`}
                 >
                   <Zap className={`w-3.5 h-3.5 ${instantBookOnly ? "fill-current" : "text-primary"}`} />
@@ -184,7 +186,7 @@ function SearchContent() {
 
             {/* FLOATING DROPDOWN LAYER */}
             <div
-              className="absolute top-0 left-0 w-full pointer-events-none z-[110]"
+              className="absolute top-0 left-0 w-full pointer-events-none z-[210]"
               style={{ transform: `translateX(-${scrollLeft}px)` }}
             >
               {isTypeOpen && (
@@ -257,8 +259,11 @@ function SearchContent() {
             ) : filteredProperties.length > 0 ? (
               <div className="flex flex-col">
                 {filteredProperties.map((property, idx) => {
-                  const propertyBookings = bookings.filter(b => String(b.property_id) === String(property.id));
-                  
+                  const propertyBookings = bookings.filter(b =>
+                    String(b.property_id) === String(property.id) &&
+                    b.status === 'confirmed'
+                  );
+
                   // Hybrid Ribbon Logic: Check search dates OR default to "Today" if no dates searched
                   const isOccupied = propertyBookings.some(b => {
                     const start2 = b.check_in;
@@ -285,7 +290,7 @@ function SearchContent() {
                       key={property.id}
                       property={{
                         ...property,
-                        isBooked: property.isBooked || !!isOccupied
+                        isBooked: !!isOccupied
                       }}
                       delayIndex={idx % 10}
                       searchContext={{ from: urlFrom, to: urlTo, adults: urlAdults, children: urlChildren }}
@@ -327,7 +332,7 @@ function SearchContent() {
 
         {/* MOBILE MAP MODAL */}
         {showMap && (
-          <div className="lg:hidden fixed inset-0 z-[100] flex flex-col bg-white">
+          <div className="lg:hidden fixed inset-0 z-[300] flex flex-col bg-white">
             <div className="flex-1 relative">
               <MapWrapper properties={filteredProperties} />
             </div>

@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { getBookings, updateBookingStatus, Booking } from "@/data/api";
+import { getBookings, updateBookingStatus, togglePropertyStatus, Booking } from "@/data/api";
+import { triggerDossierFromAdmin } from "@/app/actions/bookings";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { useAuth } from "@clerk/nextjs";
 import { useAppModeStore } from "@/store/appModeStore";
 import SystemControlToggle from "@/components/SystemControlToggle";
+import { supabase } from "@/lib/supabase";
 import {
   CalendarDays,
   Search,
@@ -38,31 +40,75 @@ export default function BookingsDashboard() {
 
   useEffect(() => {
     fetchBookings();
+
+    // ENABLE REALTIME INTELLIGENCE
+    // This ensures that failures and bookings update VISUALLY the second they happen.
+    const channel = supabase
+      .channel('bookings-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings' },
+        () => {
+          console.log("[Vista-Admin] Realtime update detected, refreshing list...");
+          fetchBookings();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchBookings, isDemoMode]);
 
   const handleStatusChange = async (id: string | number, newStatus: 'pending' | 'confirmed' | 'cancelled') => {
     setUpdatingId(id);
 
-    // 1. Instant UI Update (Optimistic)
-    const now = new Date().toISOString();
-    setBookings(prev => prev.map(b => {
-      if (String(b.id) === String(id)) {
-        return {
-          ...b,
-          status: newStatus,
-          // VERCEL FIX: Override strict TypeScript checks
-          confirmed_at: newStatus === 'confirmed' ? now : (b as any).confirmed_at,
-          cancelled_at: newStatus === 'cancelled' ? now : (b as any).cancelled_at
-        };
+    try {
+      // 1. Find the booking and current status for transition checks
+      const bookingToUpdate = bookings.find(b => String(b.id) === String(id));
+      const currentStatus = bookingToUpdate?.status;
+      
+      // VERCEL FIX: Robust property ID detection
+      const propertyId = bookingToUpdate?.property_id || (bookingToUpdate as any).property?.id;
+
+      console.log(`[Vista-Admin] Flipping booking ${id} to ${newStatus}. Target Property: ${propertyId}`);
+
+      // 2. Real Database Transaction (WAIT for completion)
+      const token = await getToken({ template: 'supabase' }) || undefined;
+      
+      if (!token && !useAppModeStore.getState().isDemoMode) {
+        alert("Session error: Could not retrieve a secure token from Clerk. Please refresh the page and try again.");
+        setUpdatingId(null);
+        return;
       }
-      return b;
-    }));
 
-    // 2. Real Database Transaction
-    const token = await getToken({ template: 'supabase' }) || undefined;
-    await updateBookingStatus(id, newStatus, undefined, token);
+      const success = await updateBookingStatus(id, newStatus, undefined, token);
 
-    setUpdatingId(null);
+      if (!success) {
+        alert("Failed to update status in database. This is often due to permissions (RLS) or missing columns. Check your browser console (F12) for the specific error details.");
+        setUpdatingId(null);
+        return;
+      }
+
+      // 3. Side-Effect: Trigger N8N dossier workflow if confirmed
+      if (currentStatus === 'pending' && newStatus === 'confirmed') {
+        try {
+          await triggerDossierFromAdmin(id.toString());
+        } catch (err) {
+          console.error("[Vista-Admin] N8N Trigger failed:", err);
+        }
+      }
+
+      // 4. Finalize UI Sync
+      await fetchBookings();
+      alert(`Booking successfully ${newStatus}!`);
+
+    } catch (err) {
+      console.error("[Vista-Admin] Status change failed:", err);
+      alert("An unexpected error occurred while updating the booking.");
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const filteredBookings = bookings.filter(b =>
@@ -71,8 +117,12 @@ export default function BookingsDashboard() {
     b.id.toString().includes(searchQuery)
   );
 
-  const getStatusConfig = (status: string) => {
-    switch (status) {
+  const getStatusConfig = (booking: Booking) => {
+    if (booking.status === 'pending' && booking.payment_status === 'failed') {
+      return { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: Clock, label: 'Payment Failed' };
+    }
+    
+    switch (booking.status) {
       case 'confirmed': return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: CheckCircle2, label: 'Confirmed' };
       case 'pending': return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: Clock, label: 'Pending' };
       case 'cancelled': return { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: XCircle, label: 'Cancelled' };
@@ -110,7 +160,9 @@ export default function BookingsDashboard() {
           />
         </div>
         <div className="flex items-center gap-2 text-sm font-medium text-navy/70">
-          Total Bookings: <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold">{bookings.length}</span>
+          Active Bookings: <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold">
+            {bookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length}
+          </span>
         </div>
       </div>
 
@@ -151,12 +203,12 @@ export default function BookingsDashboard() {
                 </thead>
                 <tbody className="divide-y divide-navy/5">
                   {filteredBookings.map((booking) => {
-                    const safeStatus = (booking.status ?? 'pending') as 'pending' | 'confirmed' | 'cancelled';
+                    const desktopSt = getStatusConfig(booking);
+                    const safeStatus = booking.status;
                     const minutesAgo = Math.floor((new Date().getTime() - new Date(booking.created_at).getTime()) / 60000);
                     const isLongPending = safeStatus === 'pending' && minutesAgo > 120; // 2 Hour Window
 
-                    const StatusIcon = getStatusConfig(safeStatus).icon;
-                    const desktopSt = getStatusConfig(safeStatus);
+                    const StatusIcon = desktopSt.icon;
 
                     return (
                       <tr key={booking.id} className={`hover:bg-slate-50/40 transition-colors group ${isLongPending ? "bg-primary/[0.02]" : ""}`}>
@@ -187,7 +239,11 @@ export default function BookingsDashboard() {
                               </div>
                             )}
                             <div>
-                              <p className="font-bold text-navy text-sm">{booking.guest_name}</p>
+                            <p className="font-bold text-navy text-sm">
+                              {booking.guest_name && booking.guest_name !== 'Guest' 
+                                ? booking.guest_name 
+                                : booking.guest_email.split('@')[0]}
+                            </p>
                               <p className="text-xs text-primary font-medium mt-0.5">{booking.property?.title || 'Unknown Property'}</p>
                               <div className="flex items-center gap-1 text-[10px] text-muted mt-1">
                                 <Mail className="w-3 h-3" />
@@ -277,7 +333,7 @@ export default function BookingsDashboard() {
             <div className="md:hidden divide-y divide-navy/5">
               {filteredBookings.map((booking) => {
                 const safeStatus = (booking.status ?? 'pending') as 'pending' | 'confirmed' | 'cancelled';
-                const mobileSt = getStatusConfig(safeStatus);
+                const mobileSt = getStatusConfig(booking);
                 const StatusIcon = mobileSt.icon;
 
                 return (

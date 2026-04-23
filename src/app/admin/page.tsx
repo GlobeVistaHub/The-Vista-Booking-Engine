@@ -59,7 +59,8 @@ export default function AdminPage() {
   const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
   const pendingBookings = bookings.filter(b => b.status === 'pending');
   // Leads: Transactions that reached checkout but failed (Payment Interruption)
-  const failedPayments = bookings.filter(b => b.payment_status === 'failed');
+  // We only count them if the booking is still 'pending' (not yet cancelled or confirmed)
+  const failedPayments = bookings.filter(b => b.payment_status === 'failed' && b.status === 'pending');
   const totalRevenue = confirmedBookings.reduce((sum, b) => sum + b.total_price, 0);
   
   // Recent activity (last 5)
@@ -121,8 +122,11 @@ export default function AdminPage() {
               <p className="text-sm font-bold text-muted uppercase tracking-wider">Active Bookings</p>
             </div>
             <div className="flex items-center justify-between">
-              <h3 className="text-3xl font-heading font-black">{confirmedBookings.length}</h3>
-              <span className="text-[10px] bg-slate-100 px-2 py-1 rounded-md font-bold text-muted uppercase">Confirmed</span>
+              <h3 className="text-3xl font-heading font-black">{confirmedBookings.length + pendingBookings.filter(b => b.payment_status !== 'failed').length}</h3>
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-[9px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md font-bold uppercase border border-emerald-100">{confirmedBookings.length} Paid</span>
+                <span className="text-[9px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md font-bold uppercase border border-amber-100">{pendingBookings.filter(b => b.payment_status !== 'failed').length} Pending</span>
+              </div>
             </div>
           </div>
 
@@ -200,7 +204,11 @@ export default function AdminPage() {
                 {recentBookings.map((booking) => (
                   <tr key={booking.id} className="hover:bg-slate-50/40 transition-colors group">
                     <td className="px-6 py-4">
-                      <p className="font-bold text-navy text-sm">{booking.guest_name}</p>
+                      <p className="font-bold text-navy text-sm">
+                        {booking.guest_name && booking.guest_name !== 'Guest' 
+                          ? booking.guest_name 
+                          : booking.guest_email?.split('@')[0] || 'Unknown Guest'}
+                      </p>
                       <p className="text-[10px] text-muted truncate max-w-[150px]">{booking.guest_email}</p>
                     </td>
                     <td className="px-6 py-4">
@@ -220,11 +228,13 @@ export default function AdminPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${
-                        booking.payment_status === 'paid' || booking.status === 'confirmed'
+                        booking.status === 'cancelled'
+                          ? "bg-rose-50 text-rose-700 border-rose-100"
+                        : booking.status === 'confirmed' || booking.payment_status === 'paid'
                           ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
-                          : booking.payment_status === 'failed'
+                        : booking.payment_status === 'failed'
                           ? "bg-rose-50 text-rose-700 border-rose-100 animate-pulse"
-                          : "bg-amber-50 text-amber-700 border-amber-100"
+                        : "bg-amber-50 text-amber-700 border-amber-100"
                       }`}>
                         {booking.payment_status === 'failed' ? "Payment Failed" : booking.status}
                       </span>

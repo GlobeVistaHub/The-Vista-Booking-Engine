@@ -43,7 +43,7 @@ export const getSiteContent = async (clerkToken?: string): Promise<SiteLabel[]> 
 
 export const updateSiteLabel = async (label: SiteLabel, clerkToken?: string): Promise<boolean> => {
   const supabase = createClerkSupabaseClient(clerkToken);
-  const { error } = await supabase.from('site_content').upsert(label);
+  const { error } = await supabase.from('site_content').upsert(label, { onConflict: 'key' });
   if (error) console.error("updateSiteLabel Error:", error);
   return !error;
 };
@@ -86,7 +86,7 @@ export const getProperties = async (options?: { includeHidden?: boolean }, clerk
     return [];
   }
 
-  return (data || []).map(p => ({
+  return (data || []).map((p: any) => ({
     ...p,
     baseGuests: p.base_guests,
     ownerPhone: p.owner_phone,
@@ -165,7 +165,7 @@ export const getBookings = async (clerkToken?: string): Promise<Booking[]> => {
     return [];
   }
 
-  return (data || []).map(b => {
+  return (data || []).map((b: any) => {
     const propData = Array.isArray(b.property) ? b.property[0] : b.property;
     return {
       ...b,
@@ -196,23 +196,10 @@ export const getPublicOccupiedDates = async (): Promise<{ property_id: string | 
   }
 
   try {
-    const { data, error } = await defaultSupabase
-      .from('bookings')
-      .select('property_id, check_in, check_out')
-      .eq('status', 'confirmed');
-
-    if (error) {
-      console.warn('[Vista-Diagnostics] Security block on public bookings:', error.message);
-      return [];
-    }
-    
-    if (!data || data.length === 0) {
-      console.log('[Vista-Diagnostics] Public occupancy query returned 0 results. Checking if this is an RLS issue...');
-    }
-
-    return data || [];
+    const { getPublicOccupancyServer } = await import('@/app/actions/bookings');
+    return await getPublicOccupancyServer();
   } catch (err) {
-    console.error('[Vista-Diagnostics] Fatal failure in public date query:', err);
+    console.error('[Vista-Diagnostics] Ghost Bridge unreachable:', err);
     return [];
   }
 };
@@ -225,12 +212,17 @@ export const updateBookingStatus = async (id: string | number, status: 'pending'
   }
   const updateData: any = { status };
   if (paymentStatus) updateData.payment_status = paymentStatus;
-  
+
   if (status === 'confirmed') updateData.confirmed_at = new Date().toISOString();
   if (status === 'cancelled') updateData.cancelled_at = new Date().toISOString();
 
   const supabase = createClerkSupabaseClient(clerkToken);
   const { error } = await supabase.from('bookings').update(updateData).eq('id', id);
+
+  if (error) {
+    console.error('[Vista-Database] Error updating booking status:', error.message, error.details);
+  }
+
   return !error;
 };
 
@@ -244,7 +236,7 @@ export const updatePropertyOverrides = async (id: string | number, overrides: { 
     });
     return true;
   }
-  
+
   const updateData = {
     cleaning_fee_override: overrides.cleaningFee,
     service_fee_override: overrides.serviceFeeRate,
@@ -264,6 +256,11 @@ export const togglePropertyStatus = async (id: string | number, currentStatus: b
   }
   const supabase = createClerkSupabaseClient(clerkToken);
   const { error } = await supabase.from('properties').update({ is_booked: !currentStatus }).eq('id', id);
+
+  if (error) {
+    console.error('[Vista-Database] Error toggling property booked status:', error.message, error.details);
+  }
+
   return !error;
 };
 
@@ -297,7 +294,7 @@ export async function batchCreateProperties(properties: Partial<Property>[], cle
 
   if (isDemoMode) {
     const existingProps = useDataStore.getState().properties;
-    
+
     // Fallback ID generation for properties without an ID in the CSV
     const numericIds = existingProps.map(p => Number(p.id)).filter(id => !isNaN(id));
     let nextId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
@@ -323,7 +320,7 @@ export async function batchCreateProperties(properties: Partial<Property>[], cle
   // This prevents the "ID is text" rejection error
   const supabase = createClerkSupabaseClient(clerkToken);
   const { error } = await supabase.from('properties').insert(baseMappedProps);
-  
+
   if (error) {
     console.error("Supabase Bulk Insert Error:", error);
     return false;
@@ -380,5 +377,66 @@ export const createBooking = async (booking: Omit<Booking, "id" | "booking_refer
   } catch (err) {
     console.error("Supabase createBooking error:", err);
     return null;
+  }
+};
+
+// -------------------------------------------------------------------------
+// Retention & Intelligence Handshakes (n8n)
+// -------------------------------------------------------------------------
+
+export const triggerN8NFailRecovery = async (booking: Booking, property: any) => {
+  try {
+    console.log("[n8n-Diagnostic] Attempting Failure Recovery Handshake...", { bookingId: booking.id, webhook: "...9386" });
+    const payload = {
+      event: "payment_failed",
+      booking: {
+        ...booking,
+        property_title: property?.title || "Luxury Property",
+        property_location: property?.location || "Prime Location",
+        check_in_formatted: booking.check_in,
+        check_out_formatted: booking.check_out,
+        total_price_formatted: `$${booking.total_price.toLocaleString()}`
+      }
+    };
+    
+    const response = await fetch("https://primary-production-4590.up.railway.app/webhook/e7811977-a84c-4974-9586-7a8717909386", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      console.log("[n8n-Diagnostic] Failure Recovery SUCCESS (200 OK)");
+    } else {
+      console.error("[n8n-Diagnostic] Failure Recovery FAILED:", response.status, response.statusText);
+    }
+    return response.ok;
+  } catch (err) {
+    console.error("[n8n-Diagnostic] Failure Recovery CRASHED:", err);
+    return false;
+  }
+};
+
+export const triggerDossierFromAdmin = async (bookingId: string) => {
+  try {
+    console.log("[n8n-Diagnostic] Attempting Admin Dossier Trigger...", { bookingId, webhook: "...359f1" });
+    const response = await fetch("https://primary-production-4590.up.railway.app/webhook/a552803a-c800-474c-83b3-8b77626359f1", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        booking_id: bookingId,
+        source: "admin_manual_confirmation"
+      })
+    });
+
+    if (response.ok) {
+      console.log("[n8n-Diagnostic] Admin Dossier SUCCESS (200 OK)");
+    } else {
+      console.error("[n8n-Diagnostic] Admin Dossier FAILED:", response.status, response.statusText);
+    }
+    return response.ok;
+  } catch (err) {
+    console.error("[n8n-Diagnostic] Admin Dossier CRASHED:", err);
+    return false;
   }
 };
