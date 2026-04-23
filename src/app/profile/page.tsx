@@ -82,6 +82,23 @@ export default function ProfilePage() {
     
     if (isLoaded && clerkUser) {
       fetchLiveData();
+
+      // REAL-TIME INTELLIGENCE: Listen for status flips while the guest is watching
+      const channel = supabase
+        .channel(`profile-${clerkUser.id}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'bookings', filter: `user_id=eq.${clerkUser.id}` },
+          () => {
+            console.log("[Vista-Profile] Realtime update detected, syncing guest dashboard...");
+            fetchLiveData();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [isLoaded, clerkUser?.id]);
 
