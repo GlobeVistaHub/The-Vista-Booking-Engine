@@ -284,7 +284,15 @@ export default function BookingsDashboard() {
                         <td className="px-6 py-5">
                           <div className="flex flex-col">
                             <span className="font-bold text-navy text-sm">${booking.total_price.toLocaleString()}</span>
-                            <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wide">Paid</span>
+                             <span className={`text-[10px] font-bold uppercase tracking-wide ${
+                               booking.payment_status === 'paid' ? 'text-emerald-600' : 
+                               booking.payment_status === 'failed' ? 'text-rose-600' : 
+                               'text-amber-600'
+                             }`}>
+                               {booking.payment_status === 'paid' ? 'Paid' : 
+                                booking.payment_status === 'failed' ? 'Failed' : 
+                                'Pending'}
+                             </span>
                           </div>
                         </td>
 
