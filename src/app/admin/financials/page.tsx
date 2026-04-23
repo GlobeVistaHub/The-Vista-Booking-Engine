@@ -17,6 +17,7 @@ import {
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@clerk/nextjs";
 import { useAppModeStore } from "@/store/appModeStore";
+import { supabase } from "@/lib/supabase";
 
 export default function FinancialsDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -27,6 +28,23 @@ export default function FinancialsDashboard() {
 
   useEffect(() => {
     fetchFinancials();
+
+    // REAL-TIME INTELLIGENCE: Update revenue and ledger live
+    const channel = supabase
+      .channel('financials-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings' },
+        () => {
+          console.log("[Vista-Financials] Money move detected, updating ledger...");
+          fetchFinancials();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [isDemoMode]);
 
   const fetchFinancials = async () => {
