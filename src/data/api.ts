@@ -187,12 +187,12 @@ export const getBookings = async (clerkToken?: string): Promise<Booking[]> => {
  * Privacy Shield: Returns only basic occupancy data for public site.
  * No guest names, no emails. Just ID + Dates.
  */
-export const getPublicOccupiedDates = async (): Promise<{ property_id: string | number, check_in: string, check_out: string }[]> => {
+export const getPublicOccupiedDates = async (): Promise<{ property_id: string | number, check_in: string, check_out: string, status: string }[]> => {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
   if (isDemoMode) {
     return useDataStore.getState().bookings
       .filter(b => b.status === 'confirmed')
-      .map(b => ({ property_id: b.property_id, check_in: b.check_in, check_out: b.check_out }));
+      .map(b => ({ property_id: b.property_id, check_in: b.check_in, check_out: b.check_out, status: b.status }));
   }
 
   try {
