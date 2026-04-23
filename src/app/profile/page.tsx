@@ -9,6 +9,7 @@ import type { Property } from "@/data/properties";
 import { User, Settings, LogOut, ChevronRight, Calendar, MapPin, Star, MessageSquare, ShieldCheck, Check, CreditCard, Trash2, Heart, Loader2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useUser as useClerkUser, SignOutButton } from "@clerk/nextjs";
+import { supabase } from "@/lib/supabase";
 
 export default function ProfilePage() {
   const { t, lang } = useLanguage();
