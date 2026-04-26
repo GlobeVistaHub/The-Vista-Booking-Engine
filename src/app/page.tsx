@@ -115,13 +115,12 @@ export default function Home() {
             const day = String(now.getDate()).padStart(2, '0');
             const todayStr = `${year}-${month}-${day}`;
 
-            const isOccupancyToday = bookings.some(b =>
+            // Show BOOKED for any confirmed booking that hasn't checked out yet
+            const isBooked = bookings.some(b =>
               String(b.property_id) === String(property.id) &&
-              (b.status === 'confirmed' || b.status === 'pending') &&
-              todayStr >= b.check_in &&
-              todayStr < b.check_out
+              b.status === 'confirmed' &&
+              b.check_out > todayStr
             );
-            const isBooked = isOccupancyToday;
 
             return (
               <Link

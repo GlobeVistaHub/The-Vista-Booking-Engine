@@ -122,6 +122,10 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
   form.append('ownerNotification', successMsg);
   form.append('guestEmail', booking.guest_email || "");
   form.append('bookingRef', formattedRef);
+  // Fields required by n8n email template
+  form.append('guestName', gName);
+  form.append('propertyName', prop?.title_en || prop?.title || "Vista Property");
+  form.append('ownerEmail', prop?.owner_email || "info@globevistahub.com");
 
   if (pdfBuffer) {
     form.append('dossier', pdfBuffer, { filename: `Vista_Dossier_${formattedRef}.pdf`, contentType: 'application/pdf' });

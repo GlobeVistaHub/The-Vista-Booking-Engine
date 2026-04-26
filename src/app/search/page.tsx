@@ -297,13 +297,8 @@ function SearchContent() {
                       const end1 = urlTo;
                       return start1 < end2 && start2 < end1;
                     } else {
-                      // Case B: No search dates - default to "Today" (consistency with home page)
-                      const now = new Date();
-                      const year = now.getFullYear();
-                      const month = String(now.getMonth() + 1).padStart(2, '0');
-                      const day = String(now.getDate()).padStart(2, '0');
-                      const todayStr = `${year}-${month}-${day}`;
-                      return todayStr >= start2 && todayStr < end2;
+                      // Case B: No search dates — show BOOKED for any confirmed booking not yet ended
+                      return b.status === 'confirmed' && b.check_out > todayStr;
                     }
                   });
 

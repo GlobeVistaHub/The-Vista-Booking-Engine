@@ -22,15 +22,15 @@ export async function getPublicOccupancyServer() {
       console.error("[Ghost-Bridge] Confirmed fetch error:", confError.message);
     }
 
-    // 2. Fetch INTERRUPTED / FAILED CHECKOUT bookings (Blocked for 2 hours only)
+    // 2. Fetch INTERRUPTED / FAILED and PENDING bookings (Blocked for 2 hours only)
+    // This blocks calendar dates for anyone who reached checkout OR had a payment fail.
     const twoHoursAgo = new Date();
     twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
 
-    // We check for status='interrupted' OR payment_status='failed' to catch all checkout leads
     const { data: interruptedData, error: intError } = await supabaseAdmin
       .from('bookings')
       .select('property_id, check_in, check_out, status')
-      .or('status.eq.interrupted,payment_status.eq.failed')
+      .or('status.eq.interrupted,status.eq.pending,payment_status.eq.failed')
       .gte('created_at', twoHoursAgo.toISOString());
 
     if (intError) {

@@ -46,6 +46,9 @@ export default function ProfilePage() {
   // Fetch live data — only runs once Clerk has confirmed identity
   useEffect(() => {
     const fetchLiveData = async () => {
+      // Silently expire any pending/interrupted bookings older than 2 hours
+      fetch('/api/bookings/cleanup', { method: 'POST' }).catch(() => {});
+
       const hidden = JSON.parse(localStorage.getItem('vista_hidden_bookings') || '[]');
 
       // 1. Fetch from Real DB using strict user isolation
@@ -85,7 +88,25 @@ export default function ProfilePage() {
           };
         }).filter(b => b && !hidden.includes(b.bookingId)) as any[];
 
-      setAllBookings(enrichedBookings);
+      // DEDUPLICATION: If a confirmed booking exists for the same property+dates,
+      // suppress any interrupted/failed booking for those same dates.
+      // Normalize dates to YYYY-MM-DD only to avoid format mismatches.
+      const toDate = (s: string | null) => s ? s.substring(0, 10) : '';
+      const confirmedBookings = enrichedBookings.filter(b => b.status === 'confirmed');
+      const deduplicatedBookings = enrichedBookings.filter(b => {
+        if (b.status === 'confirmed') return true;
+        if (b.paymentStatus === 'failed' || b.status === 'interrupted' || b.status === 'pending') {
+          const hasConfirmedVersion = confirmedBookings.some(confirmed =>
+            String(confirmed.property.id) === String(b.property.id) &&
+            toDate(confirmed.checkIn) === toDate(b.checkIn) &&
+            toDate(confirmed.checkOut) === toDate(b.checkOut)
+          );
+          if (hasConfirmedVersion) return false;
+        }
+        return true;
+      });
+
+      setAllBookings(deduplicatedBookings);
       setAllProperties(pData);
     };
 
@@ -304,7 +325,15 @@ export default function ProfilePage() {
               {/* RETENTION: ROSE FAILURE BANNER */}
               {bookingFilter === "upcoming" && (() => {
                 const activeFailedBooking = upcomingBookings.find(b => 
-                  b.paymentStatus === 'failed' && isWithinTwoHours(b.createdAt)
+                  (b.paymentStatus === 'failed' || b.status === 'interrupted' || b.status === 'pending') &&
+                  isWithinTwoHours(b.createdAt) &&
+                  // Only show banner if there is NO confirmed booking for this same property+dates
+                  !upcomingBookings.some(c =>
+                    c.status === 'confirmed' &&
+                    String(c.property.id) === String(b.property.id) &&
+                    c.checkIn === b.checkIn &&
+                    c.checkOut === b.checkOut
+                  )
                 );
                 
                 if (!activeFailedBooking) return null;
@@ -360,7 +389,7 @@ export default function ProfilePage() {
                                 }`}>
                                 {booking.status === 'confirmed' ? "CONFIRMED" :
                                   booking.status === 'cancelled' ? "CANCELLED" :
-                                    ((booking.paymentStatus === 'failed' || booking.status === 'interrupted') && isWithinTwoHours(booking.createdAt)) ? "RESERVED" :
+                                    ((booking.paymentStatus === 'failed' || booking.status === 'interrupted' || booking.status === 'pending') && isWithinTwoHours(booking.createdAt)) ? "RESERVED" :
                                       ""}
                               </div>
                             )}

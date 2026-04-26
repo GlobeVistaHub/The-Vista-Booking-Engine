@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         transaction_id: transactionId,
       })
       .or(`id.eq.${safeMerchantId},paymob_order_id.eq.${safePaymobId}`)
-      .eq('status', 'pending') // THE LOCK: Only if it hasn't been confirmed yet
+      .in('status', ['pending', 'interrupted']) // THE LOCK: Accept both pending AND resumed interrupted bookings
       .select();
 
     if (updateError) console.error("[PAYMOB CALLBACK POST ERROR]", updateError);
@@ -104,7 +104,7 @@ export async function GET(req: Request) {
               transaction_id: paymobTxId ? String(paymobTxId) : null,
             })
             .eq("id", numericId)
-            .eq("status", "pending") // THE LOCK: Only flip if still pending
+            .in('status', ['pending', 'interrupted']) // Accept both states to prevent duplication
             .select();
 
           if (error) {
