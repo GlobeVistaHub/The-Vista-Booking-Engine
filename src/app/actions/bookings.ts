@@ -12,23 +12,45 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 export async function getPublicOccupancyServer() {
   // Use a timestamp to prevent any server-side caching of the database query
   try {
-    const { data, error } = await supabaseAdmin
+    // 1. Fetch CONFIRMED bookings (Blocked forever until checkout)
+    const { data: confirmedData, error: confError } = await supabaseAdmin
       .from('bookings')
       .select('property_id, check_in, check_out, status')
-      .eq('status', 'confirmed'); // Only confirmed bookings block the property for the public
+      .eq('status', 'confirmed');
 
-    if (error) {
-      console.error("[Ghost-Bridge] Database rejection:", error.message);
-      return [];
+    if (confError) {
+      console.error("[Ghost-Bridge] Confirmed fetch error:", confError.message);
     }
 
-    return data || [];
+    // 2. Fetch INTERRUPTED / FAILED CHECKOUT bookings (Blocked for 2 hours only)
+    const twoHoursAgo = new Date();
+    twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
+
+    // We check for status='interrupted' OR payment_status='failed' to catch all checkout leads
+    const { data: interruptedData, error: intError } = await supabaseAdmin
+      .from('bookings')
+      .select('property_id, check_in, check_out, status')
+      .or('status.eq.interrupted,payment_status.eq.failed')
+      .gte('created_at', twoHoursAgo.toISOString());
+
+    if (intError) {
+      console.error("[Ghost-Bridge] Interrupted fetch error:", intError.message);
+    }
+
+    // PENDING ("Reserve Now" leads) are intentionally left out of this fetch. 
+    // This leaves the calendar open for other users while preserving your lead.
+    const allOccupied = [...(confirmedData || []), ...(interruptedData || [])];
+
+    return allOccupied;
   } catch (err) {
     console.error("[Ghost-Bridge] Fatal server failure:", err);
     return [];
   }
 }
 
+/**
+ * Admin Tool: Trigger the n8n Dossier manually from the Admin Dashboard
+ */
 export async function triggerDossierFromAdmin(bookingId: string) {
   try {
     const { data: booking, error: bError } = await supabaseAdmin

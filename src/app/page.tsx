@@ -8,6 +8,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useUser } from "@/context/UserContext";
 import { getProperties, getPublicOccupiedDates } from "@/data/api";
 import { Property } from "@/data/properties";
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const { t, lang } = useLanguage();
@@ -16,17 +17,38 @@ export default function Home() {
   const [bookings, setBookings] = useState<any[]>([]);
 
   useEffect(() => {
-    // 1. Fetch properties that aren't manually hidden
-    getProperties({ includeHidden: false }).then(setProperties);
+    const fetchAllData = () => {
+      // 1. Fetch properties that aren't manually hidden
+      getProperties({ includeHidden: false }).then(setProperties);
 
-    // 2. Smart Fetch: Get occupancy dates (handles Demo vs Real automatically)
-    getPublicOccupiedDates().then(data => {
-      console.log(`[Vista-Sync] Today's Occupancy Report: ${data.length} active bookings found.`);
-      if (data.length > 0) {
-        console.table(data.map(b => ({ property: b.property_id, check_in: b.check_in, check_out: b.check_out, status: b.status })));
-      }
-      setBookings(data);
-    });
+      // 2. Smart Fetch: Get occupancy dates (handles Demo vs Real automatically)
+      getPublicOccupiedDates().then(data => {
+        console.log(`[Vista-Sync] Today's Occupancy Report: ${data.length} active bookings found.`);
+        if (data.length > 0) {
+          console.table(data.map(b => ({ property: b.property_id, check_in: b.check_in, check_out: b.check_out, status: b.status })));
+        }
+        setBookings(data);
+      });
+    };
+
+    fetchAllData();
+
+    // ENABLE REALTIME SYNC (Visibility + Occupancy)
+    const propertiesChannel = supabase
+      .channel('public-properties-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, () => {
+        console.log("[Vista-Sync] Property visibility change detected...");
+        fetchAllData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        console.log("[Vista-Sync] Booking occupancy change detected...");
+        fetchAllData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(propertiesChannel);
+    };
   }, []);
 
   // Filter properties: ON is visible, OFF is invisible
@@ -95,7 +117,7 @@ export default function Home() {
 
             const isOccupancyToday = bookings.some(b =>
               String(b.property_id) === String(property.id) &&
-              b.status === 'confirmed' &&
+              (b.status === 'confirmed' || b.status === 'pending') &&
               todayStr >= b.check_in &&
               todayStr < b.check_out
             );

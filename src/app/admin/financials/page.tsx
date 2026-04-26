@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getBookings, Booking } from "@/data/api";
+import { getBookings } from "@/data/api";
+import type { Booking } from "@/data/types";
 import { format, parseISO } from "date-fns";
 import {
   DollarSign,

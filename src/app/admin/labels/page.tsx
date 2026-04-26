@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "@clerk/nextjs";
-import { getSiteContent, updateSiteLabel, SiteLabel } from "@/data/api";
+import { getSiteContent, updateSiteLabel } from "@/data/api";
+import type { SiteLabel } from "@/data/types";
 import { useLanguage } from "@/context/LanguageContext";
 import { 
   Loader2, 

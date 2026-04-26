@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getSiteContent, updateSiteLabel, SiteLabel, getBookings, getProperties, updateBookingStatus } from "@/data/api";
+import { getSiteContent, updateSiteLabel, getBookings, getProperties, updateBookingStatus } from "@/data/api";
+import type { SiteLabel } from "@/data/types";
 import { useSession } from "@clerk/nextjs";
 import { createClerkSupabaseClient } from "@/utils/supabaseClient";
 import { supabase as defaultSupabase } from "@/lib/supabase";

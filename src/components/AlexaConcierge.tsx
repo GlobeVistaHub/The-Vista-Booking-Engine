@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useChat } from 'ai/react';
-import { MessageCircle, X, Send, Mic, MicOff, Volume2, Keyboard, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Send, Mic, Volume2, Keyboard, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { GeminiLiveClient } from '@/lib/gemini-live-client';
 
 export default function AlexaConcierge() {
   const { lang, t } = useLanguage();
@@ -11,138 +12,58 @@ export default function AlexaConcierge() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [lastRequestTime, setLastRequestTime] = useState(0);
   const scrollRef = React.useRef<HTMLDivElement>(null);
   
-  const recognitionRef = React.useRef<any>(null);
-  
-  const initialGreeting = lang === 'ar' 
-    ? "أهلاً بك في ذا فيستا أنا أليكسا، مساعدتك الشخصية الفاخرة كيف يمكنني مساعدتك في التخطيط لرحلتك القادمة في مصر اليوم؟" 
-    : "Welcome to The Vista. I am Alexa, your luxury concierge. How may I assist you with your travel plans in Egypt today?";
+  const liveClientRef = useRef<GeminiLiveClient | null>(null);
+  const initialGreeting = "Hi, how is everything going? Alexa is with you, how can I help you today?"; 
 
-  const speakText = (text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  // Initialize Gemini Live Client
+  useEffect(() => {
+    liveClientRef.current = new GeminiLiveClient();
+    liveClientRef.current.onStateChange = (state) => {
+      if (state === 'listening') {
+        setIsListening(true);
+        setIsSpeaking(false);
+      } else if (state === 'speaking') {
+        setIsSpeaking(true);
+        setIsListening(false);
+      } else {
+        setIsListening(false);
+        setIsSpeaking(false);
+      }
+    };
     
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
-    let selectedVoice = null;
-    
-    if (lang === 'ar') {
-      selectedVoice = voices.find(v => v.lang.includes('ar')) || voices[0];
-    } else {
-      selectedVoice = voices.find(v => v.name.includes('Premium') && v.lang.includes('en')) || 
-                      voices.find(v => v.lang === 'en-GB') || 
-                      voices.find(v => v.lang === 'en-US') || voices[0];
-    }
-    
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-    }
-    
-    utterance.lang = lang === 'ar' ? 'ar-EG' : 'en-GB';
-    utterance.rate = 0.95; // Elegant, slightly slower pacing
-    utterance.pitch = 1.0;
-    
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = (e) => {
-      console.error("Speech synthesis error", e);
+    liveClientRef.current.onError = (err) => {
+      console.error("Voice Error caught in UI:", err);
+      alert(lang === 'ar' ? `خطأ في الصوت: ${err}` : `Voice Error: ${err}`);
+      setIsListening(false);
       setIsSpeaking(false);
     };
     
-    window.speechSynthesis.speak(utterance);
-  };
+    return () => {
+      liveClientRef.current?.disconnect();
+    };
+  }, [lang]);
 
   const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
     api: '/api/chat',
-    initialMessages: [
+    body: { isVoiceMode: false }, // Text mode only for useChat now
+    initialMessages: initialGreeting ? [
       {
         id: 'welcome',
         role: 'assistant',
         content: initialGreeting
       }
-    ],
-    onFinish: (message) => {
-      if (isVoiceMode) {
-        speakText(message.content);
-      }
-    },
+    ] : [],
     onError: (err) => {
-      console.error("Chat error:", err);
-      const errorMsg = lang === 'ar' 
-        ? "عذراً، أواجه صعوبة بسيطة في الاتصال حالياً هل يمكنك المحاولة مرة أخرى؟" 
-        : "I'm sorry, I'm having a bit of trouble connecting right now. Could you try again?";
-        
-      append({
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: errorMsg
-      });
-      
-      if (isVoiceMode) {
-        speakText(errorMsg);
-      }
+      console.warn("Chat error:", err);
     }
   });
 
-  // Init browser Speech Recognition
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        recognition.onstart = () => {
-          setIsListening(true);
-          window.speechSynthesis.cancel();
-          setIsSpeaking(false);
-        };
-        
-        recognition.onend = () => {
-          setIsListening(false);
-        };
-        
-        recognition.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          if (transcript.trim()) {
-            append({
-              id: Date.now().toString(),
-              role: 'user',
-              content: transcript
-            });
-          }
-        };
-
-        recognition.onerror = (event: any) => {
-          console.error("Speech recognition error", event.error);
-          setIsListening(false);
-        };
-
-        recognitionRef.current = recognition;
-      }
-      
-      // Load voices
-      if (window.speechSynthesis) {
-        window.speechSynthesis.onvoiceschanged = () => {
-           window.speechSynthesis.getVoices();
-        };
-      }
-    }
-  }, [append]);
-
   const toggleChat = () => {
     if (isOpen) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-      if (isListening && recognitionRef.current) {
-         recognitionRef.current.stop();
-      }
-    } else {
-      // When opening, reset to text mode by default unless specified
+      liveClientRef.current?.disconnect();
       setIsVoiceMode(false);
     }
     setIsOpen(!isOpen);
@@ -150,36 +71,18 @@ export default function AlexaConcierge() {
 
   const switchToVoiceMode = () => {
     setIsVoiceMode(true);
-    // If they haven't spoken yet, maybe repeat the greeting or last message?
-    if (messages.length > 0) {
-      speakText(messages[messages.length - 1].content);
-    }
   };
 
   const switchToTextMode = () => {
     setIsVoiceMode(false);
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
-    if (isListening && recognitionRef.current) {
-        recognitionRef.current.stop();
-    }
+    liveClientRef.current?.disconnect();
   };
 
   const switchListeningState = () => {
-    if (!recognitionRef.current) {
-      alert("Voice recognition is not supported in this browser.");
-      return;
-    }
-    
-    if (isListening) {
-      recognitionRef.current.stop();
+    if (isListening || isSpeaking) {
+      liveClientRef.current?.disconnect();
     } else {
-      recognitionRef.current.lang = lang === 'ar' ? 'ar-EG' : 'en-US';
-      try {
-        recognitionRef.current.start();
-      } catch (e) {
-        console.error("Failed to start recognition:", e);
-      }
+      liveClientRef.current?.connect();
     }
   };
 
@@ -206,8 +109,8 @@ export default function AlexaConcierge() {
 
       {/* Main Window */}
       <div 
-        className={`fixed bottom-24 ${lang === 'ar' ? 'left-6' : 'right-6'} z-[60] w-[90vw] md:w-[400px] h-[550px] bg-navy/95 backdrop-blur-xl rounded-2xl shadow-luxury border flex flex-col overflow-hidden transition-all duration-500 transform ${
-          isOpen ? 'translate-y-0 opacity-100 scale-100 border-white/10' : 'translate-y-10 opacity-0 scale-95 pointer-events-none border-transparent'
+        className={`fixed bottom-24 ${lang === 'ar' ? 'left-6' : 'right-6'} z-[99999] w-[90vw] md:w-[400px] h-[550px] bg-navy/95 backdrop-blur-xl rounded-2xl shadow-luxury border border-white/20 flex flex-col overflow-hidden ${
+          isOpen ? 'flex' : 'hidden'
         }`}
       >
         {/* Header */}
@@ -247,25 +150,26 @@ export default function AlexaConcierge() {
             <div className={`absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent transition-opacity duration-1000 ${isSpeaking ? 'opacity-100' : 'opacity-30'}`} />
             
             {/* The Voice Orb Core */}
-            <div className="relative z-10">
-              <div className={`absolute inset-0 rounded-full blur-2xl transition-all duration-700 ${
-                isListening ? 'bg-red-500/30 scale-150 animate-pulse' : 
-                isSpeaking ? 'bg-emerald-400/40 scale-125 animate-ping' : 'bg-primary/20 scale-100'
+            <div className="relative z-10 w-48 h-48 flex items-center justify-center">
+              {/* Refined Glowing Aura - No Jitter */}
+              <div className={`absolute inset-0 rounded-full blur-3xl transition-all duration-1000 ${
+                isListening ? 'bg-rose-500/20 scale-110' : 
+                isSpeaking ? 'bg-emerald-400/30 scale-125' : 'bg-primary/10 scale-90'
               }`} />
               
               <button
                 onClick={switchListeningState}
                 className={`relative w-32 h-32 rounded-full flex flex-col items-center justify-center transition-all duration-500 shadow-2xl border-4 backdrop-blur-md ${
                   isListening 
-                    ? 'bg-red-500/90 border-red-400 text-white scale-105' 
+                    ? 'bg-rose-500/90 border-rose-400 text-white shadow-rose-500/40' 
                     : isSpeaking 
-                      ? 'bg-emerald-500/90 border-emerald-400 text-white scale-110'
-                      : 'bg-primary border-primary/50 text-white hover:scale-105 hover:bg-primary-dark cursor-pointer'
+                      ? 'bg-emerald-500/90 border-emerald-400 text-white shadow-emerald-500/40'
+                      : 'bg-primary border-primary/50 text-white hover:bg-primary-dark cursor-pointer'
                 }`}
               >
                 {isListening ? (
                   <>
-                     <Mic className="w-10 h-10 mb-2 animate-bounce" />
+                     <Mic className="w-10 h-10 mb-2 animate-pulse" />
                      <span className="text-xs font-bold uppercase tracking-widest">{lang === 'ar' ? 'تستمع' : 'Listening'}</span>
                   </>
                 ) : isSpeaking ? (
@@ -276,7 +180,7 @@ export default function AlexaConcierge() {
                 ) : (
                   <>
                      <Mic className="w-10 h-10 mb-2" />
-                     <span className="text-[10px] font-bold uppercase tracking-widest opacity-80">{lang === 'ar' ? 'اضغط للتحدث' : 'Tap to speak'}</span>
+                     <span className="text-[10px] font-bold uppercase tracking-widest opacity-80">{lang === 'ar' ? 'اضغط للتحدث' : 'Tap to connect'}</span>
                   </>
                 )}
               </button>
@@ -284,10 +188,9 @@ export default function AlexaConcierge() {
 
             {/* Status Text overlay */}
             <div className="z-10 text-center">
-              {isLoading && !isSpeaking && (
-                <div className="flex items-center justify-center gap-2 text-white/50 text-sm">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>{lang === 'ar' ? 'أليكسا تفكر' : 'Alexa is thinking'}</span>
+              {isListening && (
+                <div className="flex items-center justify-center gap-2 text-rose-300 text-sm animate-pulse">
+                  <span>{lang === 'ar' ? 'أليكسا تستمع إليك مباشرة' : 'Live connection active'}</span>
                 </div>
               )}
             </div>
@@ -297,17 +200,18 @@ export default function AlexaConcierge() {
           <div className="flex-1 flex flex-col min-h-0 bg-transparent">
             <div 
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar"
+              className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar scroll-smooth"
+              style={{ overflowAnchor: 'auto' }}
             >
-              {messages.map((m) => (
+              {messages.filter(m => m.content && m.content.trim() !== "").map((m) => (
                 <div 
                   key={m.id} 
-                  className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                 >
                   <div 
-                    className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
+                    className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
                       m.role === 'user' 
-                        ? 'bg-primary text-white rounded-tr-none shadow-lg' 
+                        ? 'bg-primary text-white rounded-tr-none' 
                         : 'bg-white/5 text-white/90 border border-white/10 rounded-tl-none'
                     }`}
                   >
@@ -316,8 +220,8 @@ export default function AlexaConcierge() {
                 </div>
               ))}
               {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-white/5 p-3 rounded-2xl rounded-tl-none border border-white/10">
+                <div className="flex justify-start animate-in fade-in duration-200">
+                  <div className="bg-white/5 p-3 rounded-2xl rounded-tl-none border border-white/10 min-w-[60px] h-[38px] flex items-center justify-center">
                     <div className="flex gap-1">
                       <div className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce [animation-delay:-0.3s]" />
                       <div className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce [animation-delay:-0.15s]" />
@@ -342,7 +246,7 @@ export default function AlexaConcierge() {
                 />
                 <button 
                   type="submit"
-                  disabled={!input || isLoading}
+                  disabled={!input || (Date.now() - lastRequestTime < 1000)}
                   className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-dark transition-colors shrink-0"
                 >
                   <Send className="w-4 h-4" />

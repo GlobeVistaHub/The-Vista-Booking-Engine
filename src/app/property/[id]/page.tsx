@@ -31,7 +31,7 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useUser } from "@/context/UserContext";
-import { getPropertyById } from "@/data/api";
+import { getPropertyById, getPublicOccupiedDates } from "@/data/api";
 import { Property } from "@/data/properties";
 import { getPricingSettings } from "@/data/pricing_overrides";
 
@@ -55,6 +55,8 @@ function PropertyContent() {
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
 
+  const [bookings, setBookings] = useState<any[]>([]);
+
   useEffect(() => {
     if (!id) return;
     getPropertyById(id as string).then(data => {
@@ -62,7 +64,10 @@ function PropertyContent() {
       setIsLoading(false);
     });
 
-    // Initialize states from URL
+    // 1. Fetch occupancy for the "Fully Booked" banner
+    getPublicOccupiedDates().then(setBookings);
+
+    // 2. Initialize states from URL
     const urlFrom = searchParams.get("from");
     const urlTo = searchParams.get("to");
     if (urlFrom) setDateRange(prev => ({ ...prev, from: new Date(urlFrom) }));
@@ -72,6 +77,15 @@ function PropertyContent() {
     if (urlAdults) setAdults(urlAdults);
     if (urlChildren) setChildren(urlChildren);
   }, [id, searchParams]);
+
+  // Determine if Booked Today
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const isBookedToday = bookings.some(b => 
+    String(b.property_id) === String(id) && 
+    (b.status === 'confirmed' || b.status === 'pending') &&
+    todayStr >= b.check_in && todayStr < b.check_out
+  );
 
   const handleShareToPlatform = (platform: string) => {
     const url = window.location.href;
@@ -177,7 +191,13 @@ function PropertyContent() {
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${idx === currentImg ? "opacity-100" : "opacity-0"}`}
           />
         ))}
-        <div className="absolute inset-0 bg-navy/20 mix-blend-multiply pointer-events-none" />
+        <div className={`absolute inset-0 bg-navy/20 mix-blend-multiply pointer-events-none ${isBookedToday ? 'opacity-60 grayscale-[0.2]' : ''}`} />
+
+        {isBookedToday && (
+          <div className="absolute top-24 left-8 z-30 bg-navy text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] border border-white/10 shadow-2xl">
+            {t('fullyBooked')}
+          </div>
+        )}
 
         {/* Carousel Arrows */}
         <button
@@ -542,10 +562,10 @@ function PropertyContent() {
 
               {/* CTA Button */}
               <Link
-                href={`/checkout?id=${property.id}&from=${dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}&to=${dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}&adults=${adults}&children=${children}`}
-                className="w-full py-4 bg-primary hover:brightness-110 text-white rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95"
+                href={isBookedToday ? "#" : `/checkout?id=${property.id}&from=${dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}&to=${dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}&adults=${adults}&children=${children}`}
+                className={`w-full py-4 rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95 ${isBookedToday ? 'bg-navy/20 text-navy/40 cursor-not-allowed pointer-events-none' : 'bg-primary hover:brightness-110 text-white'}`}
               >
-                {t('reserve')}
+                {isBookedToday ? t('fullyBooked') : t('reserve')}
               </Link>
 
               <p className="text-center text-muted text-xs">

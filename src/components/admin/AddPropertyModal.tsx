@@ -7,20 +7,21 @@ import { Property } from "@/data/properties";
 import { useSession } from "@clerk/nextjs";
 
 const PROPERTY_TYPES = [
-  "Villa", 
-  "Penthouse", 
-  "Estate", 
-  "Apartment", 
-  "Resort", 
-  "Cabin", 
-  "Townhouse", 
-  "Studio", 
-  "Loft", 
-  "Mansion", 
+  "Villa",
+  "Penthouse",
+  "Estate",
+  "Apartment",
+  "Resort",
+  "Cabin",
+  "Townhouse",
+  "Studio",
+  "Loft",
+  "Mansion",
   "Village House"
 ] as const;
 
 const AVAILABLE_TAGS: { key: string; label: string }[] = [
+  // Existing Tags
   { key: "tagPrivatePool", label: "Private Pool" },
   { key: "tagRedSeaView", label: "Red Sea View" },
   { key: "tagButlerService", label: "Butler Service" },
@@ -29,8 +30,17 @@ const AVAILABLE_TAGS: { key: string; label: string }[] = [
   { key: "tagBeachAccess", label: "Beach Access" },
   { key: "tagGolfCourseView", label: "Golf Course View" },
   { key: "tagChefIncluded", label: "Chef Included" },
-];
 
+  // Newly Added Essential & Luxury Tags
+  { key: "tagPetsAllowed", label: "Pets Allowed" },
+  { key: "tagSecurity247", label: "24/7 Gated Security" },
+  { key: "tagHighSpeedWiFi", label: "Ultra High-speed WiFi" },
+  { key: "tagDailyHousekeeping", label: "Daily Housekeeping" },
+  { key: "tagGymAccess", label: "Private Gym / Fitness" },
+  { key: "tagSpaAccess", label: "Spa & Wellness Access" },
+  { key: "tagMarinaBerth", label: "Marina Berth Included" },
+  { key: "tagFullBoard", label: "Full Board / All-Inclusive" } // Added this so it translates cleanly!
+];
 type FormData = {
   title: string;
   title_ar: string;
@@ -126,7 +136,7 @@ export default function AddPropertyModal({ isOpen, onClose, onSuccess }: Props) 
 
     setIsLoading(true);
     const cleanImages = form.images.filter((img) => img.trim() !== "");
-    
+
     const payload: Omit<Property, "id" | "rating" | "reviews"> = {
       title: form.title,
       title_ar: form.title_ar,
@@ -167,17 +177,15 @@ export default function AddPropertyModal({ isOpen, onClose, onSuccess }: Props) 
     <>
       {/* BACKDROP */}
       <div
-        className={`fixed inset-0 bg-navy/40 backdrop-blur-sm z-[200] transition-opacity duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-navy/40 backdrop-blur-sm z-[200] transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         onClick={onClose}
       />
 
       {/* PANEL */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-[640px] bg-white z-[210] shadow-2xl flex flex-col transition-transform duration-[380ms] ease-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-full max-w-[640px] bg-white z-[210] shadow-2xl flex flex-col transition-transform duration-[380ms] ease-out ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* HEADER */}
         <div className="flex items-center justify-between p-6 border-b border-slate-100">
@@ -221,7 +229,7 @@ export default function AddPropertyModal({ isOpen, onClose, onSuccess }: Props) 
                   <div className="flex flex-col">
                     <label className="field-label">Instant Booking</label>
                     <div className="flex items-center gap-3 mt-2">
-                       <button
+                      <button
                         type="button"
                         onClick={() => set("isInstantBookable", !form.isInstantBookable)}
                         className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${form.isInstantBookable ? 'bg-emerald-500' : 'bg-slate-300'}`}
@@ -325,11 +333,10 @@ export default function AddPropertyModal({ isOpen, onClose, onSuccess }: Props) 
                     key={key}
                     type="button"
                     onClick={() => toggleTag(key)}
-                    className={`px-4 py-2 rounded-full text-xs font-bold tracking-wide border transition-all ${
-                      form.tags.includes(key)
+                    className={`px-4 py-2 rounded-full text-xs font-bold tracking-wide border transition-all ${form.tags.includes(key)
                         ? "bg-primary text-white border-primary shadow-md"
                         : "bg-white text-muted border-slate-200 hover:border-primary/40 hover:text-navy"
-                    }`}
+                      }`}
                   >
                     {label}
                   </button>
@@ -363,11 +370,10 @@ export default function AddPropertyModal({ isOpen, onClose, onSuccess }: Props) 
           <button
             onClick={handleSubmit as any}
             disabled={isLoading || isDone}
-            className={`flex items-center gap-2.5 px-8 py-3 rounded-xl font-bold text-sm shadow-lg transition-all ${
-              isDone
+            className={`flex items-center gap-2.5 px-8 py-3 rounded-xl font-bold text-sm shadow-lg transition-all ${isDone
                 ? "bg-emerald-500 text-white"
                 : "bg-primary text-white hover:opacity-90 active:scale-95 shadow-primary/30"
-            } disabled:opacity-70 disabled:cursor-not-allowed`}
+              } disabled:opacity-70 disabled:cursor-not-allowed`}
           >
             {isLoading ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>

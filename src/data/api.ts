@@ -3,37 +3,7 @@ import { createClerkSupabaseClient } from '@/utils/supabaseClient';
 import type { Property } from './properties';
 import { useDataStore } from '@/store/dataStore';
 import { useAppModeStore } from '@/store/appModeStore';
-
-export interface Booking {
-  id: string | number;
-  property_id: string | number;
-  guest_name: string;
-  guest_email: string;
-  check_in: string;
-  check_out: string;
-  status?: 'pending' | 'confirmed' | 'cancelled';
-  total_price: number;
-  adults: number;
-  children: number;
-  payment_status?: 'pending' | 'paid' | 'failed';
-  created_at: string;
-  confirmed_at?: string;
-  cancelled_at?: string;
-  booking_reference?: string;
-  paymob_order_id?: string;
-  paymob_transaction_id?: string;
-  transaction_id?: string;
-  paid_amount_egp?: number;
-  conversion_rate_used?: number;
-  property?: Property;
-}
-
-
-export interface SiteLabel {
-  key: string;
-  value_en: string;
-  value_ar: string;
-}
+import type { Booking, SiteLabel } from './types';
 
 export const getSiteContent = async (clerkToken?: string): Promise<SiteLabel[]> => {
   const supabase = clerkToken ? createClerkSupabaseClient(clerkToken) : defaultSupabase;
@@ -142,23 +112,34 @@ export const getPropertyById = async (id: string | number, options?: { includeHi
 // Bookings API
 // -------------------------------------------------------------------------
 
-export const getBookings = async (clerkToken?: string): Promise<Booking[]> => {
+export const getBookings = async (clerkToken?: string, guestEmail?: string): Promise<Booking[]> => {
   const isDemoMode = useAppModeStore.getState().isDemoMode;
 
   if (isDemoMode) {
     const mockBookings = useDataStore.getState().bookings;
     const props = useDataStore.getState().properties;
-    return mockBookings.map(b => ({
+    let filtered = mockBookings;
+    if (guestEmail) {
+      filtered = mockBookings.filter(b => b.guest_email === guestEmail);
+    }
+    return filtered.map(b => ({
       ...b,
       property: props.find(p => String(p.id) === String(b.property_id))
     }));
   }
 
   const supabase = createClerkSupabaseClient(clerkToken);
-  const { data, error } = await supabase
+  let query = supabase
     .from('bookings')
     .select('*, property:properties(*)')
     .order('created_at', { ascending: false });
+
+  // Filter by guest email if provided — this is the safe column that exists in DB
+  if (guestEmail) {
+    query = query.eq('guest_email', guestEmail);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('[getBookings] Supabase error:', error.message);
@@ -196,6 +177,7 @@ export const getPublicOccupiedDates = async (): Promise<{ property_id: string | 
   }
 
   try {
+    // Dynamic import to avoid circular dependency with server actions
     const { getPublicOccupancyServer } = await import('@/app/actions/bookings');
     return await getPublicOccupancyServer();
   } catch (err) {

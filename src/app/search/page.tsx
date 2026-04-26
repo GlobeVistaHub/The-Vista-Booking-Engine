@@ -10,6 +10,7 @@ import MapWrapper from "@/components/MapWrapper";
 import { useLanguage } from "@/context/LanguageContext";
 import { getProperties, getPublicOccupiedDates } from "@/data/api";
 import { Property } from "@/data/properties";
+import { supabase } from "@/lib/supabase";
 
 // ─── Inner component (needs useSearchParams inside Suspense) ────────────────
 function SearchContent() {
@@ -22,12 +23,33 @@ function SearchContent() {
   const [bookings, setBookings] = useState<any[]>([]);
 
   useEffect(() => {
-    getProperties({ includeHidden: false }).then(setAllProperties);
-    // Smart Fetch: Get occupancy dates (handles Demo vs Real automatically)
-    getPublicOccupiedDates().then(data => {
-      console.log(`[Vista-Search] Syncing occupancy data... Found ${data.length} records.`);
-      setBookings(data);
-    }).finally(() => setIsLoading(false));
+    const fetchSearchData = () => {
+      getProperties({ includeHidden: false }).then(setAllProperties);
+      // Smart Fetch: Get occupancy dates (handles Demo vs Real automatically)
+      getPublicOccupiedDates().then(data => {
+        console.log(`[Vista-Search] Syncing occupancy data... Found ${data.length} records.`);
+        setBookings(data);
+      }).finally(() => setIsLoading(false));
+    };
+
+    fetchSearchData();
+
+    // ENABLE REALTIME SYNC (Visibility + Occupancy)
+    const searchSyncChannel = supabase
+      .channel('public-search-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, () => {
+        console.log("[Vista-Search] Property visibility change detected...");
+        fetchSearchData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        console.log("[Vista-Search] Booking occupancy change detected...");
+        fetchSearchData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(searchSyncChannel);
+    };
   }, []);
 
   // Filter out manually hidden properties (Switch OFF)
@@ -261,7 +283,7 @@ function SearchContent() {
                 {filteredProperties.map((property, idx) => {
                   const propertyBookings = bookings.filter(b =>
                     String(b.property_id) === String(property.id) &&
-                    b.status === 'confirmed'
+                    (b.status === 'confirmed' || b.status === 'pending')
                   );
 
                   // Hybrid Ribbon Logic: Check search dates OR default to "Today" if no dates searched

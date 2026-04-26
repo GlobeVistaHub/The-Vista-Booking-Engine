@@ -1,83 +1,84 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GoogleGenerativeAIStream, StreamingTextResponse } from 'ai';
 import { createClient } from '@supabase/supabase-js';
-import { VISTA_LORE } from '@/data/vista_knowledge';
-
-// Initialize Google AI client
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '');
+import { VISTA_ALEXA_PERSONA } from '@/data/vista_knowledge';
+import fetchNode from 'node-fetch';
 
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    const { messages, isVoiceMode } = await req.json();
 
-    if (!process.env.GOOGLE_AI_API_KEY) {
-      throw new Error('GOOGLE_AI_API_KEY is not configured');
-    }
+    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    if (!apiKey) throw new Error('GOOGLE_AI_API_KEY is missing');
 
-    // 1. Fetch Live Inventory invisibly within milliseconds
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-    );
-    const { data: properties } = await supabase.from('properties').select('*').limit(30);
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
-    let inventoryString = '--- LIVE PROPERTY INVENTORY ---\\n';
-    if (properties && properties.length > 0) {
-      properties.forEach(p => {
-        inventoryString += `ID ${p.id}: ${p.title} in ${p.location}. Price: $${p.price}/night. Up to ${p.guests} guests. ${p.description_en}\\n`;
-      });
-    } else {
-      inventoryString += 'Inventory currently updating.\\n';
+    let inventoryString = '';
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data: props } = await supabase.from('properties').select('title,title_ar,location,location_ar,price').limit(30);
+      if (props) {
+        inventoryString = props.map(p => `- ${p.title} (Arabic: ${p.title_ar || p.title}) in ${p.location} (Arabic: ${p.location_ar || p.location}): $${p.price}/night`).join('\n');
+      }
     }
 
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash', // Updated to 2.0 Flash for zero-latency audio pipelines
-      systemInstruction: `
-        # ALEXA: THE NATIVE EGYPTIAN LUXURY CONCIERGE (VOICE ORACLE)
-        Role: Senior Luxury Travel Guide & Global Booking Master for The Vista.
-        Identity: Sophisticated, Warm, Highly Experienced Native Egyptian Concierge.
-        
-        ## 🧠 CRITICAL VOICE CONSTRAINTS (DO NOT VIOLATE)
-        - You are having a LIVE TELEPHONE CONVERSATION.
-        - You MUST answer in 1 or 2 elegant, conversational sentences.
-        - NEVER use markdown. NEVER use formatting like asterisks (***) or hash symbols (###).
-        - NEVER use bullet points. 
-        - Speak like a human. Keep responses concise so the audio engine sounds natural.
-        - When the user speaks in English, answer in English (with a refined, posh accent).
-        - When the user speaks in Arabic, perfectly switch to native Egyptian Arabic (أهلاً بك يا فندم).
+    const systemPrompt = `
+      ${VISTA_ALEXA_PERSONA}
+      ## LIVE INVENTORY
+      ${inventoryString}
+      ## FORMAT
+      ${isVoiceMode 
+        ? 'Concise (1-2 sentences max). CRITICAL: NEVER use markdown, asterisks, bold text, or bullet points. You are speaking out loud. Respond in pure, natural plain text only.' 
+        : 'Elegant, helpful, and highly readable. Keep paragraphs short (2-3 sentences max per paragraph). Limit total response length to avoid overwhelming the user. Use gentle spacing.'}
+    `;
 
-        ## 📖 VISTA TRAVEL LORE & PERSONALITY
-        ${VISTA_LORE}
-
-        ## 🏢 LIVE PROPERTY INVENTORY (Auto-Synced)
-        ${inventoryString}
-        
-        ## 🤖 OPERATIONAL PROTOCOLS
-        1. GREETING: If asked, warmly state who you are.
-        2. LEAD RECOVERY: Help with payment issues gracefully.
-        3. SALES: Seamlessly recommend properties based on the live inventory provided.
-      `,
+    const requestBody = JSON.stringify({
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: messages.map((m: any) => ({
+        role: m.role === 'user' ? 'user' : 'model',
+        parts: [{ text: m.content }]
+      }))
     });
 
-    // Convert messages to Gemini format safely
-    const geminiMessages = messages.map((m: any) => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content }],
-    }));
-
-    const streamingResponse = await model.generateContentStream({
-      contents: geminiMessages,
-    });
-
-    const stream = GoogleGenerativeAIStream(streamingResponse);
-    return new StreamingTextResponse(stream);
-  } catch (error: any) {
-    console.error('Alexa API Error:', error);
-    return new Response(JSON.stringify({ error: error.message || 'Internal Server Error' }), {
-      status: 500,
+    // Bypass Next.js built-in fetch (which crashes Node 24 on Windows) by using node-fetch
+    const geminiRes = await fetchNode(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      body: requestBody
     });
+
+    if (!geminiRes.ok) {
+      const errTxt = await geminiRes.text();
+      console.warn("Gemini API Error:", errTxt);
+      try {
+        const errObj = JSON.parse(errTxt);
+        throw new Error(errObj.error?.message || "Gemini API Error");
+      } catch (e) {
+        throw new Error("API Limit reached or invalid request: " + errTxt);
+      }
+    }
+
+    const data = await geminiRes.json() as any;
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I seem to have lost my connection.";
+
+    const stream = new ReadableStream({
+      start(controller) {
+        const encoder = new TextEncoder();
+        controller.enqueue(encoder.encode(`0:${JSON.stringify(responseText)}\n`));
+        controller.close();
+      }
+    });
+
+    return new Response(stream, { 
+      headers: { 
+        'Content-Type': 'text/plain; charset=utf-8',
+        'x-vercel-ai-data-stream': 'v1'
+      } 
+    });
+
+  } catch (error: any) {
+    console.warn('ALEXA SDK ERROR:', error.message);
+    return new Response(error.message, { status: 500 });
   }
 }

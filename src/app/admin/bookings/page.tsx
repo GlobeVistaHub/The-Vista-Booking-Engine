@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { getBookings, updateBookingStatus, togglePropertyStatus, Booking } from "@/data/api";
+import { getBookings, updateBookingStatus, togglePropertyStatus } from "@/data/api";
+import type { Booking } from "@/data/types";
 import { triggerDossierFromAdmin } from "@/app/actions/bookings";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { useAuth } from "@clerk/nextjs";
@@ -67,7 +68,7 @@ export default function BookingsDashboard() {
       // 1. Find the booking and current status for transition checks
       const bookingToUpdate = bookings.find(b => String(b.id) === String(id));
       const currentStatus = bookingToUpdate?.status;
-      
+
       // VERCEL FIX: Robust property ID detection
       const propertyId = bookingToUpdate?.property_id || (bookingToUpdate as any).property?.id;
 
@@ -75,7 +76,7 @@ export default function BookingsDashboard() {
 
       // 2. Real Database Transaction (WAIT for completion)
       const token = await getToken({ template: 'supabase' }) || undefined;
-      
+
       if (!token && !useAppModeStore.getState().isDemoMode) {
         alert("Session error: Could not retrieve a secure token from Clerk. Please refresh the page and try again.");
         setUpdatingId(null);
@@ -121,11 +122,11 @@ export default function BookingsDashboard() {
     if (booking.status === 'pending' && booking.payment_status === 'failed') {
       return { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: Clock, label: 'Payment Failed' };
     }
-    
+
     switch (booking.status) {
       case 'confirmed': return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: CheckCircle2, label: 'Confirmed' };
       case 'pending': return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: Clock, label: 'Pending' };
-      case 'cancelled': return { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: XCircle, label: 'Cancelled' };
+      case 'cancelled': return { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: XCircle, label: 'CANCELLED' };
       default: return { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200', icon: Clock, label: 'Unknown' };
     }
   };
@@ -239,11 +240,11 @@ export default function BookingsDashboard() {
                               </div>
                             )}
                             <div>
-                            <p className="font-bold text-navy text-sm">
-                              {booking.guest_name && booking.guest_name !== 'Guest' 
-                                ? booking.guest_name 
-                                : booking.guest_email.split('@')[0]}
-                            </p>
+                              <p className="font-bold text-navy text-sm">
+                                {booking.guest_name && booking.guest_name !== 'Guest'
+                                  ? booking.guest_name
+                                  : booking.guest_email.split('@')[0]}
+                              </p>
                               <p className="text-xs text-primary font-medium mt-0.5">{booking.property?.title || 'Unknown Property'}</p>
                               <div className="flex items-center gap-1 text-[10px] text-muted mt-1">
                                 <Mail className="w-3 h-3" />
@@ -284,15 +285,14 @@ export default function BookingsDashboard() {
                         <td className="px-6 py-5">
                           <div className="flex flex-col">
                             <span className="font-bold text-navy text-sm">${booking.total_price.toLocaleString()}</span>
-                             <span className={`text-[10px] font-bold uppercase tracking-wide ${
-                               booking.payment_status === 'paid' ? 'text-emerald-600' : 
-                               booking.payment_status === 'failed' ? 'text-rose-600' : 
-                               'text-amber-600'
-                             }`}>
-                               {booking.payment_status === 'paid' ? 'Paid' : 
-                                booking.payment_status === 'failed' ? 'Failed' : 
-                                'Pending'}
-                             </span>
+                            <span className={`text-[10px] font-bold uppercase tracking-wide ${booking.payment_status === 'paid' ? 'text-emerald-600' :
+                                booking.payment_status === 'failed' ? 'text-rose-600' :
+                                  'text-amber-600'
+                              }`}>
+                              {booking.payment_status === 'paid' ? 'Paid' :
+                                booking.payment_status === 'failed' ? 'Failed' :
+                                  'Pending'}
+                            </span>
                           </div>
                         </td>
 
