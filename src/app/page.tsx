@@ -115,11 +115,12 @@ export default function Home() {
             const day = String(now.getDate()).padStart(2, '0');
             const todayStr = `${year}-${month}-${day}`;
 
-            // Show BOOKED for any confirmed booking that hasn't checked out yet
+            // Show FULLY BOOKED ribbon only if occupied TODAY
+            // This allows guests to still click and book for future/other dates
             const isBooked = bookings.some(b =>
               String(b.property_id) === String(property.id) &&
               b.status === 'confirmed' &&
-              b.check_out > todayStr
+              todayStr >= b.check_in && todayStr < b.check_out
             );
 
             return (

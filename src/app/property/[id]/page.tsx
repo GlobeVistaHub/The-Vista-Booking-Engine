@@ -29,6 +29,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
+import { useAuth, SignInButton } from "@clerk/nextjs";
 import { useLanguage } from "@/context/LanguageContext";
 import { useUser } from "@/context/UserContext";
 import { getPropertyById, getPublicOccupiedDates } from "@/data/api";
@@ -38,6 +39,7 @@ import { getPricingSettings } from "@/data/pricing_overrides";
 function PropertyContent() {
   const { id } = useParams();
   const searchParams = useSearchParams();
+  const { isSignedIn } = useAuth();
   const { t, lang } = useLanguage();
   const { toggleWishlist, isInWishlist } = useUser();
   const [currentImg, setCurrentImg] = useState(0);
@@ -436,12 +438,22 @@ function PropertyContent() {
                         mode="range"
                         selected={{ from: dateRange.from, to: dateRange.to }}
                         onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
+                        disabled={[
+                          { before: new Date() },
+                          ...bookings
+                            .filter(b => String(b.property_id) === String(id))
+                            .map(b => ({
+                              from: new Date(b.check_in),
+                              to: new Date(new Date(b.check_out).getTime() - 24 * 60 * 60 * 1000)
+                            }))
+                        ]}
                         numberOfMonths={1}
                         className="font-body"
                         dir={lang === "ar" ? "rtl" : "ltr"}
                         classNames={{
                           day_selected: "bg-primary text-white hover:bg-primary font-bold",
                           day_today: "font-bold text-navy",
+                          day_disabled: "text-muted opacity-30 line-through cursor-not-allowed",
                         }}
                       />
                       <button
@@ -561,12 +573,20 @@ function PropertyContent() {
               </div>
 
               {/* CTA Button */}
-              <Link
-                href={isBookedToday ? "#" : `/checkout?id=${property.id}&from=${dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}&to=${dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}&adults=${adults}&children=${children}`}
-                className={`w-full py-4 rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95 ${isBookedToday ? 'bg-navy/20 text-navy/40 cursor-not-allowed pointer-events-none' : 'bg-primary hover:brightness-110 text-white'}`}
-              >
-                {isBookedToday ? t('fullyBooked') : t('reserve')}
-              </Link>
+              {!isSignedIn ? (
+                <SignInButton mode="modal">
+                  <button className="w-full py-4 bg-primary hover:brightness-110 text-white rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95">
+                    {t('reserve')}
+                  </button>
+                </SignInButton>
+              ) : (
+                <Link
+                  href={isBookedToday ? "#" : `/checkout?id=${property.id}&from=${dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}&to=${dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}&adults=${adults}&children=${children}`}
+                  className={`w-full py-4 rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95 ${isBookedToday ? 'bg-navy/20 text-navy/40 cursor-not-allowed pointer-events-none' : 'bg-primary hover:brightness-110 text-white'}`}
+                >
+                  {isBookedToday ? t('fullyBooked') : t('reserve')}
+                </Link>
+              )}
 
               <p className="text-center text-muted text-xs">
                 {t('notChargedYet')}

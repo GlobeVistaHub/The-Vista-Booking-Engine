@@ -384,7 +384,7 @@ export default function ProfilePage() {
                             {bookingFilter === "upcoming" && (
                               <div className={`px-3 py-1 rounded-full text-[10px] font-bold text-white shadow-sm uppercase tracking-wider ${booking.status === 'confirmed' ? "bg-emerald-500" :
                                   booking.status === 'cancelled' ? "bg-slate-400" :
-                                    ((booking.paymentStatus === 'failed' || booking.status === 'interrupted') && isWithinTwoHours(booking.createdAt)) ? "bg-amber-500" :
+                                    ((booking.paymentStatus === 'failed' || booking.status === 'interrupted' || booking.status === 'pending') && isWithinTwoHours(booking.createdAt)) ? "bg-amber-500" :
                                       "hidden"
                                 }`}>
                                 {booking.status === 'confirmed' ? "CONFIRMED" :

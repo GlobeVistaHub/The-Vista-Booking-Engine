@@ -51,6 +51,7 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
   let pdfBuffer: Buffer | null = null;
 
   try {
+    console.log(`[N8N] Starting Dossier Generation for ${formattedRef}...`);
     const options = await getOptions();
     browser = await puppeteer.launch(options);
     const page = await browser.newPage();
@@ -60,56 +61,106 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
         <style>
-          body { font-family: 'Inter', sans-serif; background-color: #FAFAFA; color: #111827; margin: 0; padding: 40px; }
-          .dossier-card { background: #FFFFFF; max-width: 800px; margin: 0 auto; border: 1px solid #E5E7EB; border-radius: 12px; overflow: hidden; }
-          .header { background-color: #0A1128; color: #FFFFFF; padding: 40px; text-align: center; }
-          .header h1 { font-family: 'Playfair Display', serif; margin: 0; font-size: 32px; text-transform: uppercase; }
-          .header p { color: #D4AF37; margin-top: 10px; font-size: 14px; font-weight: bold; letter-spacing: 4px; text-transform: uppercase; }
-          .content { padding: 40px; }
-          .section { margin-bottom: 30px; }
-          .section-title { font-family: 'Playfair Display', serif; font-size: 14px; color: #6B7280; text-transform: uppercase; border-bottom: 1px solid #E5E7EB; padding-bottom: 10px; margin-bottom: 15px; }
-          .grid { display: flex; justify-content: space-between; flex-wrap: wrap; }
-          .col { width: 48%; margin-bottom: 20px; }
-          .label { font-size: 10px; color: #9CA3AF; text-transform: uppercase; font-weight: bold; }
-          .value { font-size: 16px; font-weight: 600; color: #0A1128; margin-top: 4px; }
-          .footer { background: #F3F4F6; padding: 20px; text-align: center; font-size: 12px; color: #6B7280; }
+          body { font-family: 'Inter', sans-serif; color: #1a1a1a; margin: 0; padding: 40px; background: #e5e7eb; }
+          .dossier-card { background: white; max-width: 750px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+          .header { background: #0A1128; color: white; padding: 35px 20px; text-align: center; }
+          .header h1 { font-family: 'Playfair Display', serif; margin: 0; font-size: 26px; letter-spacing: 3px; text-transform: uppercase; }
+          .header p { color: #D4AF37; margin: 8px 0 0; font-size: 10px; letter-spacing: 4px; font-weight: 600; text-transform: uppercase; }
+          .content { padding: 45px; }
+          .section-title { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid #f3f4f6; padding-bottom: 10px; margin-bottom: 20px; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 35px; }
+          .label { font-size: 9px; color: #9ca3af; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px; }
+          .value { font-size: 14px; font-weight: 700; color: #111827; }
+          .status-confirmed { color: #10B981; }
+          .property-section { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+          .property-info { flex: 1; }
+          .property-image { width: 220px; height: 130px; border-radius: 8px; object-fit: cover; }
+          .location-box { border-left: 2px solid #D4AF37; padding-left: 10px; margin: 5px 0 20px; font-size: 11px; color: #6b7280; font-style: italic; }
+          .footer { background: #f9f9f9; text-align: center; padding: 25px; font-size: 12px; color: #999; border-top: 1px solid #f3f4f6; }
         </style>
       </head>
       <body>
         <div class="dossier-card">
-          <div class="header"><h1>Official Guest Dossier</h1><p>The Vista Collection</p></div>
+          <div class="header">
+            <h1>OFFICIAL GUEST DOSSIER</h1>
+            <p>THE VISTA COLLECTION</p>
+          </div>
+          
           <div class="content">
-            <div class="section"><h2 class="section-title">Booking Confirmation</h2>
-              <div class="grid">
-                <div class="col"><div class="label">Reference ID</div><div class="value">${formattedRef}</div></div>
-                <div class="col"><div class="label">Status</div><div class="value" style="color: #10B981;">SECURE & CONFIRMED</div></div>
-                <div class="col"><div class="label">Total Paid</div><div class="value">USD ${Number(booking.total_price || 0).toLocaleString()}</div></div>
+            <div class="section-title">BOOKING CONFIRMATION</div>
+            <div class="grid">
+              <div>
+                <div class="label">REFERENCE ID</div>
+                <div class="value">${formattedRef}</div>
+              </div>
+              <div>
+                <div class="label">STATUS</div>
+                <div class="value status-confirmed">SECURE & CONFIRMED</div>
+              </div>
+              <div>
+                <div class="label">TOTAL PAID</div>
+                <div class="value">USD ${Number(booking.total_price || 0).toLocaleString()}</div>
+              </div>
+              <div>
+                <div class="label">TRANSACTION ID</div>
+                <div class="value">${booking.transaction_id || 'N/A'}</div>
               </div>
             </div>
-            <div class="section"><h2 class="section-title">Guest Profile</h2>
-              <div class="grid">
-                <div class="col"><div class="label">Primary Guest</div><div class="value">${gName}</div></div>
-                <div class="col"><div class="label">Contact Email</div><div class="value">${booking.guest_email || 'Secured'}</div></div>
+
+            <div class="section-title">GUEST PROFILE</div>
+            <div class="grid">
+              <div>
+                <div class="label">PRIMARY GUEST</div>
+                <div class="value">${gName}</div>
+              </div>
+              <div>
+                <div class="label">CONTACT EMAIL</div>
+                <div class="value">${booking.guest_email || 'Secured'}</div>
+              </div>
+              <div>
+                <div class="label">TRAVEL PARTY</div>
+                <div class="value">${booking.adults || 2} Adults, ${booking.children || 0} Children</div>
               </div>
             </div>
-            <div class="section"><h2 class="section-title">Property Access</h2>
-              <div class="value" style="font-size: 20px;">${prop?.title_en || prop?.title || "Vista Property"}</div>
-              <div style="margin-top: 10px;">${booking.check_in} - ${booking.check_out}</div>
+
+            <div class="section-title">PROPERTY ACCESS</div>
+            <div class="property-section">
+              <div class="property-info">
+                <div class="label">ESTATE NAME</div>
+                <div class="value" style="font-size: 16px;">${prop?.title_en || prop?.title || "Vista Property"}</div>
+                <div class="location-box">${prop?.location || "Private Location"}</div>
+                <div class="grid" style="margin-top: 15px; grid-template-columns: 1fr 1fr;">
+                  <div>
+                    <div class="label">CHECK IN</div>
+                    <div class="value">${booking.check_in}</div>
+                  </div>
+                  <div>
+                    <div class="label">CHECK OUT</div>
+                    <div class="value">${booking.check_out}</div>
+                  </div>
+                </div>
+              </div>
+              <img src="${propertyImg}" class="property-image" alt="Property">
             </div>
           </div>
-          <div class="footer">Generated for <strong>${gName}</strong>.</div>
+
+          <div class="footer">
+            Generated securely by The Vista Booking Engine for <strong>${gName}</strong>.
+          </div>
         </div>
       </body>
       </html>
     `;
 
-    await page.setContent(htmlDossier, { waitUntil: 'load' });
+    await page.setContent(htmlDossier, { waitUntil: 'networkidle0' });
     const pdf = await page.pdf({ format: 'A4', printBackground: true });
     pdfBuffer = Buffer.from(pdf);
+    console.log(`[N8N] PDF Generated Successfully (${pdfBuffer.length} bytes)`);
   } catch (err: any) {
-    console.error("[N8N] PDF Failed, proceeding with WhatsApp only.");
+    console.error("[N8N] PDF Failed:", err.message);
+    console.log("[N8N] Proceeding with WhatsApp/Email only (No PDF).");
   } finally {
     if (browser) await browser.close();
   }
@@ -122,7 +173,6 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
   form.append('ownerNotification', successMsg);
   form.append('guestEmail', booking.guest_email || "");
   form.append('bookingRef', formattedRef);
-  // Fields required by n8n email template
   form.append('guestName', gName);
   form.append('propertyName', prop?.title_en || prop?.title || "Vista Property");
   form.append('ownerEmail', prop?.owner_email || "info@globevistahub.com");
@@ -132,9 +182,17 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
   }
 
   try {
-    await fetch(url, { method: "POST", body: form, headers: form.getHeaders() });
-    console.log("[N8N] Handshake Complete.");
-  } catch (e: any) { }
+    console.log(`[N8N] Sending Handshake to Webhook: ${url.slice(0, 30)}...`);
+    const response = await fetch(url, { method: "POST", body: form, headers: form.getHeaders() });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[N8N] Webhook Error (${response.status}):`, errorText);
+    } else {
+      console.log("[N8N] Handshake Complete. Webhook accepted the dossier.");
+    }
+  } catch (e: any) {
+    console.error("[N8N] Fetch Fatal Error:", e.message);
+  }
 };
 
 /**

@@ -53,7 +53,8 @@ export async function POST(req: Request) {
         .single();
 
       if (bookingRecord) {
-        await triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Hook Error]:", e));
+        console.log("[CALLBACK] Launching N8N Dossier in background...");
+        triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Hook Error]:", e));
       }
     }
 
@@ -66,7 +67,8 @@ export async function POST(req: Request) {
         .limit(1)
         .single();
       if (bookingRecord) {
-        await triggerN8NRecovery(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Recovery Error]:", e));
+        console.log("[CALLBACK] Launching N8N Recovery in background...");
+        triggerN8NRecovery(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Recovery Error]:", e));
       }
     }
 
@@ -94,7 +96,7 @@ export async function GET(req: Request) {
       if (resolvedId && resolvedId !== "null" && resolvedId !== "") {
         const numericId = Number(resolvedId);
         if (!isNaN(numericId)) {
-          // Atomic Safety Net: Only update if background POST hasn't already done it
+          // Titanium Safety Net: Update by ID or Paymob Order ID
           const { data: updatedRows, error } = await supabaseAdmin
             .from("bookings")
             .update({
@@ -103,22 +105,26 @@ export async function GET(req: Request) {
               paymob_transaction_id: paymobTxId ? String(paymobTxId) : null,
               transaction_id: paymobTxId ? String(paymobTxId) : null,
             })
-            .eq("id", numericId)
-            .in('status', ['pending', 'interrupted']) // Accept both states to prevent duplication
+            .or(`id.eq.${numericId},paymob_order_id.eq.${numericId}`)
+            .in('status', ['pending', 'interrupted'])
             .select();
 
           if (error) {
             console.error("[CALLBACK GET] DB update error:", error.message);
-          } else if (updatedRows && updatedRows.length > 0) {
-            // This GET request was the 'First Responder' (POST was slow or failed)
+          } else {
+            // Always try to fetch the record to trigger N8N, even if updatedRows is empty (POST might have won)
             const { data: bookingRecord } = await supabaseAdmin
               .from("bookings")
               .select(`*, property:properties(*)`)
-              .eq("id", numericId)
+              .or(`id.eq.${numericId},paymob_order_id.eq.${numericId}`)
               .single();
 
-            if (bookingRecord) {
-               await triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N GET Bailout Error]:", e));
+            if (bookingRecord && bookingRecord.status === 'confirmed' && !bookingRecord.notification_sent) {
+               console.log(`[CALLBACK GET] Found Booking ${bookingRecord.booking_reference}. Launching N8N...`);
+               triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N GET Bailout Error]:", e));
+               
+               // Mark as sent so POST doesn't double-trigger if it's still running
+               await supabaseAdmin.from('bookings').update({ notification_sent: true }).eq('id', bookingRecord.id);
             }
           }
         }

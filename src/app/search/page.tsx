@@ -280,7 +280,11 @@ function SearchContent() {
               </div>
             ) : filteredProperties.length > 0 ? (
               <div className="flex flex-col">
-                {filteredProperties.map((property, idx) => {
+                {(() => {
+                  const now = new Date();
+                  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                  
+                  return filteredProperties.map((property, idx) => {
                   const propertyBookings = bookings.filter(b =>
                     String(b.property_id) === String(property.id) &&
                     (b.status === 'confirmed' || b.status === 'pending')
@@ -295,10 +299,10 @@ function SearchContent() {
                       // Case A: Guest is searching for a future range
                       const start1 = urlFrom;
                       const end1 = urlTo;
-                      return start1 < end2 && start2 < end1;
+                      return b.status === 'confirmed' && start1 < end2 && start2 < end1;
                     } else {
-                      // Case B: No search dates — show BOOKED for any confirmed booking not yet ended
-                      return b.status === 'confirmed' && b.check_out > todayStr;
+                      // Case B: No search dates — show BOOKED only if occupied TODAY
+                      return b.status === 'confirmed' && todayStr >= b.check_in && todayStr < b.check_out;
                     }
                   });
 
@@ -313,7 +317,7 @@ function SearchContent() {
                       searchContext={{ from: urlFrom, to: urlTo, adults: urlAdults, children: urlChildren }}
                     />
                   );
-                })}
+                })})()}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-24 text-center space-y-6">
