@@ -1,5 +1,13 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# !! SECURITY: Scratch/debug/test files - NEVER commit these !!
+test_ai.js
+scratch/
+*.test.js
+models_list.json
+models_v1.json
+ALEXA_PLAN.md
+
 # dependencies
 /node_modules
 /.pnp
