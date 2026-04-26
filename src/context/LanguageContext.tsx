@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { dictionaries, Language } from "@/i18n/dictionaries";
-import { getSiteContent, SiteLabel } from "@/data/api";
+import { getSiteContent } from "@/data/api";
+import type { SiteLabel } from "@/data/types";
 
 type LanguageContextType = {
   lang: Language;
