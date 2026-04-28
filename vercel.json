@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "src/app/api/bookings/verify/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/payments/paymob/callback/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/verify-dossier/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}
