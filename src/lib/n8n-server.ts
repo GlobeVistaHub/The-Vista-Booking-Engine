@@ -54,9 +54,16 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
 
   try {
     console.log(`[N8N] Starting Dossier Generation for ${formattedRef}...`);
+    console.log(`[N8N] Webhook URL Target: ${url ? url.slice(0, 15) + "..." : "MISSING!"}`);
+    
     const options = await getOptions();
+    console.log(`[N8N] Browser Options Prepared. Launching...`);
+    
     browser = await puppeteer.launch(options);
+    console.log(`[N8N] Browser Launched successfully.`);
+    
     const page = await browser.newPage();
+    console.log(`[N8N] Page Created.`);
 
     const htmlDossier = `
       <!DOCTYPE html>
@@ -110,7 +117,7 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
                 <div class="value">${booking.transaction_id || 'N/A'}</div>
               </div>
             </div>
-
+ 
             <div class="section-title">GUEST PROFILE</div>
             <div class="grid">
               <div>
@@ -126,7 +133,7 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
                 <div class="value">${booking.adults || 2} Adults, ${booking.children || 0} Children</div>
               </div>
             </div>
-
+ 
             <div class="section-title">PROPERTY ACCESS</div>
             <div class="property-section">
               <div class="property-info">
@@ -147,7 +154,7 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
               <img src="${propertyImg}" class="property-image" alt="Property">
             </div>
           </div>
-
+ 
           <div class="footer">
             Generated securely by The Vista Booking Engine for <strong>${gName}</strong>.
           </div>
@@ -155,16 +162,18 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
       </body>
       </html>
     `;
-
-    await page.setContent(htmlDossier, { waitUntil: 'networkidle0' });
+ 
+    await page.setContent(htmlDossier, { waitUntil: 'networkidle0', timeout: 30000 });
     const pdf = await page.pdf({ format: 'A4', printBackground: true });
     pdfBuffer = Buffer.from(pdf);
     console.log(`[N8N] PDF Generated Successfully (${pdfBuffer.length} bytes)`);
   } catch (err: any) {
-    console.error("[N8N] PDF Failed:", err.message);
-    console.log("[N8N] Proceeding with WhatsApp/Email only (No PDF).");
+    console.error("[N8N] PDF Engine Error:", err.message);
+    console.log("[N8N] RECOVERY: Skipping PDF to ensure Email/WhatsApp are sent.");
   } finally {
-    if (browser) await browser.close();
+    if (browser) {
+      try { await browser.close(); } catch (e) {}
+    }
   }
 
   const successMsg = `✅ BOOKING SECURED \n\nGuest: ${gName} \nProperty: ${prop?.title_en || prop?.title || "Vista Property"} \nAmount: USD ${Number(booking.total_price || 0).toLocaleString()} \nRef: ${formattedRef} \nDates: ${booking.check_in} - ${booking.check_out} \n\nDossier dispatched successfully.`;
