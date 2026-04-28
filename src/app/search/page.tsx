@@ -67,7 +67,7 @@ function SearchContent() {
 
   // ── Secondary filter state (filter bar on search page) ──────────────────
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 2000 });
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
   const [instantBookOnly, setInstantBookOnly] = useState(false);
   const [isTypeOpen, setIsTypeOpen] = useState(false);
   const [isPriceOpen, setIsPriceOpen] = useState(false);
@@ -76,7 +76,7 @@ function SearchContent() {
   // ── Step 1: Apply URL-level filters (location + guests) ──────────────────
   const urlFilteredProperties = useMemo(() => {
     return filteredAvailable.filter(p => {
-      if (urlLocation && p.location !== urlLocation) return false;
+      if (urlLocation && p.location.trim().toLowerCase() !== urlLocation.trim().toLowerCase()) return false;
       if (totalGuests > 0 && Number(p.guests) < totalGuests) return false;
       return true;
     });
@@ -121,7 +121,7 @@ function SearchContent() {
 
   const headerTitle = useMemo(() => {
     if (urlLocation) {
-      const sample = allProperties.find(p => p.location === urlLocation);
+      const sample = allProperties.find(p => p.location.trim().toLowerCase() === urlLocation.trim().toLowerCase());
       const displayLocation = lang === "ar" && sample ? sample.location_ar : urlLocation;
       return lang === "ar"
         ? `أفضل الإقامات في ${displayLocation}`
@@ -132,7 +132,7 @@ function SearchContent() {
 
   const resetAll = () => {
     setSelectedTypes([]);
-    setPriceRange({ min: 0, max: 2000 });
+    setPriceRange({ min: 0, max: 10000 });
     setInstantBookOnly(false);
   };
 
@@ -280,44 +280,31 @@ function SearchContent() {
               </div>
             ) : filteredProperties.length > 0 ? (
               <div className="flex flex-col">
-                {(() => {
+                {filteredProperties.map((property, idx) => {
                   const now = new Date();
                   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
                   
-                  return filteredProperties.map((property, idx) => {
-                  const propertyBookings = bookings.filter(b =>
+                  const isFullyBooked = bookings.some(b =>
                     String(b.property_id) === String(property.id) &&
-                    (b.status === 'confirmed' || b.status === 'pending')
+                    b.status === 'confirmed' &&
+                    (urlFrom && urlTo 
+                      ? (urlFrom < b.check_out && b.check_in < urlTo)
+                      : (todayStr >= b.check_in && todayStr < b.check_out))
                   );
-
-                  // Hybrid Ribbon Logic: Check search dates OR default to "Today" if no dates searched
-                  const isOccupied = propertyBookings.some(b => {
-                    const start2 = b.check_in;
-                    const end2 = b.check_out;
-
-                    if (urlFrom && urlTo) {
-                      // Case A: Guest is searching for a future range
-                      const start1 = urlFrom;
-                      const end1 = urlTo;
-                      return b.status === 'confirmed' && start1 < end2 && start2 < end1;
-                    } else {
-                      // Case B: No search dates — show BOOKED only if occupied TODAY
-                      return b.status === 'confirmed' && todayStr >= b.check_in && todayStr < b.check_out;
-                    }
-                  });
 
                   return (
                     <PropertyCard
                       key={property.id}
                       property={{
                         ...property,
-                        isBooked: !!isOccupied
+                        isBooked: isFullyBooked,
+                        isReserved: false
                       }}
                       delayIndex={idx % 10}
                       searchContext={{ from: urlFrom, to: urlTo, adults: urlAdults, children: urlChildren }}
                     />
                   );
-                })})()}
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-24 text-center space-y-6">

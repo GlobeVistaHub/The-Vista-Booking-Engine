@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TrendingUp, Plus, Loader2, CalendarDays, Wallet, Clock } from "lucide-react";
+import { TrendingUp, Plus, Loader2, CalendarDays, Wallet, Clock, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import SystemControlToggle from "@/components/SystemControlToggle";
 import { useAuth } from "@clerk/nextjs";
 import { getBookings, getProperties } from "@/data/api";
@@ -16,7 +16,7 @@ export default function AdminPage() {
   const { lang } = useLanguage();
   const { getToken } = useAuth();
   const { isWhiteLabel, ownerName, isDemoMode } = useAppModeStore();
-  
+
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [totalProperties, setTotalProperties] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,7 +26,6 @@ export default function AdminPage() {
     fetchDashboardData();
 
     // ENABLE REALTIME INTELLIGENCE
-    // This ensures that failures and bookings update VISUALLY the second they happen.
     const channel = supabase
       .channel('schema-db-changes')
       .on(
@@ -56,20 +55,33 @@ export default function AdminPage() {
     setIsLoading(false);
   };
 
-  // ── Stats Calculations ──────────────────────────────────────────
+  // ── THE ARCHITECT'S KPI LOGIC (2 / 24 RULE) ──────────────────────
+  const now = new Date().getTime();
+
+  // 1. Confirmed Revenue
   const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
-  const pendingBookings = bookings.filter(b => b.status === 'pending');
-  // Leads: Transactions that reached checkout but failed (Payment Interruption)
-  // We only count them if the booking is still 'pending' (not yet cancelled or confirmed)
-  const failedPayments = bookings.filter(b => b.payment_status === 'failed' && b.status === 'pending');
   const totalRevenue = confirmedBookings.reduce((sum, b) => sum + b.total_price, 0);
-  
+
+  // 2. Active Pending (Reserve Now leads strictly UNDER 2 hours)
+  const activePendingBookings = bookings.filter(b => {
+    if (b.status !== 'pending' || b.payment_status === 'failed') return false;
+    const minutesAgo = b.created_at ? Math.floor((now - new Date(b.created_at).getTime()) / 60000) : 0;
+    return minutesAgo <= 120; // Only counts as active for the first 2 hours
+  });
+
+  // 3. Payment Alerts (Primary Leads retained for 24 hours)
+  const failedPayments = bookings.filter(b => {
+    if (b.status !== 'pending' || b.payment_status !== 'failed') return false;
+    const hoursAgo = b.created_at ? Math.floor((now - new Date(b.created_at).getTime()) / 3600000) : 0;
+    return hoursAgo <= 24;
+  });
+
   // Recent activity (last 5)
   const recentBookings = bookings.slice(0, 5);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in pb-20">
-      
+
       {/* 1. Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -78,7 +90,7 @@ export default function AdminPage() {
           </h1>
           <p className="text-muted mt-2">Here is a real-time overview of your luxury portfolio.</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center justify-center gap-2 bg-primary text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 hover:-translate-y-0.5 active:scale-95 transition-all"
         >
@@ -87,7 +99,7 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* 2. System Control Toggle (Live vs Demo Mode) */}
+      {/* 2. System Control Toggle */}
       <SystemControlToggle />
 
       {/* 3. The KPI Metrics (Top Row) */}
@@ -114,7 +126,7 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white p-6 rounded-2xl shadow-soft border border-navy/5">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
@@ -123,10 +135,10 @@ export default function AdminPage() {
               <p className="text-sm font-bold text-muted uppercase tracking-wider">Active Bookings</p>
             </div>
             <div className="flex items-center justify-between">
-              <h3 className="text-3xl font-heading font-black">{confirmedBookings.length + pendingBookings.filter(b => b.payment_status !== 'failed').length}</h3>
+              <h3 className="text-3xl font-heading font-black">{confirmedBookings.length + activePendingBookings.length}</h3>
               <div className="flex flex-col items-end gap-1">
                 <span className="text-[9px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md font-bold uppercase border border-emerald-100">{confirmedBookings.length} Paid</span>
-                <span className="text-[9px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md font-bold uppercase border border-amber-100">{pendingBookings.filter(b => b.payment_status !== 'failed').length} Pending</span>
+                <span className="text-[9px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md font-bold uppercase border border-amber-100">{activePendingBookings.length} Pending</span>
               </div>
             </div>
           </div>
@@ -137,7 +149,7 @@ export default function AdminPage() {
             )}
             <div className="flex items-center gap-4 mb-4">
               <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
-                <Clock className="w-5 h-5" />
+                <AlertTriangle className="w-5 h-5" />
               </div>
               <p className="text-sm font-bold text-muted uppercase tracking-wider">Payment Alerts</p>
             </div>
@@ -163,24 +175,24 @@ export default function AdminPage() {
               <div>
                 <h3 className="text-lg font-bold text-navy">Retention Opportunity</h3>
                 <p className="text-navy/60 text-sm max-w-xl mt-1 leading-relaxed">
-                  These guests experienced a payment interruption. They have high intent—reaching out via WhatsApp or Email can recover **${failedPayments.reduce((sum, b) => sum + b.total_price, 0).toLocaleString()}** in potential revenue.
+                  These guests experienced a payment interruption in the last 24 hours. Reaching out via WhatsApp can recover **${failedPayments.reduce((sum, b) => sum + b.total_price, 0).toLocaleString()}** in potential revenue.
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-               <span className="text-xs font-bold text-rose-600 uppercase tracking-widest">{failedPayments.length} Pending Recovery</span>
+              <span className="text-xs font-bold text-rose-600 uppercase tracking-widest">{failedPayments.length} Pending Recovery</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* 4. The Recent Bookings Table (Bottom Section) */}
+      {/* 5. The Recent Bookings Table */}
       <div className="bg-white rounded-2xl shadow-soft border border-navy/5 overflow-hidden">
         <div className="p-6 border-b border-navy/5 flex items-center justify-between">
           <h2 className="text-xl font-bold text-navy">Recent Activity</h2>
           <span className="text-[10px] font-black uppercase tracking-widest text-muted">Latest Operations</span>
         </div>
-        
+
         {isLoading ? (
           <div className="py-20 flex justify-center">
             <Loader2 className="w-8 h-8 text-primary/40 animate-spin" />
@@ -202,56 +214,71 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody className="text-navy divide-y divide-navy/5">
-                {recentBookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-slate-50/40 transition-colors group">
-                    <td className="px-6 py-4">
-                      <p className="font-bold text-navy text-sm">
-                        {booking.guest_name && booking.guest_name !== 'Guest' 
-                          ? booking.guest_name 
-                          : booking.guest_email?.split('@')[0] || 'Unknown Guest'}
-                      </p>
-                      <p className="text-[10px] text-muted truncate max-w-[150px]">{booking.guest_email}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-medium">
-                        {lang === 'ar' && booking.property ? booking.property.title_ar : (booking.property?.title || `Property #${booking.property_id}`)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-navy/70 whitespace-nowrap">
-                          {format(parseISO(booking.check_in), "MMM dd")} - {format(parseISO(booking.check_out), "MMM dd")}
+                {recentBookings.map((booking) => {
+                  const minutesAgo = booking.created_at ? Math.floor((now - new Date(booking.created_at).getTime()) / 60000) : 0;
+                  const isAutoCancelled = booking.status === 'pending' && minutesAgo > 120;
+
+                  let badgeClass = "bg-amber-50 text-amber-700 border-amber-100";
+                  let badgeText = "Pending";
+
+                  if (booking.payment_status === 'paid' || booking.status === 'confirmed') {
+                    badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-100";
+                    badgeText = "Confirmed";
+                  } else if (booking.payment_status === 'failed') {
+                    badgeClass = "bg-rose-50 text-rose-700 border-rose-100 animate-pulse";
+                    badgeText = "Interrupted";
+                  } else if (booking.status === 'cancelled' || isAutoCancelled) {
+                    badgeClass = "bg-slate-50 text-slate-700 border-slate-200";
+                    badgeText = "Cancelled";
+                  } else {
+                    // This explicitly ensures Secondary Leads show as Pending for 2 hours
+                    badgeClass = "bg-amber-50 text-amber-700 border-amber-100";
+                    badgeText = "Pending";
+                  }
+
+                  return (
+                    <tr key={booking.id} className={`hover:bg-slate-50/40 transition-colors group ${(isAutoCancelled || booking.status === 'cancelled') ? "opacity-60" : ""}`}>
+                      <td className="px-6 py-4">
+                        <p className="font-bold text-navy text-sm">
+                          {booking.guest_name && booking.guest_name !== 'Guest'
+                            ? booking.guest_name
+                            : booking.guest_email?.split('@')[0] || 'Unknown Guest'}
+                        </p>
+                        <p className="text-[10px] text-muted truncate max-w-[150px]">{booking.guest_email}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-medium">
+                          {lang === 'ar' && booking.property ? booking.property.title_ar : (booking.property?.title || `Property #${booking.property_id}`)}
                         </span>
-                        <span className="text-[10px] text-muted uppercase font-black tracking-tighter">
-                          {booking.adults + booking.children} Persons
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-navy/70 whitespace-nowrap">
+                            {format(parseISO(booking.check_in), "MMM dd")} - {format(parseISO(booking.check_out), "MMM dd")}
+                          </span>
+                          <span className="text-[10px] text-muted uppercase font-black tracking-tighter">
+                            {booking.adults + booking.children} Persons
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${badgeClass}`}>
+                          {badgeText}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${
-                        booking.status === 'cancelled'
-                          ? "bg-rose-50 text-rose-700 border-rose-100"
-                        : booking.status === 'confirmed' || booking.payment_status === 'paid'
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
-                        : booking.payment_status === 'failed'
-                          ? "bg-rose-50 text-rose-700 border-rose-100 animate-pulse"
-                        : "bg-amber-50 text-amber-700 border-amber-100"
-                      }`}>
-                        {booking.payment_status === 'failed' ? "Payment Failed" : booking.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 font-black text-right text-sm">
-                      ${booking.total_price.toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-4 font-black text-right text-sm">
+                        ${booking.total_price.toLocaleString()}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
-      <AddPropertyModal 
+      <AddPropertyModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={() => fetchDashboardData()}

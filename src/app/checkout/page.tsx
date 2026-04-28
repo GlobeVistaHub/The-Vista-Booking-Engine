@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useMemo } from "react";
 import {
   ChevronLeft,
   Star,
@@ -25,6 +25,7 @@ import "react-day-picker/style.css";
 import { Plus, Minus, X, Loader2, Globe } from "lucide-react";
 import { useAppModeStore } from "@/store/appModeStore";
 import { useAppStore } from "@/hooks/useAppStore";
+import { getPublicOccupancyServer } from "@/app/actions/bookings"; // VISTA FIX: Ghost Bridge Imported
 
 // PAYMENT METHOD LOGOS (VITAL SVGS)
 const VisaLogo = () => (
@@ -62,7 +63,7 @@ function CheckoutContent() {
   const router = useRouter();
   const { t, lang } = useLanguage();
   const propertyId = searchParams.get("id");
-  
+
   const [property, setProperty] = useState<Property | null>(null);
   const [isPropertyLoading, setIsPropertyLoading] = useState(true);
 
@@ -75,7 +76,7 @@ function CheckoutContent() {
   // Selection states
   const urlFrom = searchParams.get("from");
   const urlTo = searchParams.get("to");
-  
+
   const today = new Date();
   const defaultCheckOut = new Date();
   defaultCheckOut.setDate(today.getDate() + 5);
@@ -84,8 +85,47 @@ function CheckoutContent() {
     from: urlFrom ? new Date(urlFrom) : today,
     to: urlTo ? new Date(urlTo) : defaultCheckOut
   });
+
   const [adults, setAdults] = useState(Number(searchParams.get("adults")) || 2);
   const [children, setChildren] = useState(Number(searchParams.get("children")) || 0);
+
+  // ── VISTA FIX: INVENTORY LOCK LOGIC ──
+  const [disabledDates, setDisabledDates] = useState<Date[]>([]);
+
+  useEffect(() => {
+    if (propertyId) {
+      getPublicOccupancyServer().then((occupancy) => {
+        const blocked: Date[] = [];
+        occupancy.forEach((b: any) => {
+          if (String(b.property_id) === String(propertyId)) {
+            let current = new Date(b.check_in);
+            const end = new Date(b.check_out);
+
+            // HOSPITALITY MATH: Block everything EXCEPT the checkout day
+            while (current < end) {
+              blocked.push(new Date(current));
+              current.setDate(current.getDate() + 1);
+            }
+          }
+        });
+        setDisabledDates(blocked);
+      }).catch(err => console.error("Failed to load occupancy", err));
+    }
+  }, [propertyId]);
+
+  // VISTA FIX: Verify the selected range doesn't overlap someone else's booking
+  const isDateRangeValid = useMemo(() => {
+    if (!dateRange.from || !dateRange.to) return false;
+    const f = new Date(dateRange.from); f.setHours(0, 0, 0, 0);
+    const t = new Date(dateRange.to); t.setHours(0, 0, 0, 0);
+
+    if (t <= f) return false; // Can't checkout before check-in
+
+    return !disabledDates.some(d => {
+      const bd = new Date(d); bd.setHours(0, 0, 0, 0);
+      return bd >= f && bd < t;
+    });
+  }, [dateRange, disabledDates]);
 
   // Paymob States
   const [isProcessing, setIsProcessing] = useState(false);
@@ -108,7 +148,6 @@ function CheckoutContent() {
 
   useEffect(() => {
     if (!isPropertyLoading && !property && propertyId) {
-      // Retry once after 1.5s before giving up — prevents false redirects on slow connections
       const retryTimer = setTimeout(async () => {
         const retryData = await getPropertyById(propertyId);
         if (!retryData) {
@@ -135,16 +174,9 @@ function CheckoutContent() {
 
   const stayNights = differenceInDays(dateRange.to, dateRange.from) || 1;
   const totalGuests = adults + children;
-  
-  // CLEAN GUEST LIMITS (Regex extracts first number found in string)
-  const guestsMatch = String(property.guests).match(/\d+/);
-  const dataMaxGuests = guestsMatch ? parseInt(guestsMatch[0]) : 8;
-  
-  // LOGIC FIX: baseGuests is the threshold for charges, maxGuests is the counter limit.
+
   const pricing = getPricingSettings(property);
   const baseGuests = pricing.baseGuests;
-  const maxGuests = pricing.maxGuests;
-
   const extraGuestFee = pricing.extraGuestFee;
   const extraGuests = Math.max(0, totalGuests - baseGuests);
   const extraGuestTotal = extraGuests * extraGuestFee * stayNights;
@@ -153,13 +185,6 @@ function CheckoutContent() {
   const serviceFee = Math.round((pricePerNight * stayNights + extraGuestTotal) * pricing.serviceFeeRate);
   const total = pricePerNight * stayNights + extraGuestTotal + cleaningFee + serviceFee;
   const amountEGP = Math.round(total * exchangeRate);
-
-  const paymentMethods = [
-    { id: "visa", logo: <VisaLogo /> },
-    { id: "mc", logo: <MCLogo /> },
-    { id: "amex", logo: <AMEXLogo /> },
-    { id: "apple", logo: <ApplePayLogo /> },
-  ];
 
   const handleConfirm = async () => {
     setIsProcessing(true);
@@ -182,13 +207,11 @@ function CheckoutContent() {
         }),
       });
 
-      // Safe JSON parse: If API returns HTML error page instead of JSON, show friendly message
       const responseText = await response.text();
       let data: any;
       try {
         data = JSON.parse(responseText);
       } catch {
-        console.error("Payment API returned non-JSON:", responseText.slice(0, 200));
         throw new Error("Payment service is temporarily unavailable. Please try again.");
       }
 
@@ -388,10 +411,6 @@ function CheckoutContent() {
                   {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
                   {isProcessing ? "Processing..." : t('confirmAndPay')}
                 </button>
-                <div className="flex items-center justify-center gap-2 mt-4 text-[10px] text-muted font-bold uppercase tracking-widest">
-                  <ShieldCheck className="w-3 h-3" />
-                  <span>256-bit SSL Secure Payment</span>
-                </div>
               </div>
             </div>
           </div>
@@ -432,10 +451,16 @@ function CheckoutContent() {
                 <X className="w-5 h-5 text-navy" />
               </button>
             </div>
+
             <DayPicker
               mode="range"
+              disabled={[...disabledDates, { before: new Date() }]} // VISTA FIX: Blocks past dates + someone else's bookings!
               selected={{ from: dateRange.from, to: dateRange.to }}
-              onSelect={(range) => range?.from && range?.to && setDateRange({ from: range.from, to: range.to })}
+              onSelect={(range) => {
+                if (range?.from) {
+                  setDateRange({ from: range.from, to: range.to || range.from });
+                }
+              }}
               numberOfMonths={1}
               className="mx-auto"
               dir={lang === "ar" ? "rtl" : "ltr"}
@@ -444,11 +469,13 @@ function CheckoutContent() {
                 day_today: "font-bold text-navy border border-primary/20",
               }}
             />
+
             <button
               onClick={() => setIsEditingDates(false)}
-              className="w-full mt-8 py-4 bg-primary text-white font-bold rounded-2xl shadow-md"
+              disabled={!isDateRangeValid}
+              className={`w-full mt-8 py-4 font-bold rounded-2xl shadow-md transition-all ${isDateRangeValid ? 'bg-primary text-white hover:brightness-110' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
             >
-              {t('saveChanges')}
+              {isDateRangeValid ? t('saveChanges') : "Dates Unavailable"}
             </button>
           </div>
         </div>

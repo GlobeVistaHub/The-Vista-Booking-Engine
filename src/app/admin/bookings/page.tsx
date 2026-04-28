@@ -19,6 +19,7 @@ import {
   XCircle,
   Clock,
   Loader2,
+  AlertTriangle,
   ChevronDown
 } from "lucide-react";
 import Link from "next/link";
@@ -42,8 +43,6 @@ export default function BookingsDashboard() {
   useEffect(() => {
     fetchBookings();
 
-    // ENABLE REALTIME INTELLIGENCE
-    // This ensures that failures and bookings update VISUALLY the second they happen.
     const channel = supabase
       .channel('bookings-realtime')
       .on(
@@ -65,16 +64,9 @@ export default function BookingsDashboard() {
     setUpdatingId(id);
 
     try {
-      // 1. Find the booking and current status for transition checks
       const bookingToUpdate = bookings.find(b => String(b.id) === String(id));
       const currentStatus = bookingToUpdate?.status;
 
-      // VERCEL FIX: Robust property ID detection
-      const propertyId = bookingToUpdate?.property_id || (bookingToUpdate as any).property?.id;
-
-      console.log(`[Vista-Admin] Flipping booking ${id} to ${newStatus}. Target Property: ${propertyId}`);
-
-      // 2. Real Database Transaction (WAIT for completion)
       const token = await getToken({ template: 'supabase' }) || undefined;
 
       if (!token && !useAppModeStore.getState().isDemoMode) {
@@ -86,12 +78,11 @@ export default function BookingsDashboard() {
       const success = await updateBookingStatus(id, newStatus, undefined, token);
 
       if (!success) {
-        alert("Failed to update status in database. This is often due to permissions (RLS) or missing columns. Check your browser console (F12) for the specific error details.");
+        alert("Failed to update status in database. Check console (F12) for details.");
         setUpdatingId(null);
         return;
       }
 
-      // 3. Side-Effect: Trigger N8N dossier workflow if confirmed
       if (currentStatus === 'pending' && newStatus === 'confirmed') {
         try {
           await triggerDossierFromAdmin(id.toString());
@@ -100,10 +91,7 @@ export default function BookingsDashboard() {
         }
       }
 
-      // 4. Finalize UI Sync
       await fetchBookings();
-      alert(`Booking successfully ${newStatus}!`);
-
     } catch (err) {
       console.error("[Vista-Admin] Status change failed:", err);
       alert("An unexpected error occurred while updating the booking.");
@@ -119,22 +107,19 @@ export default function BookingsDashboard() {
   );
 
   const getStatusConfig = (booking: Booking) => {
-    if (booking.status === 'pending' && booking.payment_status === 'failed') {
-      return { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: Clock, label: 'Payment Failed' };
-    }
+    const minutesAgo = booking.created_at ? Math.floor((new Date().getTime() - new Date(booking.created_at).getTime()) / 60000) : 0;
+    const isAutoCancelled = booking.status === 'pending' && minutesAgo > 120;
 
-    switch (booking.status) {
-      case 'confirmed': return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: CheckCircle2, label: 'Confirmed' };
-      case 'pending': return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: Clock, label: 'Pending' };
-      case 'cancelled': return { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: XCircle, label: 'CANCELLED' };
-      default: return { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200', icon: Clock, label: 'Unknown' };
-    }
+    if (booking.status === 'confirmed') return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: CheckCircle2, label: 'Confirmed' };
+    if (booking.status === 'cancelled' || isAutoCancelled) return { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200', icon: XCircle, label: 'CANCELLED' };
+    if (booking.payment_status === 'failed') return { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: AlertTriangle, label: 'Payment Failed' };
+
+    return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', icon: Clock, label: 'Pending' };
   };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-20">
 
-      {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-heading text-navy font-bold flex items-center gap-3">
@@ -145,10 +130,8 @@ export default function BookingsDashboard() {
         </div>
       </div>
 
-      {/* System Control Toggle (Live vs Demo Mode) */}
       <SystemControlToggle />
 
-      {/* Toolbar */}
       <div className="bg-white p-4 rounded-2xl shadow-soft border border-navy/5 flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="relative w-full md:w-96">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
@@ -162,12 +145,14 @@ export default function BookingsDashboard() {
         </div>
         <div className="flex items-center gap-2 text-sm font-medium text-navy/70">
           Active Bookings: <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold">
-            {bookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length}
+            {bookings.filter(b => {
+              const minutesAgo = b.created_at ? Math.floor((new Date().getTime() - new Date(b.created_at).getTime()) / 60000) : 0;
+              return b.status === 'confirmed' || (b.status === 'pending' && minutesAgo <= 120);
+            }).length}
           </span>
         </div>
       </div>
 
-      {/* The Content Area */}
       <div className="bg-white rounded-2xl shadow-soft border border-navy/5 overflow-hidden">
         {isLoading ? (
           <div className="py-32 flex flex-col items-center justify-center gap-4">
@@ -188,7 +173,6 @@ export default function BookingsDashboard() {
           </div>
         ) : (
           <>
-            {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -205,21 +189,40 @@ export default function BookingsDashboard() {
                 <tbody className="divide-y divide-navy/5">
                   {filteredBookings.map((booking) => {
                     const desktopSt = getStatusConfig(booking);
+                    const StatusIcon = desktopSt.icon;
                     const safeStatus = booking.status;
                     const minutesAgo = Math.floor((new Date().getTime() - new Date(booking.created_at).getTime()) / 60000);
-                    const isLongPending = safeStatus === 'pending' && minutesAgo > 120; // 2 Hour Window
+                    const isAutoCancelled = safeStatus === 'pending' && minutesAgo > 120;
 
-                    const StatusIcon = desktopSt.icon;
+                    // THE ARCHITECT'S FINANCIAL COLUMN LOGIC (Desktop)
+                    let finText = 'Pending';
+                    let finColor = 'text-amber-600';
+
+                    if (booking.payment_status === 'paid' || safeStatus === 'confirmed') {
+                      finText = 'Paid';
+                      finColor = 'text-emerald-600';
+                    } else if (booking.payment_status === 'failed') {
+                      // PRIMARY LEADS: Payment was attempted but failed
+                      finText = 'Interrupted';
+                      finColor = 'text-rose-600';
+                    } else if (minutesAgo > 120) {
+                      // SECONDARY LEADS: 2 hours passed with absolutely no action (silent cancel)
+                      finText = 'Cancelled';
+                      finColor = 'text-slate-500';
+                    } else {
+                      // THE CHEAT: Under 2 hours. Even if Admin manually cancelled, it shows Pending here!
+                      finText = 'Pending';
+                      finColor = 'text-amber-600';
+                    }
 
                     return (
-                      <tr key={booking.id} className={`hover:bg-slate-50/40 transition-colors group ${isLongPending ? "bg-primary/[0.02]" : ""}`}>
+                      <tr key={booking.id} className={`hover:bg-slate-50/40 transition-colors group ${(isAutoCancelled || safeStatus === 'cancelled') ? "opacity-60" : ""}`}>
                         <td className="px-6 py-5">
                           <div className="flex flex-col">
                             <span className="text-xs font-mono font-black text-navy/20 uppercase tracking-tighter">
-                              {/* VERCEL FIX */}
                               {(booking as any).booking_reference || `TX-VST-${booking.id.toString().padStart(4, "0")}`}
                             </span>
-                            {isLongPending && (
+                            {safeStatus === 'pending' && !isAutoCancelled && (
                               <div className="flex items-center gap-1.5 mt-1.5">
                                 <Clock className="w-3.5 h-3.5 text-primary" />
                                 <span className="text-[9px] font-black text-primary uppercase tracking-widest">
@@ -257,7 +260,6 @@ export default function BookingsDashboard() {
                         <td className="px-6 py-5">
                           <div className="flex flex-col">
                             <span className="text-sm font-bold text-navy">
-                              {/* VERCEL FIX */}
                               {safeStatus === 'confirmed' && (booking as any).confirmed_at
                                 ? format(new Date((booking as any).confirmed_at), "MMM dd, HH:mm")
                                 : safeStatus === 'cancelled' && (booking as any).cancelled_at
@@ -285,13 +287,8 @@ export default function BookingsDashboard() {
                         <td className="px-6 py-5">
                           <div className="flex flex-col">
                             <span className="font-bold text-navy text-sm">${booking.total_price.toLocaleString()}</span>
-                            <span className={`text-[10px] font-bold uppercase tracking-wide ${booking.payment_status === 'paid' ? 'text-emerald-600' :
-                                booking.payment_status === 'failed' ? 'text-rose-600' :
-                                  'text-amber-600'
-                              }`}>
-                              {booking.payment_status === 'paid' ? 'Paid' :
-                                booking.payment_status === 'failed' ? 'Failed' :
-                                  'Pending'}
+                            <span className={`text-[10px] font-bold uppercase tracking-wide ${finColor}`}>
+                              {finText}
                             </span>
                           </div>
                         </td>
@@ -309,8 +306,7 @@ export default function BookingsDashboard() {
                               <Loader2 className="w-4 h-4 text-primary animate-spin" />
                             ) : (
                               <div className="flex items-center gap-2">
-                                {/* PENDING -> APPROVE or REJECT */}
-                                {safeStatus === 'pending' && (
+                                {safeStatus === 'pending' && !isAutoCancelled && (
                                   <>
                                     <button onClick={() => handleStatusChange(booking.id, 'confirmed')} className="px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-lg transition-all" title="Approve">
                                       <CheckCircle2 className="w-4 h-4" />
@@ -320,7 +316,6 @@ export default function BookingsDashboard() {
                                     </button>
                                   </>
                                 )}
-                                {/* CONFIRMED -> REJECT/CANCEL Only */}
                                 {safeStatus === 'confirmed' && (
                                   <button onClick={() => handleStatusChange(booking.id, 'cancelled')} className="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg transition-all" title="Cancel Booking">
                                     <XCircle className="w-4 h-4" />
@@ -340,15 +335,34 @@ export default function BookingsDashboard() {
             {/* Mobile Card View */}
             <div className="md:hidden divide-y divide-navy/5">
               {filteredBookings.map((booking) => {
-                const safeStatus = (booking.status ?? 'pending') as 'pending' | 'confirmed' | 'cancelled';
                 const mobileSt = getStatusConfig(booking);
                 const StatusIcon = mobileSt.icon;
+                const safeStatus = booking.status;
+                const minutesAgo = Math.floor((new Date().getTime() - new Date(booking.created_at).getTime()) / 60000);
+                const isAutoCancelled = safeStatus === 'pending' && minutesAgo > 120;
+
+                // THE ARCHITECT'S FINANCIAL COLUMN LOGIC (Mobile)
+                let finText = 'Pending';
+                let finColor = 'text-amber-600';
+
+                if (booking.payment_status === 'paid' || safeStatus === 'confirmed') {
+                  finText = 'Paid';
+                  finColor = 'text-emerald-600';
+                } else if (booking.payment_status === 'failed') {
+                  finText = 'Interrupted';
+                  finColor = 'text-rose-600';
+                } else if (minutesAgo > 120) {
+                  finText = 'Cancelled';
+                  finColor = 'text-slate-500';
+                } else {
+                  finText = 'Pending';
+                  finColor = 'text-amber-600';
+                }
 
                 return (
-                  <div key={booking.id} className="p-6 space-y-4">
+                  <div key={booking.id} className={`p-6 space-y-4 ${(isAutoCancelled || safeStatus === 'cancelled') ? "opacity-60" : ""}`}>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-mono font-bold text-navy/40 uppercase">
-                        {/* VERCEL FIX */}
                         {(booking as any).booking_reference || `#VST-${booking.id.toString().padStart(4, '0')}`}
                       </span>
                       <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${mobileSt.bg} ${mobileSt.text} ${mobileSt.border}`}>
@@ -376,8 +390,13 @@ export default function BookingsDashboard() {
                         </p>
                       </div>
                       <div className="p-3 bg-slate-50 rounded-xl">
-                        <p className="text-[10px] text-muted uppercase font-bold tracking-widest mb-1">Amount</p>
-                        <p className="text-xs font-bold text-navy">${booking.total_price.toLocaleString()}</p>
+                        <p className="text-[10px] text-muted uppercase font-bold tracking-widest mb-1">Financials</p>
+                        <div className="flex justify-between items-center">
+                          <p className="text-xs font-bold text-navy">${booking.total_price.toLocaleString()}</p>
+                          <span className={`text-[9px] font-bold uppercase tracking-wide ${finColor}`}>
+                            {finText}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -388,7 +407,7 @@ export default function BookingsDashboard() {
                         </div>
                       ) : (
                         <div className="flex flex-col gap-2">
-                          {booking.status === 'pending' && (
+                          {safeStatus === 'pending' && !isAutoCancelled && (
                             <div className="grid grid-cols-2 gap-2">
                               <button
                                 onClick={() => handleStatusChange(booking.id, 'confirmed')}
@@ -404,7 +423,7 @@ export default function BookingsDashboard() {
                               </button>
                             </div>
                           )}
-                          {booking.status === 'confirmed' && (
+                          {safeStatus === 'confirmed' && (
                             <button
                               onClick={() => handleStatusChange(booking.id, 'cancelled')}
                               className="flex items-center justify-center gap-2 py-3 bg-slate-50 text-rose-600 border border-navy/5 rounded-xl text-xs font-bold"

@@ -21,15 +21,16 @@ interface Property {
   images: string[];
   tags: string[];
   isBooked?: boolean;
+  isReserved?: boolean;
 }
 
-export default function PropertyCard({ 
-  property, 
+export default function PropertyCard({
+  property,
   searchContext,
-  delayIndex = 0 
-}: { 
-  property: Property, 
-  searchContext?: {from: string, to: string, adults: number, children: number},
+  delayIndex = 0
+}: {
+  property: Property,
+  searchContext?: { from: string, to: string, adults: number, children: number },
   delayIndex?: number
 }) {
   const [currentImg, setCurrentImg] = useState(0);
@@ -49,18 +50,18 @@ export default function PropertyCard({
     setCurrentImg((i) => (i === property.images.length - 1 ? 0 : i + 1));
   };
 
-  const linkHref = searchContext 
+  const linkHref = property.isBooked ? "#" : (searchContext
     ? `/property/${property.id}?from=${searchContext.from}&to=${searchContext.to}&adults=${searchContext.adults}&children=${searchContext.children}`
-    : `/property/${property.id}`;
+    : `/property/${property.id}`);
 
   return (
-    <div 
+    <div
       className={`group flex flex-col sm:flex-row gap-6 border-b border-navy/5 pb-10 last:border-0 p-4 -mx-4 rounded-3xl transition-all hover:bg-navy/[0.01] animate-reveal`}
       style={{ animationDelay: `${delayIndex * 100}ms` }}
       dir={lang === "ar" ? "rtl" : "ltr"}
     >
       {/* 1. INTERACTIVE ZONE: IMAGE & CAROUSEL (NO LINK) */}
-      <div className={`relative w-full sm:w-72 h-56 sm:h-56 rounded-2xl overflow-hidden flex-shrink-0 bg-navy/5 shadow-sm ${property.isBooked ? 'opacity-60 grayscale-[0.2]' : ''}`}>
+      <div className={`relative w-full sm:w-72 h-56 sm:h-56 rounded-2xl overflow-hidden flex-shrink-0 bg-navy/5 shadow-sm ${(property.isBooked || property.isReserved) ? 'opacity-80 grayscale-[0.1]' : ''}`}>
         {/* Images */}
         <div className="relative w-full h-full">
           {property.images.map((img, idx) => (
@@ -113,12 +114,19 @@ export default function PropertyCard({
             {t('fullyBooked')}
           </div>
         )}
+
+        {/* Reserved Ribbon */}
+        {property.isReserved && (
+          <div className="absolute top-0 left-0 z-30 bg-primary text-white px-3 py-1 rounded-br-xl text-[10px] font-black uppercase tracking-widest border-r border-b border-white/10">
+            RESERVED
+          </div>
+        )}
       </div>
 
       {/* 2. NAVIGATION ZONE: DETAILS (WRAPPED IN LINK) */}
-      <Link 
+      <Link
         href={linkHref}
-        className={`flex flex-col flex-1 py-1 min-h-[180px] group/details ${property.isBooked ? 'pointer-events-none opacity-60 grayscale-[0.2]' : ''}`}
+        className={`flex flex-col flex-1 py-1 min-h-[180px] group/details ${(property.isBooked || property.isReserved) ? 'opacity-80 grayscale-[0.1]' : ''}`}
       >
         <div className="flex justify-between items-start">
           <div className="space-y-1">
@@ -155,7 +163,7 @@ export default function PropertyCard({
 
         <div className="mt-auto pt-6 flex justify-between items-end border-t border-navy/5">
           <div className="flex items-center gap-2 text-sm font-bold text-navy group-hover/details:text-primary transition-all">
-            {t('viewDetails')} 
+            {t('viewDetails')}
             <ArrowRight className={`w-4 h-4 transition-transform group-hover/details:translate-x-1 ${lang === "ar" ? "rotate-180" : ""}`} />
           </div>
           <div className="flex items-baseline gap-1">

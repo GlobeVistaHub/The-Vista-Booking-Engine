@@ -108,16 +108,14 @@ export default function Home() {
               <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse delay-150"></div>
             </div>
           ) : visibleProperties.map((property) => {
-            // Check occupancy for Today
+            // Check occupancy for Today (Confirmed only for the Home Page ribbon)
             const now = new Date();
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
             const todayStr = `${year}-${month}-${day}`;
 
-            // Show FULLY BOOKED ribbon only if occupied TODAY
-            // This allows guests to still click and book for future/other dates
-            const isBooked = bookings.some(b =>
+            const isFullyBooked = bookings.some(b =>
               String(b.property_id) === String(property.id) &&
               b.status === 'confirmed' &&
               todayStr >= b.check_in && todayStr < b.check_out
@@ -125,12 +123,12 @@ export default function Home() {
 
             return (
               <Link
-                href={`/property/${property.id}`}
+                href={isFullyBooked ? "#" : `/property/${property.id}`}
                 key={property.id}
-                className={isBooked ? "pointer-events-none cursor-default" : ""}
+                className={isFullyBooked ? "pointer-events-none cursor-default" : ""}
               >
                 <article
-                  className={`group bg-surface rounded-2xl overflow-hidden h-full transition-all ${isBooked ? 'opacity-60 grayscale-[0.2]' : 'cursor-pointer'}`}
+                  className={`group bg-surface rounded-2xl overflow-hidden h-full transition-all ${isFullyBooked ? 'opacity-60 grayscale-[0.2]' : 'cursor-pointer'}`}
                   style={{ boxShadow: "var(--shadow-soft)" }}
                 >
                   {/* IMAGE WRAPPER */}
@@ -141,7 +139,7 @@ export default function Home() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
                     />
 
-                    {isBooked && (
+                    {isFullyBooked && (
                       <div className="absolute top-0 left-0 z-30 bg-navy text-white px-3 py-1 rounded-br-xl text-[10px] font-black uppercase tracking-widest border-r border-b border-white/10">
                         {t('fullyBooked')}
                       </div>
