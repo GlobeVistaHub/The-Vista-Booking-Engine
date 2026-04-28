@@ -32,7 +32,8 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
   const FormData = (await import('form-data')).default;
   const fetch = (await import('node-fetch')).default;
 
-  const url = process.env.N8N_WEBHOOK_URL || process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
+  const rawUrl = process.env.N8N_WEBHOOK_URL || process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
+  const url = rawUrl ? rawUrl.trim() : '';
   if (!url) return;
 
   const prop = Array.isArray(property) ? property[0] : property;
@@ -54,7 +55,8 @@ export const triggerN8NDossier = async (booking: any, property: any) => {
 
   try {
     console.log(`[N8N] Starting Dossier Generation for ${formattedRef}...`);
-    console.log(`[N8N] Webhook URL Target: ${url ? url.slice(0, 15) + "..." : "MISSING!"}`);
+    // VISTA FIX: Print the exact full URL to debug Vercel environment variables
+    console.log(`[N8N] FULL Webhook URL Target: "${url || 'MISSING'}"`);
     
     const options = await getOptions();
     console.log(`[N8N] Browser Options Prepared. Launching...`);
