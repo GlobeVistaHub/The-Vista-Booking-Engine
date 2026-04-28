@@ -4,14 +4,16 @@ import { createClient } from '@supabase/supabase-js';
  * PRODUCTION & LOCAL: Environment-aware browser launcher
  */
 const getOptions = async () => {
-  const chromium = (await import('@sparticuz/chromium')).default;
-  const isVercel = !!process.env.VERCEL;
+  const chromium = (await import("@sparticuz/chromium")).default;
+  const isVercel = !!process.env.VERCEL || !!process.env.AWS_REGION;
 
   if (isVercel) {
+    // VISTA FIX: Ensure the binary path is correctly resolved on Vercel's serverless environment
     return {
       args: chromium.args,
       executablePath: await chromium.executablePath(),
       headless: true,
+      ignoreHTTPSErrors: true,
     };
   } else {
     return {
