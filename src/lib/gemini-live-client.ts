@@ -25,9 +25,10 @@ export class GeminiLiveClient {
       this.ws = new WebSocket(url);
 
       this.ws.onopen = () => {
+        console.log("[Vista-Alexa] Handshake initiated with Google Multimodal Live API...");
         this.ws?.send(JSON.stringify({
           setup: {
-            model: "models/gemini-2.0-flash",
+            model: "models/gemini-3.1-flash",
             generationConfig: {
               responseModalities: ["AUDIO"]
             },
@@ -37,6 +38,7 @@ export class GeminiLiveClient {
           }
         }));
         
+        console.log("[Vista-Alexa] Handshake successful. Voice engine is ready and listening.");
         this.onStateChange('connected');
         this.startMicrophone();
       };
@@ -60,6 +62,7 @@ export class GeminiLiveClient {
         if (msg.serverContent?.modelTurn?.parts) {
           for (const part of msg.serverContent.modelTurn.parts) {
             if (part.inlineData?.mimeType?.startsWith('audio/pcm')) {
+              console.log("[Vista-Alexa] Audio packet received from AI. Playing...");
               this.onStateChange('speaking');
               this.playAudioChunk(part.inlineData.data);
             }
@@ -104,6 +107,9 @@ export class GeminiLiveClient {
     try {
       this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
       this.source = this.audioContext.createMediaStreamSource(this.mediaStream);
       
       // Use ScriptProcessorNode for easy raw PCM capture

@@ -65,10 +65,11 @@ export default function FinancialsDashboard() {
     const minutesAgo = b.created_at ? Math.floor((now - new Date(b.created_at).getTime()) / 60000) : 0;
     const hoursAgo = minutesAgo / 60;
 
-    if (b.payment_status === "failed") return hoursAgo <= 24; // Keep in table for 24h
-    if (b.status === "pending") return minutesAgo <= 120;     // Keep in table for 2h
+    if (b.payment_status === "failed") return hoursAgo <= 24; // Keep primary leads in table for 24h
+    if (b.status === "pending") return true; // Keep active pending leads
+    if (b.status === "cancelled" && hoursAgo <= 24) return true; // Keep secondary leads (expired) for 24h
 
-    return false; // Dead leads are hidden from financials
+    return false; // Dead leads older than 24h are hidden from financials
   });
 
   // Math

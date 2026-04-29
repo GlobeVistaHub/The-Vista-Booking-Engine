@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     });
 
     // Bypass Next.js built-in fetch (which crashes Node 24 on Windows) by using node-fetch
-    const geminiRes = await fetchNode(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+    const geminiRes = await fetchNode(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: requestBody

@@ -49,13 +49,7 @@ export default function AlexaConcierge() {
   const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
     api: '/api/chat',
     body: { isVoiceMode: false }, // Text mode only for useChat now
-    initialMessages: initialGreeting ? [
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content: initialGreeting
-      }
-    ] : [],
+    initialMessages: [],
     onError: (err) => {
       console.warn("Chat error:", err);
     }

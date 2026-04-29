@@ -16,7 +16,7 @@ export async function POST() {
 
   const { data, error } = await supabaseAdmin
     .from("bookings")
-    .update({ status: "cancelled", payment_status: "failed" })
+    .update({ status: "cancelled" })
     .or("status.eq.pending,status.eq.interrupted")
     .lt("created_at", twoHoursAgo.toISOString())
     .select("id");

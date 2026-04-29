@@ -202,13 +202,13 @@ export default function BookingsDashboard() {
                       finText = 'Paid';
                       finColor = 'text-emerald-600';
                     } else if (booking.payment_status === 'failed') {
-                      // PRIMARY LEADS: Payment was attempted but failed
+                      // PRIMARY LEADS: Payment was attempted but failed (Card Denied)
                       finText = 'Interrupted';
                       finColor = 'text-rose-600';
                     } else if (minutesAgo > 120) {
-                      // SECONDARY LEADS: 2 hours passed with absolutely no action (silent cancel)
-                      finText = 'Cancelled';
-                      finColor = 'text-slate-500';
+                      // SECONDARY LEADS: 2 hours passed with absolutely no action
+                      finText = '2nd Lead';
+                      finColor = 'text-amber-600';
                     } else {
                       // THE CHEAT: Under 2 hours. Even if Admin manually cancelled, it shows Pending here!
                       finText = 'Pending';
@@ -352,8 +352,8 @@ export default function BookingsDashboard() {
                   finText = 'Interrupted';
                   finColor = 'text-rose-600';
                 } else if (minutesAgo > 120) {
-                  finText = 'Cancelled';
-                  finColor = 'text-slate-500';
+                  finText = '2nd Lead';
+                  finColor = 'text-amber-600';
                 } else {
                   finText = 'Pending';
                   finColor = 'text-amber-600';
