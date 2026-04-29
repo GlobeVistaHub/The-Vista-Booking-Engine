@@ -55,13 +55,20 @@ export async function POST(req: Request) {
         .single();
 
       if (bookingRecord && !bookingRecord.notification_sent) {
-        console.log("[CALLBACK POST] Launching N8N Dossier and waiting for completion...");
-        
-        // VISTA FIX: We MUST await this on Vercel, otherwise the serverless function dies instantly
-        await triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Hook Error]:", e));
-        
-        // Mark as sent so GET doesn't double-trigger
-        await supabaseAdmin.from('bookings').update({ notification_sent: true }).eq('id', bookingRecord.id);
+        // VISTA FIX: Atomic lock BEFORE generating the PDF!
+        const { data: lockResult } = await supabaseAdmin
+          .from('bookings')
+          .update({ notification_sent: true })
+          .eq('id', bookingRecord.id)
+          .eq('notification_sent', false)
+          .select('id');
+
+        if (lockResult && lockResult.length > 0) {
+          console.log("[CALLBACK POST] Lock acquired. Launching N8N Dossier and waiting for completion...");
+          await triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Hook Error]:", e));
+        } else {
+          console.log("[CALLBACK POST] N8N Dossier lock already acquired by GET redirect. Skipping duplicate.");
+        }
       }
     }
 
@@ -127,13 +134,22 @@ export async function GET(req: Request) {
               .single();
 
             if (bookingRecord && bookingRecord.status === 'confirmed' && !bookingRecord.notification_sent) {
-               console.log(`[CALLBACK GET] Found Booking ${bookingRecord.booking_reference}. Launching N8N...`);
-               
-               // VISTA FIX: We MUST await this on Vercel
-               await triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N GET Bailout Error]:", e));
-               
-               // Mark as sent so POST doesn't double-trigger if it's still running
-               await supabaseAdmin.from('bookings').update({ notification_sent: true }).eq('id', bookingRecord.id);
+               // VISTA FIX: Atomic lock BEFORE generating the PDF!
+               const { data: lockResult } = await supabaseAdmin
+                 .from('bookings')
+                 .update({ notification_sent: true })
+                 .eq('id', bookingRecord.id)
+                 .eq('notification_sent', false)
+                 .select('id');
+
+               if (lockResult && lockResult.length > 0) {
+                 console.log(`[CALLBACK GET] Lock acquired. Found Booking ${bookingRecord.booking_reference}. Launching N8N...`);
+                 
+                 // VISTA FIX: We MUST await this on Vercel
+                 await triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N GET Bailout Error]:", e));
+               } else {
+                 console.log("[CALLBACK GET] N8N Dossier lock already acquired by POST webhook. Skipping duplicate.");
+               }
             }
           }
         }
