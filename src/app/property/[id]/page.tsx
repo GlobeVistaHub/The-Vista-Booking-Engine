@@ -114,7 +114,8 @@ function PropertyContent() {
     const platforms: Record<string, string> = {
       whatsapp: `https://wa.me/?text=${encodeURIComponent(text)}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      instagram: `https://www.instagram.com/`, // Instagram requires manual upload, so we link to the app
+      messenger: `https://www.facebook.com/dialog/send?link=${encodeURIComponent(url)}&app_id=121798348485126&redirect_uri=${encodeURIComponent(url)}`,
+      instagram: `https://www.instagram.com/`, // Instagram requires manual upload
       twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title || "The Vista")}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
       telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title || "")}`,
@@ -124,7 +125,13 @@ function PropertyContent() {
     };
 
     if (platforms[platform]) {
-      window.open(platforms[platform], '_blank', 'width=600,height=400');
+      if (platform === 'email') {
+        // Mailto links should not use window.open as it causes double-windows/tabs
+        window.location.href = platforms[platform];
+      } else {
+        // Platform dialogs (Facebook, Messenger, etc.) should use pop-ups
+        window.open(platforms[platform], '_blank', 'width=600,height=400');
+      }
     }
     setShareMenuOpen(false);
   };
