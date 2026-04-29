@@ -118,9 +118,10 @@ function PropertyContent() {
       twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title || "The Vista")}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
       telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title || "")}`,
+      messenger: `https://www.facebook.com/dialog/send?link=${encodeURIComponent(url)}&app_id=291494419107518&redirect_uri=${encodeURIComponent(url)}`,
       pinterest: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(title || "")}`,
       reddit: `https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title || "")}`,
-      email: `mailto:?subject=${encodeURIComponent(title || "The Vista")}&body=${encodeURIComponent(text)}`
+      email: `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(title || "The Vista")}&body=${encodeURIComponent(text)}`
     };
 
     if (platforms[platform]) {
