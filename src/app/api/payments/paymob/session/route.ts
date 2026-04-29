@@ -56,6 +56,13 @@ export async function POST(req: Request) {
           error: "These dates are no longer available. Someone else has just reserved them." 
         }, { status: 409 });
       }
+      
+      // VISTA CLEANUP: If we reached here, the user is resuming their own booking!
+      // Delete their old pending bookings for these exact dates so we don't create duplicates in the Admin Dashboard
+      const idsToDelete = overlappingBookings.map(b => b.id);
+      if (idsToDelete.length > 0) {
+        await supabaseAdmin.from("bookings").delete().in("id", idsToDelete);
+      }
     }
 
     // 2. Generate VST reference and create the "Pending" booking in Supabase
