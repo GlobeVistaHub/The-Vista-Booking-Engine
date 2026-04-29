@@ -52,9 +52,12 @@ export async function POST(req: Request) {
         .eq('id', updatedRows[0].id)
         .single();
 
-      if (bookingRecord) {
-        console.log("[CALLBACK] Launching N8N Dossier in background...");
+      if (bookingRecord && !bookingRecord.notification_sent) {
+        console.log("[CALLBACK POST] Launching N8N Dossier in background...");
         triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Hook Error]:", e));
+        
+        // Mark as sent so GET doesn't double-trigger
+        await supabaseAdmin.from('bookings').update({ notification_sent: true }).eq('id', bookingRecord.id);
       }
     }
 
