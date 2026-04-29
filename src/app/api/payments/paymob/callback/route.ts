@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { triggerN8NDossier, triggerN8NRecovery } from "@/lib/n8n-server";
 
+export const maxDuration = 60; // Allow up to 60 seconds on Vercel to guarantee heavy PDF generation completes
+
 // Initialize Supabase Admin for system-level overrides
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

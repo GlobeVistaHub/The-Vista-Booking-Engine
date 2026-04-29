@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { PaymobService } from "@/utils/paymob";
 import { createClient } from "@supabase/supabase-js";
 
+export const maxDuration = 60; // Allow up to 60 seconds on Vercel
+
 // Initialize Supabase Admin for sensitive writes
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,10 +31,10 @@ export async function POST(req: Request) {
     const amountCents = amountEGP * 100;
 
     // 1.5 VERIFY NO OVERLAPPING BOOKINGS (DOUBLE-BOOKING PROTECTION)
-    // We must ensure there is no overlapping confirmed or pending booking!
+    // We must ensure there is no overlapping confirmed or pending booking from ANOTHER user!
     const { data: overlappingBookings, error: overlapError } = await supabaseAdmin
       .from("bookings")
-      .select("id, status")
+      .select("id, status, guest_email")
       .eq("property_id", propertyId)
       .in("status", ["confirmed", "pending", "interrupted"])
       .lt("check_in", checkOut)
@@ -44,10 +46,16 @@ export async function POST(req: Request) {
     }
 
     if (overlappingBookings && overlappingBookings.length > 0) {
-      // DATES ARE TAKEN! The user's brother beat them to it!
-      return NextResponse.json({ 
-        error: "These dates are no longer available. Someone else has just reserved them." 
-      }, { status: 409 });
+      // SMART IDENTITY CHECK: If the only overlaps are the guest's OWN pending bookings, let them proceed!
+      const isBlockedBySomeoneElse = overlappingBookings.some(b => 
+        b.status === "confirmed" || b.guest_email !== guestEmail
+      );
+
+      if (isBlockedBySomeoneElse) {
+        return NextResponse.json({ 
+          error: "These dates are no longer available. Someone else has just reserved them." 
+        }, { status: 409 });
+      }
     }
 
     // 2. Generate VST reference and create the "Pending" booking in Supabase
