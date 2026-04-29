@@ -53,8 +53,10 @@ export async function POST(req: Request) {
         .single();
 
       if (bookingRecord && !bookingRecord.notification_sent) {
-        console.log("[CALLBACK POST] Launching N8N Dossier in background...");
-        triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Hook Error]:", e));
+        console.log("[CALLBACK POST] Launching N8N Dossier and waiting for completion...");
+        
+        // VISTA FIX: We MUST await this on Vercel, otherwise the serverless function dies instantly
+        await triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Hook Error]:", e));
         
         // Mark as sent so GET doesn't double-trigger
         await supabaseAdmin.from('bookings').update({ notification_sent: true }).eq('id', bookingRecord.id);
@@ -70,8 +72,8 @@ export async function POST(req: Request) {
         .limit(1)
         .single();
       if (bookingRecord) {
-        console.log("[CALLBACK] Launching N8N Recovery in background...");
-        triggerN8NRecovery(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Recovery Error]:", e));
+        console.log("[CALLBACK] Launching N8N Recovery...");
+        await triggerN8NRecovery(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N Recovery Error]:", e));
       }
     }
 
@@ -124,7 +126,9 @@ export async function GET(req: Request) {
 
             if (bookingRecord && bookingRecord.status === 'confirmed' && !bookingRecord.notification_sent) {
                console.log(`[CALLBACK GET] Found Booking ${bookingRecord.booking_reference}. Launching N8N...`);
-               triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N GET Bailout Error]:", e));
+               
+               // VISTA FIX: We MUST await this on Vercel
+               await triggerN8NDossier(bookingRecord, bookingRecord.property || bookingRecord.properties).catch(e => console.error("[N8N GET Bailout Error]:", e));
                
                // Mark as sent so POST doesn't double-trigger if it's still running
                await supabaseAdmin.from('bookings').update({ notification_sent: true }).eq('id', bookingRecord.id);
