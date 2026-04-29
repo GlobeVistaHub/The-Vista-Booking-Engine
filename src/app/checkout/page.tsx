@@ -98,8 +98,8 @@ function CheckoutContent() {
         const blocked: Date[] = [];
         occupancy.forEach((b: any) => {
           if (String(b.property_id) === String(propertyId)) {
-            let current = new Date(b.check_in);
-            const end = new Date(b.check_out);
+            let current = new Date(b.check_in + "T00:00:00");
+            const end = new Date(b.check_out + "T00:00:00");
 
             // HOSPITALITY MATH: Block everything EXCEPT the checkout day
             while (current < end) {

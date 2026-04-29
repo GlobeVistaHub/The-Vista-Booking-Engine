@@ -28,6 +28,28 @@ export async function POST(req: Request) {
     const amountEGP = Math.round(amountUSD * rate);
     const amountCents = amountEGP * 100;
 
+    // 1.5 VERIFY NO OVERLAPPING BOOKINGS (DOUBLE-BOOKING PROTECTION)
+    // We must ensure there is no overlapping confirmed or pending booking!
+    const { data: overlappingBookings, error: overlapError } = await supabaseAdmin
+      .from("bookings")
+      .select("id, status")
+      .eq("property_id", propertyId)
+      .in("status", ["confirmed", "pending", "interrupted"])
+      .lt("check_in", checkOut)
+      .gt("check_out", checkIn);
+
+    if (overlapError) {
+      console.error("Overlap Check Error:", overlapError);
+      return NextResponse.json({ error: "Failed to verify dates availability" }, { status: 500 });
+    }
+
+    if (overlappingBookings && overlappingBookings.length > 0) {
+      // DATES ARE TAKEN! The user's brother beat them to it!
+      return NextResponse.json({ 
+        error: "These dates are no longer available. Someone else has just reserved them." 
+      }, { status: 409 });
+    }
+
     // 2. Generate VST reference and create the "Pending" booking in Supabase
     const currentYear = new Date().getFullYear();
     const randomID = Math.floor(10000 + Math.random() * 90000);

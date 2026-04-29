@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense, useEffect } from "react";
+import { useState, Suspense, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { format, differenceInDays } from "date-fns";
 import Link from "next/link";
@@ -89,9 +89,22 @@ function PropertyContent() {
     todayStr >= b.check_in && todayStr < b.check_out
   );
 
-  const isFullyBooked = currentBooking?.status === 'confirmed';
-  const isReserved = currentBooking?.status === 'pending' || currentBooking?.status === 'interrupted';
-  const isOccupiedToday = isFullyBooked || isReserved;
+  const isFullyBookedToday = currentBooking?.status === 'confirmed';
+  const isReservedToday = currentBooking?.status === 'pending' || currentBooking?.status === 'interrupted';
+  const isOccupiedToday = isFullyBookedToday || isReservedToday;
+
+  const isDateSelectionBooked = useMemo(() => {
+    if (!dateRange.from || !dateRange.to) return false;
+    const start = dateRange.from;
+    const end = dateRange.to;
+    
+    return bookings.some(b => {
+      if (String(b.property_id) !== String(id)) return false;
+      const bIn = new Date(b.check_in + "T00:00:00");
+      const bOut = new Date(b.check_out + "T00:00:00");
+      return start < bOut && end > bIn;
+    });
+  }, [dateRange, bookings, id]);
 
   const handleShareToPlatform = (platform: string) => {
     const url = window.location.href;
@@ -199,7 +212,7 @@ function PropertyContent() {
         ))}
         <div className={`absolute inset-0 bg-navy/20 mix-blend-multiply pointer-events-none ${isOccupiedToday ? 'opacity-60 grayscale-[0.2]' : ''}`} />
 
-        {isFullyBooked && (
+        {isFullyBookedToday && (
           <div className="absolute top-24 left-8 z-30 bg-navy text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] border border-white/10 shadow-2xl">
             {t('fullyBooked')}
           </div>
@@ -465,8 +478,8 @@ function PropertyContent() {
                           ...bookings
                             .filter(b => String(b.property_id) === String(id))
                             .map(b => ({
-                              from: new Date(b.check_in),
-                              to: new Date(new Date(b.check_out).getTime() - 24 * 60 * 60 * 1000)
+                              from: new Date(b.check_in + "T00:00:00"),
+                              to: new Date(new Date(b.check_out + "T00:00:00").getTime() - 24 * 60 * 60 * 1000)
                             }))
                         ]}
                         numberOfMonths={1}
@@ -597,16 +610,19 @@ function PropertyContent() {
               {/* CTA Button */}
               {!isSignedIn ? (
                 <SignInButton mode="modal">
-                  <button className="w-full py-4 bg-primary hover:brightness-110 text-white rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95">
-                    {t('reserve')}
+                  <button 
+                    disabled={isDateSelectionBooked}
+                    className={`w-full py-4 rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95 ${isDateSelectionBooked ? 'bg-navy/20 text-navy/40 cursor-not-allowed' : 'bg-primary hover:brightness-110 text-white'}`}
+                  >
+                    {isDateSelectionBooked ? t('datesUnavailable') || "UNAVAILABLE" : t('reserve')}
                   </button>
                 </SignInButton>
               ) : (
                 <Link
-                  href={isOccupiedToday ? "#" : `/checkout?id=${property.id}&from=${dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}&to=${dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}&adults=${adults}&children=${children}`}
-                  className={`w-full py-4 rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95 ${isOccupiedToday ? 'bg-navy/20 text-navy/40 cursor-not-allowed pointer-events-none' : 'bg-primary hover:brightness-110 text-white'}`}
+                  href={isDateSelectionBooked ? "#" : `/checkout?id=${property.id}&from=${dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}&to=${dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}&adults=${adults}&children=${children}`}
+                  className={`w-full py-4 rounded-2xl font-bold text-center text-lg shadow-md transition-all active:scale-95 ${isDateSelectionBooked ? 'bg-navy/20 text-navy/40 cursor-not-allowed pointer-events-none' : 'bg-primary hover:brightness-110 text-white'}`}
                 >
-                  {isFullyBooked ? "BOOKED" : t('reserve')}
+                  {isDateSelectionBooked ? t('datesUnavailable') || "UNAVAILABLE" : t('reserve')}
                 </Link>
               )}
 
