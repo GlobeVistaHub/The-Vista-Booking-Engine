@@ -33,7 +33,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       if (_currentToken) {
         headers.set('Authorization', `Bearer ${_currentToken}`);
       }
-      return fetch(url, { ...options, headers });
+      // Use the appropriate fetch for the environment (browser vs server)
+      const fetcher = typeof window !== 'undefined' ? window.fetch : fetch;
+      return fetcher(url, { ...options, headers });
     },
   },
 });

@@ -16,7 +16,7 @@ export default function AlexaConcierge() {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   
   const liveClientRef = useRef<GeminiLiveClient | null>(null);
-  const initialGreeting = "Hi, how is everything going? Alexa is with you, how can I help you today?"; 
+  const initialGreeting = ""; 
 
   // Initialize Gemini Live Client
   useEffect(() => {
@@ -49,13 +49,7 @@ export default function AlexaConcierge() {
   const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
     api: '/api/chat',
     body: { isVoiceMode: false }, // Text mode only for useChat now
-    initialMessages: initialGreeting ? [
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content: initialGreeting
-      }
-    ] : [],
+    initialMessages: [],
     onError: (err) => {
       console.warn("Chat error:", err);
     }
