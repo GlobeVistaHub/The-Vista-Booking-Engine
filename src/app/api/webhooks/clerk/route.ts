@@ -59,5 +59,5 @@ export async function POST(req: Request) {
     // TODO: Add your database logic here to save the logout time
   }
 
-  return new Response('', { status: 200 })
+  return new Response('', { status: 200 }) // Sync trigger for Vercel deployment
 }
