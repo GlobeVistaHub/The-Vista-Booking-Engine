@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useChat } from 'ai/react';
 import { MessageCircle, X, Send, Mic, Volume2, Keyboard, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import { GeminiLiveClient } from '@/lib/gemini-live-client';
 
 export default function AlexaConcierge() {
   const { lang, t } = useLanguage();
@@ -12,52 +11,97 @@ export default function AlexaConcierge() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSpeechEnabled, setIsSpeechEnabled] = useState(true); // Toggle for TTS
   const [lastRequestTime, setLastRequestTime] = useState(0);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   
-  const liveClientRef = useRef<GeminiLiveClient | null>(null);
   const initialGreeting = ""; 
 
-  // Initialize Gemini Live Client
-  useEffect(() => {
-    liveClientRef.current = new GeminiLiveClient();
-    liveClientRef.current.onStateChange = (state) => {
-      if (state === 'listening') {
-        setIsListening(true);
-        setIsSpeaking(false);
-      } else if (state === 'speaking') {
-        setIsSpeaking(true);
-        setIsListening(false);
-      } else {
-        setIsListening(false);
-        setIsSpeaking(false);
+  // Function to play ElevenLabs speech
+  const playSpeech = async (text: string) => {
+    if (!isSpeechEnabled) return;
+    
+    try {
+      // 1. Stop any current audio immediately
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
       }
-    };
-    
-    liveClientRef.current.onError = (err) => {
-      console.error("Voice Error caught in UI:", err);
-      alert(lang === 'ar' ? `خطأ في الصوت: ${err}` : `Voice Error: ${err}`);
-      setIsListening(false);
+
+      setIsSpeaking(true);
+      const response = await fetch('/api/speech', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) throw new Error('Speech generation failed');
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      
+      if (audioRef.current) {
+        audioRef.current.src = url;
+        // Handle the play promise to prevent AbortError
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.warn("Playback interrupted or failed:", error);
+          });
+        }
+
+        audioRef.current.onended = () => {
+          setIsSpeaking(false);
+          URL.revokeObjectURL(url);
+        };
+      }
+    } catch (error) {
+      console.error('Speech error:', error);
       setIsSpeaking(false);
-    };
-    
-    return () => {
-      liveClientRef.current?.disconnect();
-    };
-  }, [lang]);
+    }
+  };
 
   const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
     api: '/api/chat',
-    body: { isVoiceMode: false }, // Text mode only for useChat now
+    body: { isVoiceMode: false },
     initialMessages: [],
+    onFinish: (message) => {
+      if (message.role === 'assistant') {
+        playSpeech(message.content);
+      }
+    },
     onError: (err) => {
       console.warn("Chat error:", err);
     }
   });
 
+  // Browser Speech Recognition for Voice Mode
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang === 'ar' ? 'ar-SA' : 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      append({ role: 'user', content: transcript });
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    recognition.start();
+  };
+
   const toggleChat = () => {
     if (isOpen) {
-      liveClientRef.current?.disconnect();
       setIsVoiceMode(false);
     }
     setIsOpen(!isOpen);
@@ -69,14 +113,17 @@ export default function AlexaConcierge() {
 
   const switchToTextMode = () => {
     setIsVoiceMode(false);
-    liveClientRef.current?.disconnect();
   };
 
   const switchListeningState = () => {
     if (isListening || isSpeaking) {
-      liveClientRef.current?.disconnect();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        setIsSpeaking(false);
+      }
+      setIsListening(false);
     } else {
-      liveClientRef.current?.connect();
+      startListening();
     }
   };
 
@@ -100,6 +147,8 @@ export default function AlexaConcierge() {
           </div>
         )}
       </button>
+
+      <audio ref={audioRef} className="hidden" />
 
       {/* Main Window */}
       <div 

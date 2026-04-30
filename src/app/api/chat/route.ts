@@ -17,9 +17,36 @@ export async function POST(req: Request) {
     let inventoryString = '';
     if (supabaseUrl && supabaseKey) {
       const supabase = createClient(supabaseUrl, supabaseKey);
-      const { data: props } = await supabase.from('properties').select('title,title_ar,location,location_ar,price').limit(30);
+      
+      // 1. Fetch detailed property info
+      const { data: props } = await supabase
+        .from('properties')
+        .select('id, title, title_ar, location, location_ar, price, description, description_ar, features, rules')
+        .limit(30);
+
+      // 2. Fetch recent bookings to help with availability questions
+      const { data: bookings } = await supabase
+        .from('bookings')
+        .select('property_id, check_in, check_out, status')
+        .eq('status', 'confirmed')
+        .gte('check_out', new Date().toISOString())
+        .limit(50);
+
       if (props) {
-        inventoryString = props.map(p => `- ${p.title} (Arabic: ${p.title_ar || p.title}) in ${p.location} (Arabic: ${p.location_ar || p.location}): $${p.price}/night`).join('\n');
+        inventoryString = props.map(p => {
+          const propertyBookings = bookings?.filter(b => b.property_id === (p as any).id) || [];
+          const bookingDates = propertyBookings.map(b => `${b.check_in} to ${b.check_out}`).join(', ');
+          
+          return `
+PROPERTY: ${p.title} (${p.title_ar})
+Location: ${p.location} (${p.location_ar})
+Price: $${p.price}/night
+Features: ${JSON.stringify(p.features)}
+Rules: ${p.rules || 'Standard luxury stay rules apply.'}
+Description: ${p.description}
+Current Booked Dates: ${bookingDates || 'None currently confirmed for the future.'}
+---`;
+        }).join('\n');
       }
     }
 
