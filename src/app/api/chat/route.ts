@@ -36,28 +36,37 @@ export async function POST(req: Request) {
         inventoryString = props.map(p => {
           const propertyBookings = bookings?.filter(b => b.property_id === (p as any).id) || [];
           const bookingDates = propertyBookings.map(b => `${b.check_in} to ${b.check_out}`).join(', ');
+          const amenities = Array.isArray(p.features) ? p.features.join(', ') : 'Luxury amenities';
           
           return `
-PROPERTY: ${p.title} (${p.title_ar})
-Location: ${p.location} (${p.location_ar})
+[PROPERTY START]
+Name: ${p.title}
+Arabic Name: ${p.title_ar}
+Location: ${p.location}
 Price: $${p.price}/night
-Features: ${JSON.stringify(p.features)}
-Rules: ${p.rules || 'Standard luxury stay rules apply.'}
+Amenities: ${amenities}
 Description: ${p.description}
-Current Booked Dates: ${bookingDates || 'None currently confirmed for the future.'}
----`;
+Unavailable Dates: ${bookingDates || 'All dates currently available'}
+[PROPERTY END]`;
         }).join('\n');
       }
     }
 
     const systemPrompt = `
       ${VISTA_ALEXA_PERSONA}
-      ## LIVE INVENTORY
+
+      # YOUR CURRENT REAL-TIME INVENTORY (TRUST THIS OVER EVERYTHING)
       ${inventoryString}
-      ## FORMAT
+
+      # CRITICAL INSTRUCTION
+      - You must ONLY use the properties listed above.
+      - If a user asks about a property in the list, acknowledge it enthusiastically.
+      - If a user mentions "Neon Penthouse", it is one of your most premium listings.
+      
+      # FORMATTING
       ${isVoiceMode 
-        ? 'Concise (1-2 sentences max). CRITICAL: NEVER use markdown, asterisks, bold text, or bullet points. You are speaking out loud. Respond in pure, natural plain text only.' 
-        : 'Elegant, helpful, and highly readable. Keep paragraphs short (2-3 sentences max per paragraph). Limit total response length to avoid overwhelming the user. Use gentle spacing.'}
+        ? 'Respond in 1-2 sentences only. NO markdown. NO bold. NO bullet points. Just plain text for speaking.' 
+        : 'Elegant and luxurious. Use short paragraphs.'}
     `;
 
     const requestBody = JSON.stringify({
