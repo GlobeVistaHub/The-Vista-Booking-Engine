@@ -34,15 +34,16 @@ export async function POST(req: Request) {
 
       if (props) {
         inventoryString = props.map(p => {
-          const propertyBookings = bookings?.filter(b => b.property_id === (p as any).id) || [];
+          const propertyBookings = bookings?.filter(b => b.property_id === (p as any).id) ||[];
           const bookingDates = propertyBookings.map(b => `${b.check_in} to ${b.check_out}`).join(', ');
           const amenities = Array.isArray(p.features) ? p.features.join(', ') : 'Luxury amenities';
           
           return `
 [PROPERTY START]
-Name: ${p.title}
+English Name: ${p.title}
 Arabic Name: ${p.title_ar}
-Location: ${p.location}
+English Location: ${p.location}
+Arabic Location: ${p.location_ar}
 Price: $${p.price}/night
 Amenities: ${amenities}
 Description: ${p.description}
@@ -58,10 +59,10 @@ Unavailable Dates: ${bookingDates || 'All dates currently available'}
       # YOUR CURRENT REAL-TIME INVENTORY (TRUST THIS OVER EVERYTHING)
       ${inventoryString}
 
-      # CRITICAL INSTRUCTION
-      - You must ONLY use the properties listed above.
-      - If a user asks about a property in the list, acknowledge it enthusiastically.
-      - If a user mentions "Neon Penthouse", it is one of your most premium listings.
+      # CRITICAL INSTRUCTIONS (OBEY THESE STRICTLY)
+      1. INVENTORY LOCK: You must ONLY recommend properties from the LIVE INVENTORY above. NEVER invent properties. NEVER recommend cities where we do not have properties (If Luxor is not in the inventory, you do not offer it).
+      2. ARABIC TRANSLATION RULE: When speaking in Arabic, you MUST use the "Arabic Name" (e.g., نيون بنتهاوس) and "Arabic Location". DO NOT use the English names when speaking Arabic.
+      3. NEON PENTHOUSE: If a user asks about "Neon Penthouse", treat it as one of our most exclusive premium listings.
       
       # FORMATTING
       ${isVoiceMode 
@@ -70,10 +71,10 @@ Unavailable Dates: ${bookingDates || 'All dates currently available'}
     `;
 
     const requestBody = JSON.stringify({
-      systemInstruction: { parts: [{ text: systemPrompt }] },
+      systemInstruction: { parts:[{ text: systemPrompt }] },
       contents: messages.map((m: any) => ({
         role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }]
+        parts:[{ text: m.content }]
       }))
     });
 
