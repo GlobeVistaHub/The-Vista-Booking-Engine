@@ -82,17 +82,15 @@ export async function POST(req: Request) {
       console.error("Could not fetch user email from Clerk", e);
     }
     
-    const logLabel = eventType === 'session.created' ? 'Login' : 'Logout';
-    
     await supabaseAdmin.from('user_activity').insert({
       user_id,
       email,
-      event_type: logLabel.toLowerCase(),
+      event_type: 'logout',
       timestamp: new Date().toISOString(),
       metadata: { source: 'clerk_webhook', status: eventType }
     });
     
-    console.log(`[Vista-Security] User ${email} (${user_id}) session recorded (${logLabel})`);
+    console.log(`[Vista-Security] User ${email} (${user_id}) session recorded (Logout)`);
   }
 
   return new Response('', { status: 200 }) // Sync trigger for Vercel deployment
