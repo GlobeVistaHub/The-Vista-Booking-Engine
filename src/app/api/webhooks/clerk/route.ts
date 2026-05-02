@@ -43,31 +43,54 @@ export async function POST(req: Request) {
   // 5. Handle the event (Login/Logout)
   const eventType = evt.type;
   const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
+  const { clerkClient } = await import('@clerk/nextjs/server');
   
   if (eventType === 'session.created') {
     const { user_id, last_active_at } = evt.data;
     
+    // Fetch the email from Clerk
+    let email = "unknown@email.com";
+    try {
+      const client = await clerkClient();
+      const user = await client.users.getUser(user_id);
+      email = user.emailAddresses[0]?.emailAddress || email;
+    } catch (e) {
+      console.error("Could not fetch user email from Clerk", e);
+    }
+    
     await supabaseAdmin.from('user_activity').insert({
       user_id,
+      email,
       event_type: 'login',
       timestamp: last_active_at ? new Date(last_active_at).toISOString() : new Date().toISOString(),
       metadata: { source: 'clerk_webhook', status: 'active' }
     });
     
-    console.log(`[Vista-Security] User ${user_id} session recorded (Login)`);
+    console.log(`[Vista-Security] User ${email} (${user_id}) session recorded (Login)`);
   }
 
   if (eventType === 'session.ended' || eventType === 'session.removed' || eventType === 'session.revoked') {
     const { user_id } = evt.data;
     
+    // Fetch the email from Clerk
+    let email = "unknown@email.com";
+    try {
+      const client = await clerkClient();
+      const user = await client.users.getUser(user_id);
+      email = user.emailAddresses[0]?.emailAddress || email;
+    } catch (e) {
+      console.error("Could not fetch user email from Clerk", e);
+    }
+    
     await supabaseAdmin.from('user_activity').insert({
       user_id,
+      email,
       event_type: 'logout',
       timestamp: new Date().toISOString(),
       metadata: { source: 'clerk_webhook', status: eventType }
     });
     
-    console.log(`[Vista-Security] User ${user_id} session recorded (${eventType})`);
+    console.log(`[Vista-Security] User ${email} (${user_id}) session recorded (${eventType})`);
   }
 
   return new Response('', { status: 200 }) // Sync trigger for Vercel deployment
