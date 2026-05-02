@@ -36,6 +36,8 @@ import { useAppModeStore } from "@/store/appModeStore";
 import { useAppStore } from "@/hooks/useAppStore";
 import AlexaConcierge from "@/components/AlexaConcierge";
 
+import { Analytics } from "@vercel/analytics/react";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -65,6 +67,7 @@ export default function RootLayout({
               </main>
               <Footer />
               <AlexaConcierge />
+              <Analytics />
             </body>
           </UserProvider>
         </LanguageProvider>
