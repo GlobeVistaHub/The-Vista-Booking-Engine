@@ -42,21 +42,32 @@ export async function POST(req: Request) {
 
   // 5. Handle the event (Login/Logout)
   const eventType = evt.type;
+  const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
   
   if (eventType === 'session.created') {
     const { user_id, last_active_at } = evt.data;
-    const loginTime = new Date(last_active_at).toLocaleString();
-    console.log(`User ${user_id} logged in at ${loginTime}`);
     
-    // TODO: Add your database logic here to save the login time
+    await supabaseAdmin.from('user_activity').insert({
+      user_id,
+      event_type: 'login',
+      timestamp: last_active_at ? new Date(last_active_at).toISOString() : new Date().toISOString(),
+      metadata: { source: 'clerk_webhook', status: 'active' }
+    });
+    
+    console.log(`[Vista-Security] User ${user_id} session recorded (Login)`);
   }
 
   if (eventType === 'session.ended') {
     const { user_id } = evt.data;
-    const logoutTime = new Date().toLocaleString(); 
-    console.log(`User ${user_id} logged out at ${logoutTime}`);
     
-    // TODO: Add your database logic here to save the logout time
+    await supabaseAdmin.from('user_activity').insert({
+      user_id,
+      event_type: 'logout',
+      timestamp: new Date().toISOString(),
+      metadata: { source: 'clerk_webhook', status: 'ended' }
+    });
+    
+    console.log(`[Vista-Security] User ${user_id} session recorded (Logout)`);
   }
 
   return new Response('', { status: 200 }) // Sync trigger for Vercel deployment
