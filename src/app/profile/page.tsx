@@ -58,19 +58,7 @@ export default function ProfilePage() {
         getProperties()
       ]);
 
-      // 2. Fetch from Simulation Store (Zustand)
-      const { useDataStore } = await import('@/store/dataStore');
-      const simBookings = useDataStore.getState().bookings;
-
-      // 3. Merge Real + Simulated (Deduplicate by ID)
-      const mergedBookings = [...bData];
-      simBookings.forEach(sim => {
-        if (!mergedBookings.some(b => String(b.id) === String(sim.id))) {
-          mergedBookings.push(sim);
-        }
-      });
-
-      const enrichedBookings = mergedBookings
+      const enrichedBookings = bData
         .map(b => {
           const prop = b.property || pData.find(p => String(p.id) === String(b.property_id));
           if (!prop) return null;
