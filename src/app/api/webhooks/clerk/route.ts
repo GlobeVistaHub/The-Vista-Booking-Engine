@@ -57,17 +57,17 @@ export async function POST(req: Request) {
     console.log(`[Vista-Security] User ${user_id} session recorded (Login)`);
   }
 
-  if (eventType === 'session.ended') {
+  if (eventType === 'session.ended' || eventType === 'session.removed' || eventType === 'session.revoked') {
     const { user_id } = evt.data;
     
     await supabaseAdmin.from('user_activity').insert({
       user_id,
       event_type: 'logout',
       timestamp: new Date().toISOString(),
-      metadata: { source: 'clerk_webhook', status: 'ended' }
+      metadata: { source: 'clerk_webhook', status: eventType }
     });
     
-    console.log(`[Vista-Security] User ${user_id} session recorded (Logout)`);
+    console.log(`[Vista-Security] User ${user_id} session recorded (${eventType})`);
   }
 
   return new Response('', { status: 200 }) // Sync trigger for Vercel deployment
