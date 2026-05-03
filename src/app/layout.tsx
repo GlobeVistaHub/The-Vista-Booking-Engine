@@ -58,6 +58,12 @@ export default function RootLayout({
         },
       }}
     >
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="theme-color" content="#0A0A0A" />
+      </head>
       <html className={`${inter.variable} ${playfair.variable} ${cairo.variable} ${tajawal.variable} h-full antialiased`}>
         <BrandingEngine />
         <LanguageProvider>
