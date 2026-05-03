@@ -13,15 +13,26 @@ export default function DemoBadge() {
       {/* The Ultra-Thin Corner Tab */}
       <button 
         onClick={() => setIsExpanded(true)}
-        className={`fixed bottom-0 ${lang === 'ar' ? 'right-0 rounded-tl-xl' : 'left-0 rounded-tr-xl'} z-[50] bg-navy/90 backdrop-blur-xl border-t border-r border-primary/30 px-3 py-1.5 flex items-center gap-2 hover:bg-primary/20 transition-all duration-300 group`}
+        className={`fixed bottom-0 ${lang === 'ar' ? 'right-0 rounded-tl-xl' : 'left-0 rounded-tr-xl'} z-[50] bg-navy/90 backdrop-blur-xl border-t border-r border-primary/40 px-4 py-2 flex items-center gap-3 hover:bg-primary/20 transition-all duration-300 group shadow-[0_0_15px_rgba(212,175,55,0.1)]`}
       >
-        <div className="relative flex h-1.5 w-1.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
+        {/* Synchronized breathing and pinging dot */}
+        <div className="relative flex h-2.5 w-2.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary shadow-[0_0_8px_rgba(212,175,55,0.8)] animate-breathe"></span>
         </div>
-        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary/80 group-hover:text-primary transition-colors">
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary group-hover:text-white transition-colors">
           {lang === 'ar' ? 'بيئة تجريبية' : 'Sandbox'}
         </span>
+
+        <style jsx>{`
+          @keyframes breathe {
+            0%, 100% { opacity: 0.2; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1); }
+          }
+          .animate-breathe {
+            animation: breathe 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+          }
+        `}</style>
       </button>
 
       {/* The Information Overlay (Appears on Click) */}
