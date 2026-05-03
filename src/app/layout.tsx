@@ -35,6 +35,8 @@ import BrandingEngine from "@/components/BrandingEngine";
 import { useAppModeStore } from "@/store/appModeStore";
 import { useAppStore } from "@/hooks/useAppStore";
 import AlexaConcierge from "@/components/AlexaConcierge";
+import DemoBadge from "@/components/DemoBadge";
+
 
 import { Analytics } from "@vercel/analytics/react";
 
@@ -67,6 +69,8 @@ export default function RootLayout({
               </main>
               <Footer />
               <AlexaConcierge />
+              <DemoBadge />
+
               <Analytics />
             </body>
           </UserProvider>
