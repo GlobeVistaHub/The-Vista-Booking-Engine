@@ -28,14 +28,20 @@ export async function POST(req: Request) {
       outputFormat: 'mp3_44100_128',
     });
 
-    // Create a readable stream from the response
-    // The ElevenLabs SDK returns a stream in the latest version
-    const response = new NextResponse(audioStream as any);
-    response.headers.set('Content-Type', 'audio/mpeg');
-    
-    return response;
+    return new NextResponse(audioStream as any, {
+      headers: { 'Content-Type': 'audio/mpeg' }
+    });
   } catch (error: any) {
-    console.error('ElevenLabs Error:', error);
-    return NextResponse.json({ error: error.message || 'Error generating speech' }, { status: 500 });
+    // This will print the EXACT error from ElevenLabs in your terminal
+    console.error('--- ELEVENLABS CRITICAL ERROR ---');
+    console.error('Status:', error.status);
+    console.error('Message:', error.message);
+    console.error('Body:', error.body);
+    console.error('---------------------------------');
+    
+    return NextResponse.json({ 
+      error: error.message || 'Error generating speech',
+      details: error.body || 'No details provided'
+    }, { status: error.status || 500 });
   }
 }

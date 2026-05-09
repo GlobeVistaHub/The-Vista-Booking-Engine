@@ -13,15 +13,15 @@ export async function POST(req: Request) {
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
+
     let inventoryString = '';
     if (supabaseUrl && supabaseKey) {
       const supabase = createClient(supabaseUrl, supabaseKey);
-      
+
       // 1. Fetch detailed property info
       const { data: props } = await supabase
         .from('properties')
-        .select('id, title, title_ar, location, location_ar, price, description, description_ar, features, rules')
+        .select('id, title, title_ar, location, location_ar, price, description_en, description_ar, tags')
         .limit(30);
 
       // 2. Fetch recent bookings to help with availability questions
@@ -34,48 +34,47 @@ export async function POST(req: Request) {
 
       if (props) {
         inventoryString = props.map(p => {
-          const propertyBookings = bookings?.filter(b => b.property_id === (p as any).id) ||[];
+          const propertyBookings = bookings?.filter(b => b.property_id === (p as any).id) || [];
           const bookingDates = propertyBookings.map(b => `${b.check_in} to ${b.check_out}`).join(', ');
-          const amenities = Array.isArray(p.features) ? p.features.join(', ') : 'Luxury amenities';
-          
+
           return `
-[PROPERTY START]
-English Name: ${p.title}
-Arabic Name: ${p.title_ar}
-English Location: ${p.location}
-Arabic Location: ${p.location_ar}
+PROPERTY (AR): ${p.title_ar} / (EN): ${p.title}
+Location (AR): ${p.location_ar} / (EN): ${p.location}
 Price: $${p.price}/night
-Amenities: ${amenities}
-Description: ${p.description}
-Unavailable Dates: ${bookingDates || 'All dates currently available'}
-[PROPERTY END]`;
+Features: ${(p as any).tags || 'Luxury amenities'}
+Description (AR): ${(p as any).description_ar}
+Description (EN): ${(p as any).description_en}
+Current Booked Dates: ${bookingDates || 'None currently confirmed for the future.'}
+---`;
         }).join('\n');
       }
     }
 
-    const systemPrompt = `
+    const alexaSystemPrompt = `
       ${VISTA_ALEXA_PERSONA}
-
-      # YOUR CURRENT REAL-TIME INVENTORY (TRUST THIS OVER EVERYTHING)
       ${inventoryString}
-
-      # CRITICAL INSTRUCTIONS (OBEY THESE STRICTLY)
-      1. INVENTORY LOCK: You must ONLY recommend properties from the LIVE INVENTORY above. NEVER invent properties. NEVER recommend cities where we do not have properties (If Luxor is not in the inventory, you do not offer it).
-      2. ARABIC TRANSLATION RULE: When speaking in Arabic, you MUST use the "Arabic Name" (e.g., نيون بنتهاوس) and "Arabic Location". DO NOT use the English names when speaking Arabic.
-      3. NEON PENTHOUSE: If a user asks about "Neon Penthouse", treat it as one of our most exclusive premium listings.
       
-      # FORMATTING
-      ${isVoiceMode 
-        ? 'Respond in 1-2 sentences only. NO markdown. NO bold. NO bullet points. Just plain text for speaking.' 
-        : 'Elegant and luxurious. Use short paragraphs.'}
+      CRITICAL:
+      1. Arabic Input = Egyptian Arabic (Masri) Output.
+      2. English Input = English Output.
+      3. Max 1-2 short sentences.
     `;
 
     const requestBody = JSON.stringify({
-      systemInstruction: { parts:[{ text: systemPrompt }] },
+      systemInstruction: { parts: [{ text: alexaSystemPrompt }] },
       contents: messages.map((m: any) => ({
         role: m.role === 'user' ? 'user' : 'model',
-        parts:[{ text: m.content }]
-      }))
+        parts: [{ text: m.content }]
+      })),
+      generationConfig: {
+        temperature: 0.7,
+      },
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+      ]
     });
 
     // Bypass Next.js built-in fetch (which crashes Node 24 on Windows) by using node-fetch
@@ -107,11 +106,11 @@ Unavailable Dates: ${bookingDates || 'All dates currently available'}
       }
     });
 
-    return new Response(stream, { 
-      headers: { 
+    return new Response(stream, {
+      headers: {
         'Content-Type': 'text/plain; charset=utf-8',
         'x-vercel-ai-data-stream': 'v1'
-      } 
+      }
     });
 
   } catch (error: any) {
