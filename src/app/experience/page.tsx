@@ -243,19 +243,19 @@ export default function ExperiencePage() {
       </div>
 
       {/* HUD */}
-      <div className="fixed top-8 left-8 z-50 select-none pointer-events-none">
-        <p className="text-[10px] tracking-[6px] font-black uppercase text-amber-500 mb-1">STAGE</p>
-        <span ref={hudRef} className="font-mono text-2xl font-black text-white/90">01  Overview</span>
+      <div className="fixed top-4 left-4 md:top-8 md:left-8 z-50 select-none pointer-events-none">
+        <p className="text-[9px] md:text-[10px] tracking-[6px] font-black uppercase text-amber-500 mb-1">STAGE</p>
+        <span ref={hudRef} className="font-mono text-lg md:text-2xl font-black text-white/90">01  Overview</span>
       </div>
 
       {/* Badge */}
       <div 
         onClick={toggleAudio}
-        className="fixed top-8 right-8 z-50 flex items-center gap-3 bg-black/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full cursor-pointer hover:bg-white/10 transition-colors select-none"
+        className="fixed top-4 right-4 md:top-8 md:right-8 z-50 flex items-center gap-2 md:gap-3 bg-black/40 backdrop-blur-md border border-white/10 px-3 md:px-4 py-1.5 md:py-2 rounded-full cursor-pointer hover:bg-white/10 transition-colors select-none max-w-[150px] sm:max-w-none"
       >
-        <span className={`w-2 h-2 rounded-full ${isMuted ? "bg-white/40" : "bg-amber-500 animate-pulse"}`} />
-        <span className={`text-[10px] tracking-widest font-bold uppercase ${isMuted ? "text-white/40" : "text-white/80"}`}>
-          {isMuted ? "UNMUTE TRACK" : "COMMERCIAL TRACK ACTIVE"}
+        <span className={`w-2 h-2 flex-shrink-0 rounded-full ${isMuted ? "bg-white/40" : "bg-amber-500 animate-pulse"}`} />
+        <span className={`text-[9px] md:text-[10px] tracking-widest font-bold uppercase truncate ${isMuted ? "text-white/40" : "text-white/80"}`}>
+          {isMuted ? "UNMUTE" : <><span className="hidden sm:inline">COMMERCIAL </span>ACTIVE</>}
         </span>
       </div>
 
