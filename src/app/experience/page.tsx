@@ -146,7 +146,7 @@ function SpatialCard({
           transformStyle: "preserve-3d",
           willChange: "transform, opacity, filter",
         }}
-        className="cursor-pointer select-none relative w-full px-3 sm:px-4"
+        className="cursor-pointer select-none relative w-full flex justify-center px-3 sm:px-4"
       >
         <div className="relative rounded-[30px] overflow-hidden">
           {children}
