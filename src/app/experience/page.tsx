@@ -47,23 +47,26 @@ function SpatialCard({
 
       // 2. 3D Scroll Math
       const v = lastScrollV;
-      let opacity = 0, scale = 0.6, z = -400, rotX = 25, blur = 12;
+      let opacity = 0, scale = 0.6, z = -400, rotX = 25, rotY = -15, yPx = 100, blur = 12;
       let isActive = false;
 
       if (v < fadeIn) {
-        opacity = 0; scale = 0.6; z = -400; rotX = 25; blur = 12;
+        opacity = 0; scale = 0.6; z = -400; rotX = 25; rotY = -15; yPx = 100; blur = 12;
       } else if (v < rangeIn) {
         const t = (v - fadeIn) / (rangeIn - fadeIn);
-        opacity = lerp(0, 1, t); scale = lerp(0.6, 1, t); z = lerp(-400, 0, t); rotX = lerp(25, 0, t); blur = lerp(12, 0, t);
+        opacity = lerp(0, 1, t); scale = lerp(0.6, 1, t); z = lerp(-400, 0, t); 
+        rotX = lerp(25, 0, t); rotY = lerp(-15, 0, t); yPx = lerp(100, 0, t); blur = lerp(12, 0, t);
       } else if (v <= rangeOut) {
         // Active settling range
-        opacity = 1; scale = 1; z = lerp(0, 50, (v - rangeIn)/(rangeOut - rangeIn)); rotX = 0; blur = 0;
+        opacity = 1; scale = 1; z = lerp(0, 50, (v - rangeIn)/(rangeOut - rangeIn)); 
+        rotX = 0; rotY = 0; yPx = 0; blur = 0;
         isActive = true;
       } else if (v < fadeOut) {
         const t = (v - rangeOut) / (fadeOut - rangeOut);
-        opacity = lerp(1, 0, t); scale = lerp(1, 1.8, t); z = lerp(50, 450, t); rotX = lerp(0, -25, t); blur = lerp(0, 25, t);
+        opacity = lerp(1, 0, t); scale = lerp(1, 1.8, t); z = lerp(50, 450, t); 
+        rotX = lerp(0, -25, t); rotY = lerp(0, 15, t); yPx = lerp(0, -100, t); blur = lerp(0, 25, t);
       } else {
-        opacity = 0; scale = 1.8; z = 450; rotX = -25; blur = 25;
+        opacity = 0; scale = 1.8; z = 450; rotX = -25; rotY = 15; yPx = -100; blur = 25;
       }
 
       // 3. Combine Scroll + Mouse Tilt
@@ -73,7 +76,7 @@ function SpatialCard({
       ref.current.style.opacity = String(opacity);
       ref.current.style.pointerEvents = isActive ? "all" : "none";
       ref.current.style.filter = blur > 0.1 ? `blur(${blur}px)` : "none";
-      ref.current.style.transform = `translateZ(${z}px) scale(${scale}) rotateX(${rotX + tiltX}deg) rotateY(${tiltY}deg)`;
+      ref.current.style.transform = `translateY(${yPx}px) translateZ(${z}px) scale(${scale}) rotateX(${rotX + tiltX}deg) rotateY(${rotY + tiltY}deg)`;
 
       // 4. Shimmer Update
       if (shimmerRef.current) {
