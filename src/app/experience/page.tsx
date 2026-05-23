@@ -99,12 +99,11 @@ function SpatialCard({
     };
   }, [scrollYProgress, fadeIn, rangeIn, rangeOut, fadeOut]);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handlePointerAt = (clientX: number, clientY: number) => {
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
     mouseState.current.active = true;
     mouseState.current.px = x;
     mouseState.current.py = y;
@@ -112,9 +111,15 @@ function SpatialCard({
     mouseState.current.targetY = (y / rect.height) - 0.5;
   };
 
-  const handleMouseLeave = () => {
-    mouseState.current.active = false;
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) =>
+    handlePointerAt(e.clientX, e.clientY);
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const t = e.touches[0];
+    if (t) handlePointerAt(t.clientX, t.clientY);
   };
+
+  const handlePointerEnd = () => { mouseState.current.active = false; };
 
   return (
     <div
@@ -132,13 +137,16 @@ function SpatialCard({
         ref={ref}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => { mouseState.current.active = true; }}
-        onMouseLeave={handleMouseLeave}
+        onMouseLeave={handlePointerEnd}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handlePointerEnd}
+        onTouchCancel={handlePointerEnd}
         style={{
           opacity: 0,
           transformStyle: "preserve-3d",
           willChange: "transform, opacity, filter",
         }}
-        className="cursor-pointer select-none relative"
+        className="cursor-pointer select-none relative w-full px-3 sm:px-4"
       >
         <div className="relative rounded-[30px] overflow-hidden">
           {children}
