@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://the-vista-booking-engine-vb2y.vercel.app'),
   title: "The Vista | Spatial UI Engineering",
   description: "An immersive scroll-controlled Spatial UI experience. Explore the world's most premium luxury booking engine architecture.",
   openGraph: {
