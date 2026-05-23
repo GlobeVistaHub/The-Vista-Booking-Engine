@@ -224,7 +224,7 @@ export default function ExperiencePage() {
   }, [scrollYProgress]);
 
   return (
-    <div ref={containerRef} style={{ height: "700vh" }} className="relative w-full">
+    <div ref={containerRef} style={{ height: "700vh" }} className="relative w-full" dir="ltr">
 
       {/* Fixed background */}
       <div className="fixed inset-0 -z-10 bg-[#030308] pointer-events-none">
@@ -343,24 +343,20 @@ export default function ExperiencePage() {
 
         {/* CARD 3 — n8n Orchestrator */}
         <SpatialCard scrollYProgress={scrollYProgress} rangeIn={0.46} rangeOut={0.63}>
-          <div className="w-full max-w-2xl bg-[#0a0e27]/85 border border-amber-500/40 rounded-[26px] backdrop-blur-2xl shadow-[0_30px_80px_rgba(0,0,0,0.9)] p-6 sm:p-8 flex flex-col items-center gap-7">
-            <p className="text-lg md:text-xl font-black text-white text-center leading-snug text-balance">
+          <div className="w-full max-w-2xl bg-[#0a0e27]/85 border border-amber-500/40 rounded-[26px] backdrop-blur-2xl shadow-[0_30px_80px_rgba(0,0,0,0.9)] p-8 flex flex-col items-center gap-7">
+            <p className="text-lg md:text-xl font-black text-white text-center leading-snug">
               &ldquo;Your itinerary for <span className="text-amber-400 whitespace-nowrap">Villa Serenity</span> is optimized.&rdquo;
             </p>
-            <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-6 w-full justify-center relative py-2">
-              {/* Horizontal line for desktop */}
-              <div className="hidden sm:block absolute top-1/2 left-[8%] right-[8%] h-px bg-gradient-to-r from-cyan-400 via-amber-400 to-emerald-400 opacity-30" />
-              {/* Vertical line for mobile */}
-              <div className="block sm:hidden absolute left-1/2 top-[5%] bottom-[5%] w-px bg-gradient-to-b from-cyan-400 via-amber-400 to-emerald-400 opacity-30 -translate-x-1/2" />
-              
+            <div className="flex items-center gap-3 sm:gap-6 w-full justify-center relative py-2">
+              <div className="absolute top-1/2 left-[8%] right-[8%] h-px bg-gradient-to-r from-cyan-400 via-amber-400 to-emerald-400 opacity-30" />
               {[
                 { label:"TRIGGER", sub:"Webhook Active", cls:"border-cyan-400 text-cyan-400" },
                 { label:"AI CORE", sub:"Processing",     cls:"border-amber-400 text-amber-400" },
                 { label:"ACTION",  sub:"API Dispatch",   cls:"border-emerald-400 text-emerald-400" },
               ].map(n => (
-                <div key={n.label} className={`w-[130px] sm:w-[140px] p-3 sm:p-4 bg-black/70 border-2 ${n.cls} rounded-[14px] flex flex-col items-center z-10`}>
-                  <span className={`text-[9px] font-black tracking-widest uppercase ${n.cls.split(" ")[1]}`}>{n.label}</span>
-                  <span className="text-white text-xs font-semibold mt-1 text-center">{n.sub}</span>
+                <div key={n.label} className={`w-[110px] sm:w-[140px] p-3 sm:p-4 bg-black/70 border-2 ${n.cls} rounded-[14px] flex flex-col items-center z-10`}>
+                  <span className={`text-[8px] sm:text-[9px] font-black tracking-widest uppercase ${n.cls.split(" ")[1]}`}>{n.label}</span>
+                  <span className="text-white text-[10px] sm:text-xs font-semibold mt-1 text-center">{n.sub}</span>
                 </div>
               ))}
             </div>
