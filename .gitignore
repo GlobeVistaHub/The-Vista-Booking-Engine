@@ -50,3 +50,5 @@ next-env.d.ts
 
 # Ignore massive video files
 public/video-assets/*.mp4
+
+!public/video-assets/compressed-finale-video.mp4

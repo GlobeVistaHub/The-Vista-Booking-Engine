@@ -225,7 +225,7 @@ export default function ExperiencePage() {
           playsInline 
           className="w-full h-full object-cover opacity-70"
         >
-          <source src="/video-assets/finale-video.mp4" type="video/mp4" />
+          <source src="/video-assets/compressed-finale-video.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-t from-[#030308] via-transparent to-[#030308]/60" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,#030308_95%)]" />
