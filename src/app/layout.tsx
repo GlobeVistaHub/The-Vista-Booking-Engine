@@ -47,6 +47,7 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
+  const isExperience = pathname?.startsWith("/experience");
   const brandColor = useAppStore(useAppModeStore, (s) => s.brandColor) as string;
 
   return (
@@ -64,18 +65,18 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="theme-color" content="#0A0A0A" />
       </head>
-      <html className={`${inter.variable} ${playfair.variable} ${cairo.variable} ${tajawal.variable} h-full antialiased`}>
+      <html className={`${inter.variable} ${playfair.variable} ${cairo.variable} ${tajawal.variable} ${isExperience ? '' : 'h-full'} antialiased`}>
         <BrandingEngine />
         <LanguageProvider>
           <UserProvider>
-            <body className="min-h-full flex flex-col">
-              {!isAdmin && <Header />}
-              <main className={`flex-grow ${isAdmin ? '' : 'pt-20'}`}>
+            <body className={`bg-[#030308] ${isExperience ? 'min-h-screen' : 'min-h-full'} flex flex-col`}>
+              {!isAdmin && !isExperience && <Header />}
+              <main className={`flex-grow ${isAdmin || isExperience ? '' : 'pt-20'}`}>
                 {children}
               </main>
-              <Footer />
-              <AlexaConcierge />
-              <DemoBadge />
+              {!isAdmin && !isExperience && <Footer />}
+              {!isExperience && <AlexaConcierge />}
+              {!isExperience && <DemoBadge />}
 
               <Analytics />
             </body>

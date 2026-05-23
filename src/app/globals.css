@@ -46,9 +46,22 @@ body {
   }
 }
 
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .animate-reveal {
   animation: reveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   opacity: 0; /* Hidden initially */
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
 }
 
 /* Base utility for staggered delays if needed */
