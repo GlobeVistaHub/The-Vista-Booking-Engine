@@ -11,8 +11,9 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-4 md:px-6">
-      {/* The Docked Glass Card */}
-      <div className="max-w-7xl mx-auto bg-vantablack/40 backdrop-blur-xl border-x border-b border-white/10 rounded-b-3xl flex items-center justify-between px-6 py-3 shadow-2xl">
+      <div className="max-w-7xl mx-auto flex flex-col gap-2">
+        {/* The Docked Glass Card */}
+        <div className="bg-vantablack/40 backdrop-blur-xl border-x border-b border-white/10 rounded-b-3xl flex items-center justify-between px-6 py-3 shadow-2xl">
         
         {/* The Master Transparent Logo */}
         <div className="flex-shrink-0">
@@ -54,6 +55,14 @@ export default function Navbar() {
           </button>
         </div>
 
+        </div>
+      </div>
+
+      {/* Mobile Floating Pills */}
+      <div className="flex lg:hidden justify-center gap-3 max-w-7xl mx-auto mt-2 px-2">
+        <a href="#services" className="px-4 py-1.5 bg-vantablack/60 backdrop-blur-xl border border-white/10 rounded-full text-[10px] text-white uppercase font-bold tracking-widest shadow-xl hover:bg-electric-cyan/20 hover:border-electric-cyan/50 transition-all">Services</a>
+        <a href="#vault" className="px-4 py-1.5 bg-vantablack/60 backdrop-blur-xl border border-white/10 rounded-full text-[10px] text-white uppercase font-bold tracking-widest shadow-xl hover:bg-electric-cyan/20 hover:border-electric-cyan/50 transition-all">The Vault</a>
+        <a href="#location" className="px-4 py-1.5 bg-vantablack/60 backdrop-blur-xl border border-white/10 rounded-full text-[10px] text-white uppercase font-bold tracking-widest shadow-xl hover:bg-electric-cyan/20 hover:border-electric-cyan/50 transition-all">Location</a>
       </div>
     </nav>
   );

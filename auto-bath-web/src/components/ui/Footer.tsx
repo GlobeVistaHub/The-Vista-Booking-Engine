@@ -110,7 +110,7 @@ export default function Footer() {
         href="https://wa.me/61400764508" 
         target="_blank" 
         rel="noopener noreferrer"
-        className="fixed bottom-28 right-6 md:bottom-6 md:right-6 z-[100] bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(37,211,102,0.5)] hover:shadow-[0_0_40px_rgba(37,211,102,0.8)] hover:scale-110 transition-all duration-300 animate-in fade-in slide-in-from-bottom-8"
+        className="fixed bottom-40 right-6 md:bottom-6 md:right-6 z-[100] bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(37,211,102,0.5)] hover:shadow-[0_0_40px_rgba(37,211,102,0.8)] hover:scale-110 transition-all duration-300 animate-in fade-in slide-in-from-bottom-8"
         aria-label="Chat on WhatsApp"
       >
         <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">

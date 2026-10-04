@@ -25,7 +25,7 @@ export default function Home() {
             HAPPIER DRIVERS
           </h1>
           
-          <div className="mt-16 md:mt-0 inline-block bg-[#050505]/60 backdrop-blur-xl border border-white/10 px-4 py-2 md:px-8 md:py-3 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.8)] mx-4 md:mx-0">
+          <div className="mt-24 md:mt-0 inline-block bg-[#050505]/60 backdrop-blur-xl border border-white/10 px-4 py-2 md:px-8 md:py-3 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.8)] mx-4 md:mx-0">
             <p className="shimmer-text text-xs md:text-lg max-w-lg mx-auto tracking-wide">
               Melbourne's premier hand car wash and uncompromising luxury detailing facility
             </p>

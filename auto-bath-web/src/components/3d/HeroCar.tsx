@@ -10,6 +10,7 @@ function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot, 
 
   const portalRef = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   
   useEffect(() => {
     portalRef.current = document.getElementById('popup-root') || document.body;
@@ -17,7 +18,7 @@ function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot, 
   }, []);
 
   return (
-    <group position={position} scale={isActive ? 1.2 : 1}>
+    <group position={position} scale={isActive || isHovered ? 1.2 : 1}>
       {/* MASSIVE Invisible Hitbox for Mobile Thumbs */}
       <mesh 
         onClick={(e) => {
@@ -25,13 +26,13 @@ function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot, 
           setActiveHotspot(isActive ? null : id);
         }}
         onPointerOver={(e) => { 
-          if (isMobile) return;
           e.stopPropagation(); 
           setActiveHotspot(id);
+          setIsHovered(true);
           document.body.style.cursor = 'pointer'; 
         }} 
         onPointerOut={() => { 
-          if (isMobile) return;
+          setIsHovered(false);
           setActiveHotspot(null);
           document.body.style.cursor = 'auto'; 
         }}
