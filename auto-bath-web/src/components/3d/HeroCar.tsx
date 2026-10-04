@@ -58,19 +58,22 @@ function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot }
   );
 }
 
-function Lamborghini({ activeHotspot, setActiveHotspot }: { activeHotspot: string | null, setActiveHotspot: (id: string | null) => void }) {
+function Lamborghini({ activeHotspot, setActiveHotspot, isMobile }: { activeHotspot: string | null, setActiveHotspot: (id: string | null) => void, isMobile: boolean }) {
   const { scene } = useGLTF('/free_lamborghini_revuelto.glb');
+  
+  const baseScale = isMobile ? 0.9 : 1.3;
+  const yOffset = isMobile ? -0.8 : -1.0;
   
   return (
     <>
       <primitive 
         object={scene} 
-        scale={1.3} 
-        position={[0, -1.0, 0]} 
+        scale={baseScale} 
+        position={[0, yOffset, 0]} 
         rotation={[0, -Math.PI / 6, 0]} 
       />
 
-      <group scale={1.3} position={[0, -1.0, 0]} rotation={[0, -Math.PI / 6, 0]}>
+      <group scale={baseScale} position={[0, yOffset, 0]} rotation={[0, -Math.PI / 6, 0]}>
         <Hotspot id="hood" position={[0, 0.8, 1.8]} label="Ceramic Coating" price="FROM $1,200" activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} />
         <Hotspot id="wheel" position={[-1.2, 0.4, 1.1]} label="Alloy Restoration" price="FROM $300" activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} />
         <Hotspot id="glass" position={[0, 0.9, 0.9]} label="Hydrophobic Glass" price="FROM $150" activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} />
@@ -83,13 +86,22 @@ useGLTF.preload('/free_lamborghini_revuelto.glb');
 
 export default function HeroCar() {
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const isInteracting = activeHotspot !== null;
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <div className="absolute inset-0 w-full h-full z-0">
       <Canvas 
-        dpr={[1, 2]}
-        gl={{ antialias: true, alpha: true, logarithmicDepthBuffer: true }}
+        style={{ touchAction: 'pan-y' }}
+        dpr={[1, 1.5]}
+        gl={{ antialias: true, alpha: true, logarithmicDepthBuffer: true, powerPreference: "high-performance" }}
         camera={{ position: [0, 1.5, 7], fov: 45 }}
         // Bulletproof Mobile Close: Tapping ANYWHERE on the background canvas instantly closes all popups and resumes car rotation
         onPointerMissed={() => setActiveHotspot(null)}
@@ -101,7 +113,7 @@ export default function HeroCar() {
           <spotLight position={[10, 10, 10]} angle={0.5} penumbra={1} intensity={300} color="#ffffff" />
           <pointLight position={[-10, 5, -10]} intensity={200} color="#00C2D4" />
 
-          <Lamborghini activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} />
+          <Lamborghini activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} isMobile={isMobile} />
 
           <ContactShadows position={[0, -1.5, 0]} opacity={0.9} scale={20} blur={3} far={4} color="#00C2D4" />
 
