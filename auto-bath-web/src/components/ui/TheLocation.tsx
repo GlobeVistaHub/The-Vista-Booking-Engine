@@ -84,6 +84,7 @@ export default function TheLocation() {
               interactive={true}
               scrollZoom={false} // Don't steal user scroll!
               dragPan={true}
+              cooperativeGestures={true} // Requires two fingers to pan on mobile, allowing one-finger vertical page scroll
             >
               {/* Native Zoom Controls (+/-) */}
               <NavigationControl position="bottom-right" showCompass={false} />
