@@ -53,7 +53,9 @@ export default function PricingGrid() {
           {services.map((service, i) => (
             <div 
               key={i} 
-              className={`relative group bg-[#050505]/60 backdrop-blur-2xl border ${service.popular ? 'border-cyber-orange/80' : 'border-white/10'} rounded-2xl p-8 hover:bg-[#050505]/80 active:bg-[#050505]/90 transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,194,212,0.15)] active:shadow-[0_0_40px_rgba(0,194,212,0.3)] hover:-translate-y-2 active:scale-[0.98] active:border-electric-cyan/50`}
+              tabIndex={0}
+              onClick={() => {}} // Tricks iOS Safari into allowing :hover states on touch
+              className={`relative group bg-[#050505]/60 backdrop-blur-2xl border ${service.popular ? 'border-cyber-orange/80' : 'border-white/10'} rounded-2xl p-8 hover:bg-[#050505]/80 active:bg-[#050505]/90 transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,194,212,0.15)] active:shadow-[0_0_40px_rgba(0,194,212,0.3)] hover:-translate-y-2 active:scale-[0.98] active:border-electric-cyan/50 cursor-pointer md:cursor-default`}
             >
               {/* Popular Badge */}
               {service.popular && (

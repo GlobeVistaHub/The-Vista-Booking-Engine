@@ -28,7 +28,7 @@ export default function Navbar() {
         </div>
 
         {/* Center Navigation Links (Scaled to fit mobile) */}
-        <div className="flex items-center space-x-2 md:space-x-12">
+        <div className="flex items-center space-x-2 md:space-x-12 mt-4 md:mt-0">
           <a href="#services" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-white transition-colors tracking-wide uppercase md:capitalize">
             Services
           </a>
