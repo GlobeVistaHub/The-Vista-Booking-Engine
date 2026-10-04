@@ -27,13 +27,13 @@ function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot, 
         }}
         onPointerOver={(e) => { 
           e.stopPropagation(); 
-          setActiveHotspot(id);
+          if (!isMobile) setActiveHotspot(id);
           setIsHovered(true);
           document.body.style.cursor = 'pointer'; 
         }} 
         onPointerOut={() => { 
           setIsHovered(false);
-          setActiveHotspot(null);
+          if (!isMobile) setActiveHotspot(null);
           document.body.style.cursor = 'auto'; 
         }}
         visible={false}
