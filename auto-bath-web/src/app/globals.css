@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --background: #050505;
+  --foreground: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-vantablack: #050505;
+  --color-cyber-orange: #FF6600;
+  --color-electric-cyan: #00C2D4;
+  --color-liquid-silver: #8A8F98;
+  --color-surface-card: #111216;
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-syncopate);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    var(--color-liquid-silver) 0%,
+    #ffffff 50%,
+    var(--color-liquid-silver) 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer 4.5s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
