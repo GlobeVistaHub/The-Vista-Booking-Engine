@@ -29,7 +29,7 @@ export default function TheLocation() {
   };
 
   return (
-    <section id="location" className="relative w-full py-32 bg-[#050505] border-t border-white/5">
+    <section id="location" className="relative w-full py-12 md:py-32 bg-[#050505] border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row gap-12 items-center">
         
         {/* Left: Text & Info */}

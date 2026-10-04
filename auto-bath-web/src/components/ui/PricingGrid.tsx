@@ -40,7 +40,7 @@ export default function PricingGrid() {
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-20 relative z-10">
-          <h2 className="font-heading font-bold text-2xl md:text-5xl text-white tracking-tighter uppercase mb-4">
+          <h2 className="font-heading font-bold text-xl md:text-5xl text-white tracking-tighter uppercase mb-4">
             Uncompromising <span className="text-electric-cyan">Detail</span>
           </h2>
           <p className="font-mono text-white/80 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
