@@ -80,8 +80,8 @@ export default function PricingGrid() {
               </ul>
 
               <button 
-                onClick={() => openBooking(service.title.includes("Ceramic") ? "ceramic" : service.title.includes("Paint") ? "paint" : service.title.includes("Interior") ? "interior" : "wash")}
-                className={`w-full py-4 rounded-lg font-heading font-bold uppercase tracking-widest transition-all duration-300 ${service.popular ? 'bg-cyber-orange text-[#050505] hover:bg-white hover:shadow-[0_0_20px_rgba(255,255,255,0.5)]' : 'bg-white/5 text-white border border-white/10 hover:bg-electric-cyan hover:border-electric-cyan hover:text-[#050505] hover:shadow-[0_0_20px_rgba(0,194,212,0.5)]'}`}
+                onClick={(e) => { e.stopPropagation(); openBooking(service.title.includes("Ceramic") ? "ceramic" : service.title.includes("Paint") ? "paint" : service.title.includes("Interior") ? "interior" : "wash"); }}
+                className={`w-full py-4 rounded-lg font-heading font-bold uppercase tracking-widest transition-all duration-300 active:scale-[0.98] ${service.popular ? 'bg-cyber-orange text-[#050505] hover:bg-white active:bg-white hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] active:shadow-[0_0_20px_rgba(255,255,255,0.8)]' : 'bg-white/5 text-white border border-white/10 hover:bg-electric-cyan active:bg-electric-cyan hover:border-electric-cyan active:border-electric-cyan hover:text-[#050505] active:text-[#050505] hover:shadow-[0_0_20px_rgba(0,194,212,0.5)] active:shadow-[0_0_20px_rgba(0,194,212,0.8)]'}`}
               >
                 Book Now
               </button>
