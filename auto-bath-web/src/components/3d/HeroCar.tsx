@@ -42,7 +42,6 @@ function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot, 
       </mesh>
       
       {/* Visual Ring */}
-      <mesh pointerEventsType={{ deny: true }}>
       <mesh>
         <ringGeometry args={[0.08, 0.12, 32]} />
         <meshBasicMaterial color="#00C2D4" transparent opacity={0.8} />
