@@ -36,7 +36,7 @@ export default function PricingGrid() {
   const { openBooking } = useBooking();
 
   return (
-    <section id="services" className="relative w-full bg-[#050505] py-16 md:py-32 px-6 lg:px-12 z-20">
+    <section id="services" className="relative w-full bg-[#050505] py-24 md:py-32 px-6 lg:px-12 z-20">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-20 relative z-10">
@@ -53,11 +53,11 @@ export default function PricingGrid() {
           {services.map((service, i) => (
             <div 
               key={i} 
-              className={`relative group bg-[#050505]/60 backdrop-blur-2xl border ${service.popular ? 'border-cyber-orange/80' : 'border-white/10'} rounded-2xl p-8 hover:bg-[#050505]/80 transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,194,212,0.15)] hover:-translate-y-2`}
+              className={`relative group bg-[#050505]/60 backdrop-blur-2xl border ${service.popular ? 'border-cyber-orange/80' : 'border-white/10'} rounded-2xl p-8 hover:bg-[#050505]/80 active:bg-[#050505]/90 transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,194,212,0.15)] active:shadow-[0_0_40px_rgba(0,194,212,0.3)] hover:-translate-y-2 active:scale-[0.98] active:border-electric-cyan/50`}
             >
               {/* Popular Badge */}
               {service.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-cyber-orange text-[#050505] font-mono text-xs md:text-sm font-bold tracking-widest uppercase px-5 py-1.5 rounded-full shadow-[0_0_15px_rgba(255,107,0,0.5)] whitespace-nowrap">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-cyber-orange text-[#050505] font-mono text-[10px] md:text-sm font-extrabold tracking-widest uppercase px-5 py-1.5 rounded-full shadow-md md:shadow-[0_0_15px_rgba(255,107,0,0.5)] border border-cyber-orange whitespace-nowrap">
                   Most Requested
                 </div>
               )}
