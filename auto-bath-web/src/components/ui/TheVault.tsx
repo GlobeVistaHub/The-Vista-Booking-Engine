@@ -51,9 +51,7 @@ export default function TheVault() {
         {/* The Interactive Slider Container */}
         <div 
           ref={containerRef}
-          className={`relative w-full aspect-video md:aspect-[21/9] rounded-3xl overflow-hidden border border-white/10 shadow-2xl touch-pan-y select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-          onMouseDown={(e) => handleInteractionStart(e.clientX)}
-          onTouchStart={(e) => handleInteractionStart(e.touches[0].clientX)}
+          className={`relative w-full aspect-video md:aspect-[21/9] rounded-3xl overflow-hidden border border-white/10 shadow-2xl touch-pan-y select-none`}
           onMouseUp={() => setIsDragging(false)}
           onMouseLeave={() => { setIsHovered(false); setIsDragging(false); }}
           onMouseEnter={() => setIsHovered(true)}
@@ -100,18 +98,23 @@ export default function TheVault() {
             </div>
           </div>
 
-          {/* The Slider Handle */}
+          {/* The Slider Handle & Hitbox */}
           <div 
-            className="absolute top-0 bottom-0 w-1 bg-electric-cyan shadow-[0_0_20px_rgba(0,194,212,1)] pointer-events-none z-20"
+            className="absolute top-0 bottom-0 w-12 -ml-6 z-30 flex items-center justify-center touch-none cursor-grab active:cursor-grabbing"
             style={{ left: `${sliderPosition}%` }}
+            onMouseDown={(e) => { e.stopPropagation(); handleInteractionStart(e.clientX); }}
+            onTouchStart={(e) => { e.stopPropagation(); handleInteractionStart(e.touches[0].clientX); }}
           >
+            {/* The visible cyan line */}
+            <div className="absolute top-0 bottom-0 w-1 bg-electric-cyan shadow-[0_0_20px_rgba(0,194,212,1)] pointer-events-none" />
+
             {/* Dynamic Laser Wash Trail (Trails to the left over the clean car) */}
             <div 
-              className={`absolute top-0 bottom-0 right-full w-[15vw] md:w-[250px] bg-gradient-to-l from-electric-cyan/40 via-electric-cyan/10 to-transparent transition-opacity duration-500 ${isDragging ? 'opacity-100 animate-pulse' : 'opacity-0'}`}
+              className={`absolute top-0 bottom-0 right-[50%] w-[15vw] md:w-[250px] bg-gradient-to-l from-electric-cyan/40 via-electric-cyan/10 to-transparent transition-opacity duration-500 pointer-events-none ${isDragging ? 'opacity-100 animate-pulse' : 'opacity-0'}`}
             />
             
             {/* Handle Knob */}
-            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-[#050505] border-2 border-electric-cyan rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,194,212,0.8)] transition-transform duration-300 ${isDragging ? 'scale-110 shadow-[0_0_50px_rgba(0,194,212,1)]' : 'scale-100'}`}>
+            <div className={`relative w-12 h-12 bg-[#050505] border-2 border-electric-cyan rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,194,212,0.8)] transition-transform duration-300 pointer-events-none ${isDragging ? 'scale-110 shadow-[0_0_50px_rgba(0,194,212,1)]' : 'scale-100'}`}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00C2D4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 18l-6-6 6-6" />
                 <path d="M9 18l-6-6 6-6" className="opacity-50" />

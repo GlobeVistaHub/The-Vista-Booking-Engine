@@ -67,7 +67,7 @@ function Lamborghini({ activeHotspot, setActiveHotspot, isMobile }: { activeHots
   const { scene } = useGLTF('/free_lamborghini_revuelto.glb');
   
   const baseScale = isMobile ? 0.9 : 1.3;
-  const yOffset = isMobile ? -0.8 : -1.0;
+  const yOffset = isMobile ? -0.4 : -1.0;
   
   return (
     <>

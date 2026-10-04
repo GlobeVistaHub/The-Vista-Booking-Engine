@@ -47,12 +47,3 @@ body {
   }
 }
 
-/* Disable shimmer on mobile for performance and readability */
-@media (max-width: 768px) {
-  .shimmer-text {
-    animation: none;
-    background: var(--color-liquid-silver);
-    -webkit-background-clip: text;
-    color: transparent;
-  }
-}
