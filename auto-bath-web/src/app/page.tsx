@@ -19,9 +19,9 @@ export default function Home() {
         <Navbar />
 
         {/* Hero Text */}
-        <div className="relative z-10 text-center mt-20 pointer-events-none flex flex-col items-center gap-6">
-          <h1 className="font-heading font-bold text-4xl md:text-7xl text-white tracking-tighter uppercase leading-tight [text-shadow:0_10px_40px_rgba(0,0,0,1),_0_2px_10px_rgba(0,0,0,0.8)]">
-            CLEANER <span className="text-cyber-orange bg-electric-cyan/20 backdrop-blur-md px-4 py-1 rounded-xl border border-electric-cyan/30 inline-block shadow-[0_0_20px_rgba(0,194,212,0.2)]">CARS</span><br/>
+        <div className="relative z-40 text-center mt-4 md:mt-20 pointer-events-none flex flex-col items-center gap-4 md:gap-6">
+          <h1 className="font-heading font-bold text-3xl md:text-7xl text-white tracking-tighter uppercase leading-tight [text-shadow:0_10px_40px_rgba(0,0,0,1),_0_2px_10px_rgba(0,0,0,0.8)]">
+            CLEANER <span className="text-cyber-orange bg-electric-cyan/20 backdrop-blur-md px-3 py-1 md:px-4 md:py-1 rounded-xl border border-electric-cyan/30 inline-block shadow-[0_0_20px_rgba(0,194,212,0.2)]">CARS</span><br/>
             HAPPIER DRIVERS
           </h1>
           
@@ -44,6 +44,10 @@ export default function Home() {
         </div>
 
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-electric-cyan/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
+        {/* MOBILE SAFE SCROLL ZONES: These sit on top of the 3D canvas to guarantee scrolling works at the top/bottom of the screen, while leaving the middle open for car rotation */}
+        <div className="absolute top-0 left-0 w-full h-[25vh] z-30 md:hidden" style={{ touchAction: 'pan-y' }} />
+        <div className="absolute bottom-0 left-0 w-full h-[25vh] z-30 md:hidden" style={{ touchAction: 'pan-y' }} />
       </section>
 
       {/* ================= SERVICES PRICING GRID ================= */}

@@ -53,9 +53,9 @@ function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot, 
       
       {isActive && mounted && (
         <Html center portal={portalRef as any} zIndexRange={[99999, 99998]}>
-          <div className="bg-vantablack/90 backdrop-blur-xl border border-electric-cyan/50 px-5 py-3 rounded-xl shadow-[0_0_30px_rgba(0,194,212,0.6)] pointer-events-none whitespace-nowrap animate-in fade-in zoom-in duration-200">
-            <h3 className="text-electric-cyan font-heading font-bold text-[13px] uppercase tracking-wider drop-shadow-md">{label}</h3>
-            <p className="text-white text-xs font-mono mt-1 opacity-90">{price}</p>
+          <div className="bg-vantablack/90 backdrop-blur-xl border border-electric-cyan/50 px-3 py-2 md:px-5 md:py-3 rounded-lg md:rounded-xl shadow-[0_0_30px_rgba(0,194,212,0.6)] pointer-events-none whitespace-nowrap animate-in fade-in zoom-in duration-200">
+            <h3 className="text-electric-cyan font-heading font-bold text-[9px] md:text-[13px] uppercase tracking-wider drop-shadow-md">{label}</h3>
+            <p className="text-white text-[9px] md:text-xs font-mono mt-0.5 md:mt-1 opacity-90">{price}</p>
           </div>
         </Html>
       )}
@@ -125,7 +125,6 @@ export default function HeroCar() {
           <OrbitControls 
             enableZoom={false} 
             enablePan={false}
-            enableRotate={!isMobile} // NEVER steal scroll on mobile
             autoRotate={!isInteracting}
             autoRotateSpeed={isInteracting ? 0 : 0.5}
             enableDamping={!isInteracting}
