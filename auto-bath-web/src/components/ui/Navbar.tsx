@@ -29,7 +29,7 @@ export default function Navbar() {
         </div>
 
         {/* Center Navigation Links (Hidden on mobile) */}
-        <div className="hidden md:flex items-center space-x-12">
+        <div className="hidden lg:flex items-center space-x-12">
           <a href="#services" className="text-lg font-semibold text-liquid-silver hover:text-white transition-colors tracking-wide">
             Services
           </a>
