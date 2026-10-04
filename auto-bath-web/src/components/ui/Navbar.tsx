@@ -49,8 +49,8 @@ export default function Navbar() {
             style={{ transform: "translateZ(0)", backfaceVisibility: "hidden", WebkitFontSmoothing: "antialiased" }}
           >
             <span className="relative z-10">BOOK NOW</span>
-            {/* The Glass Shimmer Sheen */}
-            <div className="absolute top-0 left-0 w-[150%] h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-[120%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out skew-x-[45deg]" />
+            {/* The Glass Shimmer Sheen (Disabled on touch devices so it doesn't get stuck) */}
+            <div className="absolute top-0 left-0 w-[150%] h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-[120%] lg:group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out skew-x-[45deg]" />
           </button>
         </div>
 
