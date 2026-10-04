@@ -34,7 +34,7 @@ export default function TheVault() {
   };
 
   return (
-    <section id="vault" className="relative w-full py-32 bg-vantablack overflow-hidden border-t border-white/5">
+    <section id="vault" className="relative w-full py-16 md:py-32 bg-vantablack overflow-hidden border-t border-white/5">
       {/* Background ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-electric-cyan/5 rounded-full blur-[120px] pointer-events-none" />
 

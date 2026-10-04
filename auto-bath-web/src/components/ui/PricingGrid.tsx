@@ -36,7 +36,7 @@ export default function PricingGrid() {
   const { openBooking } = useBooking();
 
   return (
-    <section id="services" className="relative w-full bg-[#050505] py-32 px-6 lg:px-12 z-20">
+    <section id="services" className="relative w-full bg-[#050505] py-16 md:py-32 px-6 lg:px-12 z-20">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-20 relative z-10">
