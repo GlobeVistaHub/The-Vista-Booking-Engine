@@ -5,7 +5,7 @@ import { OrbitControls, Environment, ContactShadows, useGLTF, Html } from '@reac
 import { Suspense, useEffect, useRef, useState } from 'react';
 
 // Added global activeHotspot state to ensure mobile perfection
-function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot }: { id: string, position: [number, number, number], label: string, price: string, activeHotspot: string | null, setActiveHotspot: (id: string | null) => void }) {
+function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot, isMobile }: { id: string, position: [number, number, number], label: string, price: string, activeHotspot: string | null, setActiveHotspot: (id: string | null) => void, isMobile: boolean }) {
   const isActive = activeHotspot === id;
 
   const portalRef = useRef<HTMLElement | null>(null);
@@ -17,26 +17,32 @@ function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot }
   }, []);
 
   return (
-    <mesh 
-      position={position} 
-      // Desktop Hover opens it
-      onPointerOver={(e) => { 
-        e.stopPropagation(); 
-        setActiveHotspot(id);
-        document.body.style.cursor = 'pointer'; 
-      }} 
-      // Desktop Mouse Leave closes it
-      onPointerOut={() => { 
-        setActiveHotspot(null);
-        document.body.style.cursor = 'auto'; 
-      }}
-      // Bulletproof Mobile Tap forces a toggle
-      onClick={(e) => {
-        e.stopPropagation();
-        setActiveHotspot(isActive ? null : id);
-      }}
-      scale={isActive ? 1.2 : 1}
-    >
+    <group position={position} scale={isActive ? 1.2 : 1}>
+      {/* MASSIVE Invisible Hitbox for Mobile Thumbs */}
+      <mesh 
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveHotspot(isActive ? null : id);
+        }}
+        onPointerOver={(e) => { 
+          if (isMobile) return;
+          e.stopPropagation(); 
+          setActiveHotspot(id);
+          document.body.style.cursor = 'pointer'; 
+        }} 
+        onPointerOut={() => { 
+          if (isMobile) return;
+          setActiveHotspot(null);
+          document.body.style.cursor = 'auto'; 
+        }}
+        visible={false}
+      >
+        <sphereGeometry args={[0.3, 16, 16]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
+      
+      {/* Visual Ring */}
+      <mesh pointerEventsType={{ deny: true }}>
       <mesh>
         <ringGeometry args={[0.08, 0.12, 32]} />
         <meshBasicMaterial color="#00C2D4" transparent opacity={0.8} />
@@ -54,7 +60,7 @@ function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot }
           </div>
         </Html>
       )}
-    </mesh>
+    </group>
   );
 }
 
@@ -74,9 +80,9 @@ function Lamborghini({ activeHotspot, setActiveHotspot, isMobile }: { activeHots
       />
 
       <group scale={baseScale} position={[0, yOffset, 0]} rotation={[0, -Math.PI / 6, 0]}>
-        <Hotspot id="hood" position={[0, 0.8, 1.8]} label="Ceramic Coating" price="FROM $1,200" activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} />
-        <Hotspot id="wheel" position={[-1.2, 0.4, 1.1]} label="Alloy Restoration" price="FROM $300" activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} />
-        <Hotspot id="glass" position={[0, 0.9, 0.9]} label="Hydrophobic Glass" price="FROM $150" activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} />
+        <Hotspot id="hood" position={[0, 0.8, 1.8]} label="Ceramic Coating" price="FROM $1,200" activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} isMobile={isMobile} />
+        <Hotspot id="wheel" position={[-1.2, 0.4, 1.1]} label="Alloy Restoration" price="FROM $300" activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} isMobile={isMobile} />
+        <Hotspot id="glass" position={[0, 0.9, 0.9]} label="Hydrophobic Glass" price="FROM $150" activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} isMobile={isMobile} />
       </group>
     </>
   );
@@ -120,6 +126,7 @@ export default function HeroCar() {
           <OrbitControls 
             enableZoom={false} 
             enablePan={false}
+            enableRotate={!isMobile} // NEVER steal scroll on mobile
             autoRotate={!isInteracting}
             autoRotateSpeed={isInteracting ? 0 : 0.5}
             enableDamping={!isInteracting}
