@@ -69,9 +69,9 @@ export default function TheVault() {
               className="absolute inset-0 w-full h-full object-cover grayscale-[40%] brightness-[0.55] contrast-[1.1] sepia-[30%]"
               draggable={false}
             />
-            {/* Subtle Film Grain / Grit Layer specifically for the Before Status */}
+            {/* Subtle Film Grain / Grit Layer (Disabled on mobile to fix massive GPU lag during swipe) */}
             <div 
-              className="absolute inset-0 w-full h-full opacity-[0.25] mix-blend-overlay pointer-events-none"
+              className="hidden md:block absolute inset-0 w-full h-full opacity-[0.25] mix-blend-overlay pointer-events-none"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
                 backgroundRepeat: 'repeat'
