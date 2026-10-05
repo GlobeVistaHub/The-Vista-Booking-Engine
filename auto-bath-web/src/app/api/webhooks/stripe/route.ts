@@ -3,29 +3,22 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
-  // apiVersion omitted to use default
-});
-
-// Next.js App Router natively supports raw body parsing via req.text()
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
 export async function POST(req: Request) {
-  // Use raw array buffer instead of text() to prevent Vercel from mutating line endings or encoding
-  const rawBody = await req.arrayBuffer();
-  const buffer = Buffer.from(rawBody);
-  
-  const headersList = await headers();
-  const sig = headersList.get('stripe-signature') as string;
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
-
   let event: Stripe.Event;
 
   try {
-    if (!sig) return new NextResponse('Webhook signature missing', { status: 400 });
-    if (!webhookSecret) return new NextResponse('Webhook secret missing', { status: 400 });
+    const body = await req.text();
+    const headersList = await headers();
+    const signature = headersList.get('Stripe-Signature') as string;
+
+    if (!signature) {
+      return new NextResponse('Webhook signature missing', { status: 400 });
+    }
     
-    // Pass the raw buffer directly to Stripe
-    event = stripe.webhooks.constructEvent(buffer, sig, webhookSecret);
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err: any) {
     console.error(`Webhook Signature Verification Failed: ${err.message}`);
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
