@@ -541,8 +541,8 @@ export default function BookingWidget() {
                     alert("Booking failed: " + result.error);
                     setIsProcessing(false);
                   }
-                } catch (e) {
-                  alert("An unexpected error occurred.");
+                } catch (e: any) {
+                  alert("Vercel Network Error: " + (e.message || "Failed to reach server. Please try again."));
                   setIsProcessing(false);
                 }
                 return;
