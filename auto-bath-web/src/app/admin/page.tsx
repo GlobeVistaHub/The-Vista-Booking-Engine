@@ -124,9 +124,9 @@ export default async function AdminDashboardPage() {
                         <XCircle size={12} /> Failed
                       </span>
                     )}
-                    {booking.status === 'canceled' && (
+                    {booking.status === 'cancelled' && (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 text-xs font-bold uppercase tracking-wider">
-                        <XCircle size={12} /> Canceled
+                        <XCircle size={12} /> Cancelled
                       </span>
                     )}
                   </td>
