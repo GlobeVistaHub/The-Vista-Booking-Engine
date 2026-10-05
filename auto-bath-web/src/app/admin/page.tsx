@@ -14,7 +14,10 @@ export default async function AdminDashboardPage() {
     if (!id) return;
     
     const admin = createAdminClient();
-    await admin.from("bookings").update({ status: "canceled" }).eq("id", id);
+    const { error } = await admin.from("bookings").update({ status: "canceled" }).eq("id", id);
+    if (error) {
+      console.error("Failed to cancel booking:", error);
+    }
     revalidatePath("/admin");
   }
   
@@ -133,6 +136,11 @@ export default async function AdminDashboardPage() {
                     {booking.status === 'failed' && (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyber-orange/10 text-cyber-orange text-xs font-bold uppercase tracking-wider">
                         <XCircle size={12} /> Failed
+                      </span>
+                    )}
+                    {booking.status === 'canceled' && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 text-xs font-bold uppercase tracking-wider">
+                        <XCircle size={12} /> Canceled
                       </span>
                     )}
                   </td>
