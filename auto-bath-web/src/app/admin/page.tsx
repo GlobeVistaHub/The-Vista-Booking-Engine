@@ -1,10 +1,22 @@
 import { createAdminClient } from "@/utils/supabase/admin";
-import { CheckCircle, Clock, XCircle, ChevronRight } from "lucide-react";
+import { CheckCircle, Clock, XCircle, Trash2 } from "lucide-react";
+import { revalidatePath } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   const supabaseAdmin = createAdminClient();
+  
+  // Inline Server Action to Cancel Bookings
+  async function cancelBooking(formData: FormData) {
+    "use server";
+    const id = formData.get("id") as string;
+    if (!id) return;
+    
+    const admin = createAdminClient();
+    await admin.from("bookings").update({ status: "canceled" }).eq("id", id);
+    revalidatePath("/admin");
+  }
   
   // Fetch real data from Supabase
   const { data: rawBookings, error } = await supabaseAdmin
@@ -125,9 +137,16 @@ export default async function AdminDashboardPage() {
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-electric-cyan hover:text-white transition-colors">
-                      <ChevronRight size={18} className="ml-auto" />
-                    </button>
+                    {(booking.status === 'confirmed' || booking.status === 'pending') ? (
+                      <form action={cancelBooking}>
+                        <input type="hidden" name="id" value={booking.id} />
+                        <button type="submit" className="flex items-center justify-end gap-2 ml-auto text-cyber-orange hover:text-red-500 transition-colors text-xs font-bold uppercase tracking-widest">
+                          <Trash2 size={14} /> Cancel
+                        </button>
+                      </form>
+                    ) : (
+                      <span className="text-white/20 text-xs font-bold uppercase tracking-widest">Archived</span>
+                    )}
                   </td>
                 </tr>
               ))}
