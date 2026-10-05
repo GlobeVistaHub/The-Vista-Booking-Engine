@@ -6,12 +6,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   // apiVersion omitted to use default
 });
 
-// Stripe requires the raw body to construct the event
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Next.js App Router natively supports raw body parsing via req.text()
 
 export async function POST(req: Request) {
   const body = await req.text();
