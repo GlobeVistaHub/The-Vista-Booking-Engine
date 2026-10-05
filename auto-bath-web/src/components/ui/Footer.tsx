@@ -27,19 +27,19 @@ export default function Footer() {
                 Elevating automotive care to an art form. Exclusive hand-washing, meticulous detailing, and concourse-level restoration for those who demand absolute perfection.
               </p>
               <div className="flex space-x-4">
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-electric-cyan hover:text-[#050505] hover:border-electric-cyan hover:scale-110 transition-all duration-300 shadow-lg">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" onTouchStart={() => {}} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-electric-cyan active:bg-electric-cyan hover:text-[#050505] active:text-[#050505] hover:border-electric-cyan active:border-electric-cyan hover:scale-110 active:scale-110 transition-all duration-300 shadow-lg">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                     <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                   </svg>
                 </a>
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-electric-cyan hover:text-[#050505] hover:border-electric-cyan hover:scale-110 transition-all duration-300 shadow-lg">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" onTouchStart={() => {}} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-electric-cyan active:bg-electric-cyan hover:text-[#050505] active:text-[#050505] hover:border-electric-cyan active:border-electric-cyan hover:scale-110 active:scale-110 transition-all duration-300 shadow-lg">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
                   </svg>
                 </a>
-                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-electric-cyan hover:text-[#050505] hover:border-electric-cyan hover:scale-110 transition-all duration-300 shadow-lg">
+                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" onTouchStart={() => {}} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-electric-cyan active:bg-electric-cyan hover:text-[#050505] active:text-[#050505] hover:border-electric-cyan active:border-electric-cyan hover:scale-110 active:scale-110 transition-all duration-300 shadow-lg">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
                   </svg>

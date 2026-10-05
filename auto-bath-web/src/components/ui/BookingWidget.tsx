@@ -16,6 +16,18 @@ export default function BookingWidget() {
   const { isBookingOpen, closeBooking, selectedPackage, setSelectedPackage } = useBooking();
   const [step, setStep] = useState(1);
   
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (isBookingOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isBookingOpen]);
+  
   // Step 2: Date & Time State
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
