@@ -29,7 +29,11 @@ export default function BookingWidget() {
       import("@/app/actions/booking").then(m => {
         if (m.getBookedSlotsAction) {
           m.getBookedSlotsAction().then(res => {
-            if (res.success) setBookedSlots(res.bookedTimes || []);
+            if (res.success) {
+              // Supabase returns "+00:00". We must normalize it to ".000Z" so it matches exactVercelString.
+              const normalized = (res.bookedTimes || []).map((t: string) => new Date(t).toISOString());
+              setBookedSlots(normalized);
+            }
           });
         }
       });
