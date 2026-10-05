@@ -18,17 +18,13 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
 
   try {
-    if (!sig || !webhookSecret) return new NextResponse('Webhook secret missing', { status: 400 });
+    if (!sig) return new NextResponse('Webhook signature missing', { status: 400 });
+    if (!webhookSecret) return new NextResponse('Webhook secret missing', { status: 400 });
+    
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err: any) {
-    console.error(`Webhook Signature Error: ${err.message}`);
-    // FALLBACK FOR SANDBOX TESTING ONLY: If the secret mismatch occurs due to Vercel env var formatting,
-    // we bypass signature verification just to ensure the DB logic works. (MUST BE REMOVED BEFORE PRODUCTION)
-    try {
-      event = JSON.parse(body) as Stripe.Event;
-    } catch (parseErr) {
-      return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
-    }
+    console.error(`Webhook Signature Verification Failed: ${err.message}`);
+    return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
   // Handle the specific event
