@@ -21,7 +21,7 @@ export default function Navbar() {
               alt="Auto-Bath Luxury Detailing" 
               width={500} 
               height={160} 
-              className="object-contain h-12 md:h-28 lg:h-36 w-auto md:scale-[1.4] md:origin-left"
+              className="object-contain h-14 md:h-28 lg:h-36 w-auto md:scale-[1.4] md:origin-left"
               priority
             />
           </Link>
@@ -29,13 +29,13 @@ export default function Navbar() {
 
         {/* Center Navigation Links (Scaled to fit mobile) */}
         <div className="flex items-center space-x-2 md:space-x-12 translate-y-1 md:translate-y-0">
-          <a href="#services" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-white transition-colors tracking-wide uppercase md:capitalize whitespace-nowrap">
+          <a href="#services" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-electric-cyan active:text-electric-cyan active:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] md:hover:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] transition-all duration-300 tracking-wide uppercase md:capitalize whitespace-nowrap">
             Services
           </a>
-          <a href="#vault" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-white transition-colors tracking-wide uppercase md:capitalize whitespace-nowrap">
+          <a href="#vault" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-electric-cyan active:text-electric-cyan active:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] md:hover:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] transition-all duration-300 tracking-wide uppercase md:capitalize whitespace-nowrap">
             The Vault
           </a>
-          <a href="#location" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-white transition-colors tracking-wide uppercase md:capitalize whitespace-nowrap">
+          <a href="#location" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-electric-cyan active:text-electric-cyan active:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] md:hover:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] transition-all duration-300 tracking-wide uppercase md:capitalize whitespace-nowrap">
             Location
           </a>
         </div>
@@ -44,7 +44,8 @@ export default function Navbar() {
         <div className="flex-shrink-0">
           <button 
             onClick={() => openBooking()}
-            className="relative overflow-hidden group px-3 py-1.5 md:px-6 md:py-2.5 rounded-full bg-cyber-orange text-vantablack font-bold text-[9px] md:text-sm transition-all duration-500 whitespace-nowrap uppercase tracking-widest hover:scale-105 hover:shadow-[0_0_30px_rgba(255,102,0,0.8)] will-change-transform"
+            onTouchStart={() => {}} // Forces iOS to register :active CSS pseudo-classes instantly
+            className="relative overflow-hidden group px-3 py-1.5 md:px-6 md:py-2.5 rounded-full bg-cyber-orange text-vantablack font-bold text-[9px] md:text-sm transition-all duration-300 whitespace-nowrap uppercase tracking-widest scale-90 origin-right md:scale-100 hover:scale-105 active:scale-95 active:shadow-[0_0_30px_rgba(255,102,0,0.8)] hover:shadow-[0_0_30px_rgba(255,102,0,0.8)] will-change-transform"
             style={{ transform: "translateZ(0)", backfaceVisibility: "hidden", WebkitFontSmoothing: "antialiased" }}
           >
             <span className="relative z-10">BOOK NOW</span>
