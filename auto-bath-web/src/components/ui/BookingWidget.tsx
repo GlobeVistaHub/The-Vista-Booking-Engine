@@ -450,12 +450,14 @@ export default function BookingWidget() {
                 
                 <div className="relative z-10 space-y-6">
                   {/* Total Amount */}
-                  <div className="flex justify-between items-end border-b border-white/10 pb-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-2 sm:gap-0 border-b border-white/10 pb-6">
                     <div>
                       <p className="text-white/50 text-xs font-mono uppercase mb-1">Total Due Today</p>
-                      <p className="text-xl text-white font-bold">{PACKAGES.find(p => p.id === selectedPackage)?.name}</p>
+                      <p className="text-xl text-white font-bold pr-4">{PACKAGES.find(p => p.id === selectedPackage)?.name}</p>
                     </div>
-                    <p className="text-4xl text-cyber-orange font-heading">${PACKAGES.find(p => p.id === selectedPackage)?.price}</p>
+                    <p className="text-4xl text-cyber-orange font-heading whitespace-nowrap mt-2 sm:mt-0">
+                      ${PACKAGES.find(p => p.id === selectedPackage)?.price}
+                    </p>
                   </div>
 
                   {/* Mocked Credit Card Form */}
