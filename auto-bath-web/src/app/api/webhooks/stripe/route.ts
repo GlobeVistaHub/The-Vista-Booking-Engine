@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
 
@@ -10,7 +11,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
 
 export async function POST(req: Request) {
   const body = await req.text();
-  const sig = req.headers.get('stripe-signature') as string;
+  const headersList = await headers();
+  const sig = headersList.get('stripe-signature') as string;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   let event: Stripe.Event;
