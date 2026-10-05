@@ -326,16 +326,22 @@ export default function BookingWidget() {
                         {AVAILABLE_TIMES.map((time, i) => {
                           const isSelected = selectedTime === time;
                           
-                          // Check if this specific date & time exists in our bookedSlots array
-                          // We format it identically to how the server action parses it to ensure a perfect match.
-                          // Wait, the server action parses it using UTC time because it runs on Vercel.
-                          // Since we want a foolproof check without timezone math on the client,
-                          // we'll just check if the string representation matches what we send to the server.
+                          // Vercel server saves the date in UTC blindly. 
+                          // If a user in Melbourne uses 'new Date()' on their browser, it converts to Melbourne time,
+                          // which creates a completely different ISO string!
+                          // We must manually construct the exact UTC string Vercel saved to match it.
+                          const year = selectedDate.getFullYear();
+                          const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                          const day = String(selectedDate.getDate()).padStart(2, '0');
                           
-                          // The server does: new Date(`${formData.date} ${formData.time}`).toISOString()
-                          // We will simulate that exactly:
-                          const simulatedServerTime = new Date(`${selectedDate.toDateString()} ${time}`).toISOString();
-                          const isUnavailable = bookedSlots.includes(simulatedServerTime);
+                          const [timeStr, modifier] = time.split(' ');
+                          let [hours, minutes] = timeStr.split(':');
+                          if (hours === '12') hours = '00';
+                          if (modifier === 'PM') hours = String(parseInt(hours, 10) + 12);
+                          hours = hours.padStart(2, '0');
+                          
+                          const exactVercelString = `${year}-${month}-${day}T${hours}:${minutes}:00.000Z`;
+                          const isUnavailable = bookedSlots.includes(exactVercelString);
                           
                           return (
                             <button
