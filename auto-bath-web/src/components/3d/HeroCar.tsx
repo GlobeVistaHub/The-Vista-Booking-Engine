@@ -106,8 +106,8 @@ export default function HeroCar() {
     <div className="absolute inset-0 w-full h-full z-0">
       <Canvas 
         style={{ touchAction: 'pan-y' }}
-        dpr={isMobile ? 1 : [1, 1.5]}
-        gl={{ antialias: !isMobile, alpha: true, logarithmicDepthBuffer: !isMobile }}
+        dpr={isMobile ? [1, 1.2] : [1, 1.5]}
+        gl={{ antialias: true, alpha: true, logarithmicDepthBuffer: !isMobile }}
         camera={{ position: [0, 1.5, 7], fov: 45 }}
         // Bulletproof Mobile Close: Tapping ANYWHERE on the background canvas instantly closes all popups and resumes car rotation
         onPointerMissed={() => setActiveHotspot(null)}
