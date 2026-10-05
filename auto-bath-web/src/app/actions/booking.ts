@@ -5,7 +5,7 @@ import Stripe from "stripe";
 
 // Initialize Stripe (we will need STRIPE_SECRET_KEY in .env later)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_mock", {
-  apiVersion: "2024-06-20",
+  // Use the SDK's default API version
 });
 
 export async function createBookingAction(formData: {
@@ -70,7 +70,6 @@ export async function createBookingAction(formData: {
 
     // 5. Create a Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
       customer_email: formData.email,
       line_items: [
         {
