@@ -34,7 +34,7 @@ export default function FAQ() {
   };
 
   return (
-    <section id="faq" className="w-full py-12 md:py-32 bg-[#050505] relative border-t border-white/5">
+    <section id="faq" className="w-full py-8 md:py-32 bg-[#050505] relative border-t border-white/5">
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-electric-cyan/5 rounded-full blur-[150px] pointer-events-none" />
 

@@ -5,7 +5,7 @@ import { MapPin, Phone, Mail } from "lucide-react";
 export default function Footer() {
   return (
     <>
-      <footer className="relative bg-vantablack pt-24 pb-12 border-t border-white/5 overflow-hidden">
+      <footer className="relative bg-vantablack pt-12 md:pt-24 pb-12 border-t border-white/5 overflow-hidden">
         {/* Background ambient glow */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[800px] h-[400px] bg-electric-cyan/5 rounded-full blur-[120px] pointer-events-none" />
 
@@ -51,10 +51,10 @@ export default function Footer() {
             <div className="col-span-1 lg:col-span-1 lg:pl-8 lg:pt-4">
               <h4 className="text-white font-heading font-bold uppercase tracking-widest mb-6 text-sm">Quick Links</h4>
               <ul className="space-y-4">
-                <li><a href="/#services" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">Our Services</a></li>
-                <li><a href="/#vault" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">The Vault</a></li>
-                <li><a href="/#location" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">Find Us</a></li>
-                <li><a href="/#services" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">Book an Appointment</a></li>
+                <li><Link href="/#services" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">Our Services</Link></li>
+                <li><Link href="/#vault" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">The Vault</Link></li>
+                <li><Link href="/#location" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">Find Us</Link></li>
+                <li><Link href="/#services" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">Book an Appointment</Link></li>
               </ul>
             </div>
 
@@ -62,10 +62,10 @@ export default function Footer() {
             <div className="col-span-1 lg:col-span-1 lg:pt-4">
               <h4 className="text-white font-heading font-bold uppercase tracking-widest mb-6 text-sm">Specialties</h4>
               <ul className="space-y-4">
-                <li><a href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Premium Hand Wash</a></li>
-                <li><a href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Paint Correction</a></li>
-                <li><a href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Ceramic Coating</a></li>
-                <li><a href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Interior Detailing</a></li>
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Premium Hand Wash</Link></li>
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Paint Correction</Link></li>
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Ceramic Coating</Link></li>
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Interior Detailing</Link></li>
               </ul>
             </div>
 

@@ -21,14 +21,14 @@ export default function Navbar() {
               alt="Auto-Bath Luxury Detailing" 
               width={500} 
               height={160} 
-              className="object-contain h-10 md:h-28 lg:h-36 w-auto scale-[1.2] md:scale-[1.4] origin-left"
+              className="object-contain h-14 md:h-28 lg:h-36 w-auto scale-[1.2] md:scale-[1.4] origin-left"
               priority
             />
           </Link>
         </div>
 
         {/* Center Navigation Links (Scaled to fit mobile) */}
-        <div className="flex items-center space-x-2 md:space-x-12 mt-4 md:mt-0">
+        <div className="flex items-center space-x-2 md:space-x-12 mt-6 md:mt-0">
           <a href="#services" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-white transition-colors tracking-wide uppercase md:capitalize">
             Services
           </a>
