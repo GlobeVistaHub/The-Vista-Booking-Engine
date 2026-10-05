@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, Check, Calendar, Clock, Car, User, ChevronRight, ChevronLeft, CreditCard, Lock } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
+import { createBookingAction } from "@/app/actions/booking";
 
 // Actual Data from PricingGrid
 const PACKAGES = [
@@ -15,6 +16,7 @@ const PACKAGES = [
 export default function BookingWidget() {
   const { isBookingOpen, closeBooking, selectedPackage, setSelectedPackage } = useBooking();
   const [step, setStep] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   // Prevent background scrolling when modal is open
   useEffect(() => {
@@ -516,28 +518,47 @@ export default function BookingWidget() {
           </button>
           
           <button 
-            onClick={() => {
+            onClick={async () => {
               if (step === 1 && !selectedPackage) return;
               if (step === 2 && (!selectedDate || !selectedTime)) return;
               if (step === 3 && !isFormValid) return;
               if (step === 4) {
-                // Mock Payment Submission
-                alert("Payment successful! Redirecting to confirmation page...");
-                closeBooking();
+                setIsProcessing(true);
+                try {
+                  const result = await createBookingAction({
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    vehicle: formData.vehicle,
+                    packageId: selectedPackage!,
+                    date: selectedDate!.toDateString(),
+                    time: selectedTime!
+                  });
+                  
+                  if (result.success && result.checkoutUrl) {
+                    window.location.href = result.checkoutUrl;
+                  } else {
+                    alert("Booking failed: " + result.error);
+                    setIsProcessing(false);
+                  }
+                } catch (e) {
+                  alert("An unexpected error occurred.");
+                  setIsProcessing(false);
+                }
                 return;
               }
               setStep(Math.min(4, step + 1));
             }}
-            disabled={(step === 1 && !selectedPackage) || (step === 2 && (!selectedDate || !selectedTime)) || (step === 3 && !isFormValid)}
+            disabled={(step === 1 && !selectedPackage) || (step === 2 && (!selectedDate || !selectedTime)) || (step === 3 && !isFormValid) || isProcessing}
             className={`px-8 py-3 rounded-full font-bold uppercase tracking-widest text-sm flex items-center gap-2 transition-all ${
-              (step === 1 && !selectedPackage) || (step === 2 && (!selectedDate || !selectedTime)) || (step === 3 && !isFormValid)
+              (step === 1 && !selectedPackage) || (step === 2 && (!selectedDate || !selectedTime)) || (step === 3 && !isFormValid) || isProcessing
                 ? "bg-white/5 text-white/30 cursor-not-allowed" 
                 : step === 4
                   ? "bg-electric-cyan text-vantablack hover:bg-white shadow-[0_0_30px_rgba(0,194,212,0.4)]"
                   : "bg-cyber-orange text-[#050505] hover:bg-white shadow-[0_0_30px_rgba(255,102,0,0.4)]"
             }`}
           >
-            {step === 4 ? `Pay $${PACKAGES.find(p => p.id === selectedPackage)?.price}` : step === 3 ? "Proceed to Payment" : step === 2 ? "Review Details" : "Continue"}
+            {isProcessing ? "Processing..." : step === 4 ? `Pay $${PACKAGES.find(p => p.id === selectedPackage)?.price}` : step === 3 ? "Proceed to Payment" : step === 2 ? "Review Details" : "Continue"}
             {step === 4 ? <Lock size={16} /> : <ChevronRight size={18} />}
           </button>
         </div>
