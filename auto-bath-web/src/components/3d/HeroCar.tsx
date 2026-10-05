@@ -106,8 +106,8 @@ export default function HeroCar() {
     <div className="absolute inset-0 w-full h-full z-0">
       <Canvas 
         style={{ touchAction: 'pan-y' }}
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, alpha: true, logarithmicDepthBuffer: true, powerPreference: "high-performance" }}
+        dpr={isMobile ? 1 : [1, 1.5]}
+        gl={{ antialias: !isMobile, alpha: true, logarithmicDepthBuffer: true, powerPreference: "high-performance" }}
         camera={{ position: [0, 1.5, 7], fov: 45 }}
         // Bulletproof Mobile Close: Tapping ANYWHERE on the background canvas instantly closes all popups and resumes car rotation
         onPointerMissed={() => setActiveHotspot(null)}
@@ -121,7 +121,7 @@ export default function HeroCar() {
 
           <Lamborghini activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} isMobile={isMobile} />
 
-          <ContactShadows position={[0, -1.5, 0]} opacity={0.9} scale={20} blur={3} far={4} color="#00C2D4" />
+          <ContactShadows position={[0, -1.5, 0]} opacity={0.9} scale={20} blur={3} far={4} color="#00C2D4" frames={1} resolution={256} />
 
           <OrbitControls 
             enableZoom={false} 
