@@ -75,9 +75,11 @@ export default function Footer() {
             <div className="col-span-1 lg:col-span-1 lg:pt-4">
               <h4 className="text-white font-heading font-bold uppercase tracking-widest mb-6 text-sm">Contact</h4>
               <ul className="space-y-4">
-                <li className="flex items-start gap-4 group">
-                  <MapPin size={18} className="text-electric-cyan flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-                  <span className="text-white/50 text-sm font-sans group-hover:text-white transition-colors">64 Bulla Rd,<br/>Strathmore, VIC 3041</span>
+                <li className="group cursor-pointer">
+                  <a href="https://maps.google.com/?q=64+Bulla+Rd,+Strathmore,+VIC+3041" target="_blank" rel="noopener noreferrer" className="flex items-start gap-4">
+                    <MapPin size={18} className="text-electric-cyan flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                    <span className="text-white/50 text-sm font-sans group-hover:text-white transition-colors">64 Bulla Rd,<br/>Strathmore, VIC 3041</span>
+                  </a>
                 </li>
                 <li className="flex items-center gap-4 group">
                   <Phone size={18} className="text-electric-cyan flex-shrink-0 group-hover:scale-110 transition-transform" />
@@ -112,7 +114,7 @@ export default function Footer() {
         href="https://wa.me/61400764508" 
         target="_blank" 
         rel="noopener noreferrer"
-        className="fixed bottom-20 right-6 md:bottom-6 md:right-6 z-[100] bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(37,211,102,0.5)] hover:shadow-[0_0_40px_rgba(37,211,102,0.8)] hover:scale-110 transition-all duration-300 animate-in fade-in slide-in-from-bottom-8"
+        className="fixed bottom-20 right-6 md:bottom-6 md:right-6 z-40 bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(37,211,102,0.5)] hover:shadow-[0_0_40px_rgba(37,211,102,0.8)] hover:scale-110 transition-all duration-300 animate-in fade-in slide-in-from-bottom-8"
         aria-label="Chat on WhatsApp"
       >
         <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
