@@ -18,10 +18,22 @@ export default function BookingWidget() {
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Prevent background scrolling when modal is open
+  // Prevent background scrolling and fetch available slots when modal is open
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  
   useEffect(() => {
     if (isBookingOpen) {
       document.body.style.overflow = 'hidden';
+      
+      // Fetch unavailable slots from Supabase
+      import("@/app/actions/booking").then(m => {
+        if (m.getBookedSlotsAction) {
+          m.getBookedSlotsAction().then(res => {
+            if (res.success) setBookedSlots(res.bookedTimes || []);
+          });
+        }
+      });
+      
     } else {
       document.body.style.overflow = '';
     }
@@ -313,8 +325,17 @@ export default function BookingWidget() {
                       <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
                         {AVAILABLE_TIMES.map((time, i) => {
                           const isSelected = selectedTime === time;
-                          // Fake some unavailable times randomly for realism based on the date
-                          const isUnavailable = (selectedDate.getDate() + i) % 5 === 0;
+                          
+                          // Check if this specific date & time exists in our bookedSlots array
+                          // We format it identically to how the server action parses it to ensure a perfect match.
+                          // Wait, the server action parses it using UTC time because it runs on Vercel.
+                          // Since we want a foolproof check without timezone math on the client,
+                          // we'll just check if the string representation matches what we send to the server.
+                          
+                          // The server does: new Date(`${formData.date} ${formData.time}`).toISOString()
+                          // We will simulate that exactly:
+                          const simulatedServerTime = new Date(`${selectedDate.toDateString()} ${time}`).toISOString();
+                          const isUnavailable = bookedSlots.includes(simulatedServerTime);
                           
                           return (
                             <button

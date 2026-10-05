@@ -111,3 +111,23 @@ export async function createBookingAction(formData: {
     return { success: false, error: error.message || "An unexpected error occurred." };
   }
 }
+
+export async function getBookedSlotsAction() {
+  try {
+    const supabaseAdmin = createAdminClient();
+    
+    // Fetch all future bookings that are pending or confirmed
+    const { data, error } = await supabaseAdmin
+      .from("bookings")
+      .select("scheduled_time")
+      .in("status", ["pending", "confirmed"])
+      .gte("scheduled_time", new Date().toISOString());
+
+    if (error) throw error;
+    
+    return { success: true, bookedTimes: data.map(b => b.scheduled_time) };
+  } catch (error: any) {
+    console.error("Fetch booked slots error:", error);
+    return { success: false, bookedTimes: [] };
+  }
+}
