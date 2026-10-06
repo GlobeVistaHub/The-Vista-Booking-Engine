@@ -194,9 +194,18 @@ export function ShowcaseClient() {
     };
 
     fit();
-    document.fonts?.ready.then(fit);
+    const fonts = document.fonts;
+    fonts?.ready.then(fit);
+    fonts?.addEventListener?.("loadingdone", fit);
+    window.addEventListener("load", fit);
     window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
+    const timers = [300, 1000, 2500].map((ms) => window.setTimeout(fit, ms));
+    return () => {
+      fonts?.removeEventListener?.("loadingdone", fit);
+      window.removeEventListener("load", fit);
+      window.removeEventListener("resize", fit);
+      timers.forEach(window.clearTimeout);
+    };
   }, []);
 
   return (
