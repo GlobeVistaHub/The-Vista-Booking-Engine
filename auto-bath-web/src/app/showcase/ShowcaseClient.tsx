@@ -1,23 +1,23 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, Variants } from "framer-motion";
 import { CodeSnippet } from "@/components/ui/CodeSnippet";
 import { useRef, useState } from "react";
 import Map, { Marker, MapRef, NavigationControl } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Script from "next/script";
 
-const fadeInUp = {
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.65, 0.3, 0.9] } }
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
 };
 
-const kineticText = {
+const kineticText: Variants = {
   hidden: { opacity: 0, rotateX: -90, y: 50 },
   visible: { 
     opacity: 1, 
@@ -243,9 +243,9 @@ export function ShowcaseClient() {
                     
                     {/* The Coordinates overlay */}
                     <div 
-                      className={\`absolute bottom-full mb-2 flex flex-col items-center transition-all duration-700 ease-out \${
+                      className={`absolute bottom-full mb-2 flex flex-col items-center transition-all duration-700 ease-out ${
                         currentZoom >= 14.5 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-                      }\`}
+                      }`}
                     >
                       <div className="bg-[#050505]/95 border border-electric-cyan/40 backdrop-blur-xl px-3 py-1.5 rounded flex items-center gap-2 shadow-[0_0_20px_rgba(0,255,255,0.3)] mb-3">
                         <div className="w-1.5 h-1.5 rounded-full bg-electric-cyan animate-pulse" />
