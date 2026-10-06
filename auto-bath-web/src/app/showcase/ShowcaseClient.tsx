@@ -200,7 +200,7 @@ export function ShowcaseClient() {
               Goodbrains Studio // Case Study
             </motion.span>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-heading font-bold text-white uppercase tracking-tighter leading-tight mb-8 break-words" style={{ perspective: "1000px" }}>
+            <h1 className="text-[8vw] sm:text-5xl md:text-7xl font-heading font-bold text-white uppercase tracking-tighter leading-tight mb-8" style={{ perspective: "1000px" }}>
               <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }}>Engineering</motion.div>
               <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }} className="text-transparent bg-clip-text bg-gradient-to-r from-electric-cyan to-cyber-orange">
                 Digital Machines.
@@ -390,7 +390,7 @@ export function ShowcaseClient() {
           <h3 className="text-2xl font-heading font-bold text-white uppercase tracking-widest mb-6">
             Ready to experience the platform?
           </h3>
-          <a href="https://auto-bath-detailing-melbourne.vercel.app" target="_blank" className="inline-block bg-white text-[#050505] px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-electric-cyan hover:shadow-[0_0_40px_rgba(0,194,212,0.5)] transition-all">
+          <a href="https://auto-bath-detailing-melbourne.vercel.app" target="_blank" className="inline-block bg-electric-cyan shadow-[0_0_40px_rgba(0,194,212,0.5)] md:bg-white md:shadow-none text-[#050505] px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm md:hover:bg-electric-cyan md:hover:shadow-[0_0_40px_rgba(0,194,212,0.5)] active:scale-95 active:shadow-[0_0_60px_rgba(0,194,212,0.8)] transition-all duration-300">
             Visit Auto-Bath
           </a>
         </motion.div>
