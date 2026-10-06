@@ -39,7 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
         
         <div className="p-4 border-t border-white/5">
-          <div className="flex items-center justify-between px-2 py-3">
+          <div className="flex flex-col gap-4 px-2 py-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-electric-cyan/20 flex items-center justify-center border border-electric-cyan/30">
                 <span className="text-xs font-bold text-electric-cyan">AD</span>
@@ -49,9 +49,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <p className="text-[10px] text-white/40 font-mono">System Active</p>
               </div>
             </div>
-            <form action={handleSignOut}>
-              <button type="submit" className="text-white/40 hover:text-[#df1b41] transition-colors p-2 rounded-lg hover:bg-[#df1b41]/10">
+            <form action={handleSignOut} className="w-full">
+              <button type="submit" className="w-full flex items-center justify-center gap-2 text-white/50 hover:text-[#df1b41] transition-colors p-3 rounded-lg hover:bg-[#df1b41]/10 border border-transparent hover:border-[#df1b41]/20 font-bold text-sm bg-white/5">
                 <LogOut size={16} />
+                Sign Out
               </button>
             </form>
           </div>
