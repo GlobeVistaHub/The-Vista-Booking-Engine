@@ -65,8 +65,20 @@ export async function createBookingAction(formData: {
       
     if (serviceError || !service) throw new Error("Invalid service selected");
 
-    // 4. Construct Timestamp (combining date and time strings safely)
-    const scheduledTime = new Date(`${formData.date} ${formData.time}`).toISOString();
+    // 4. Construct literal UTC Timestamp to avoid server timezone shifts
+    // Parse "Tue Oct 06 2026" and "01:00 PM" into "2026-10-06T13:00:00.000Z"
+    const parsedDate = new Date(formData.date);
+    const year = parsedDate.getFullYear();
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    
+    const [timeStr, modifier] = formData.time.split(' ');
+    let [hours, minutes] = timeStr.split(':');
+    if (hours === '12') hours = '00';
+    if (modifier === 'PM') hours = String(parseInt(hours, 10) + 12);
+    hours = hours.padStart(2, '0');
+    
+    const scheduledTime = `${year}-${month}-${day}T${hours}:${minutes}:00.000Z`;
 
     // 5. Create a Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({

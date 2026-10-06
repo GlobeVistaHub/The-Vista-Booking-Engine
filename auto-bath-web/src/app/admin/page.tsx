@@ -33,8 +33,8 @@ export default async function AdminDashboardPage() {
       name: b.profiles?.full_name || "Unknown Customer",
       vehicle: b.vehicle_make,
       service: b.services?.name || "Unknown Service",
-      date: dateObj.toLocaleDateString('en-AU', { month: 'short', day: 'numeric', year: 'numeric' }),
-      time: dateObj.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }),
+      date: dateObj.toLocaleDateString('en-AU', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' }),
+      time: dateObj.toLocaleTimeString('en-AU', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' }),
       status: b.status,
       price: b.services?.base_price ? (b.services.base_price / 100).toFixed(2) : "0.00",
     };

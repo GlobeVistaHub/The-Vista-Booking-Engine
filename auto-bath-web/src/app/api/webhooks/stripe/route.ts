@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       
       if (booking && customerEmail && process.env.RESEND_API_KEY) {
         const dateObj = new Date(booking.scheduled_time);
-        const formattedDate = `${dateObj.toLocaleDateString('en-AU', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} at ${dateObj.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}`;
+        const formattedDate = `${dateObj.toLocaleDateString('en-AU', { timeZone: 'UTC', weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} at ${dateObj.toLocaleTimeString('en-AU', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })}`;
         
         await resend.emails.send({
           from: 'Auto-Bath Booking <onboarding@resend.dev>',
