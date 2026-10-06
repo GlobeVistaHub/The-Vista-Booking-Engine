@@ -2,7 +2,8 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { CodeSnippet } from "@/components/ui/CodeSnippet";
-import TheLocation from "@/components/ui/TheLocation";
+import Map, { Marker } from "react-map-gl/mapbox";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -80,6 +81,10 @@ if (hoursDifference >= 48) {
   console.log(\`No refund issued: Cancellation is within 48 hour window.\`);
 }`;
 
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+const LATITUDE = -37.7346;
+const LONGITUDE = 144.9194;
+
 export function ShowcaseClient() {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
@@ -130,9 +135,9 @@ export function ShowcaseClient() {
             transition={{ duration: 1.2, delay: 0.5 }}
             className="w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden border border-white/10 relative mt-4 shadow-[0_0_50px_rgba(0,194,212,0.1)]"
           >
-            {/* Spline 3D Porsche Embed */}
+            {/* Spline 3D Porsche Embed - Reliable public URL */}
             <iframe 
-              src="https://my.spline.design/3dtextblue-032ce9ebbeff05ad2209e51c8db1e8a8/" 
+              src="https://my.spline.design/porsche911-c918bfd4cb5f5ad2b13edefed4a9a463/" 
               frameBorder="0" 
               width="100%" 
               height="100%" 
@@ -203,9 +208,35 @@ export function ShowcaseClient() {
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="h-[400px] w-full rounded-2xl overflow-hidden border border-white/10 relative"
+            className="h-[400px] w-full rounded-2xl overflow-hidden border border-white/10 relative bg-[#111]"
           >
-            <TheLocation />
+            <div className="absolute inset-0 pointer-events-none rounded-2xl z-10 shadow-[inset_0_0_120px_rgba(0,255,255,0.15)] ring-1 ring-inset ring-white/10" />
+            {MAPBOX_TOKEN ? (
+              <Map
+                initialViewState={{
+                  latitude: LATITUDE,
+                  longitude: LONGITUDE,
+                  zoom: 14,
+                  pitch: 60,
+                  bearing: -20,
+                }}
+                mapStyle="mapbox://styles/mapbox/dark-v11"
+                mapboxAccessToken={MAPBOX_TOKEN}
+                interactive={true}
+                scrollZoom={false}
+              >
+                <Marker longitude={LONGITUDE} latitude={LATITUDE} anchor="bottom">
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute w-12 h-12 bg-electric-cyan rounded-full animate-ping opacity-30" />
+                    <div className="relative w-4 h-4 bg-electric-cyan rounded-full border-2 border-black shadow-[0_0_15px_rgba(0,255,255,0.8)]" />
+                  </div>
+                </Marker>
+              </Map>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white/50 font-mono text-sm">
+                Loading Cinematic Map...
+              </div>
+            )}
             <div className="absolute top-4 right-4 pointer-events-none z-10">
               <span className="bg-[#050505]/80 backdrop-blur-md text-white/70 px-3 py-1.5 rounded-full text-xs font-mono border border-white/10">Mapbox GL</span>
             </div>
@@ -244,7 +275,7 @@ export function ShowcaseClient() {
           <h3 className="text-2xl font-heading font-bold text-white uppercase tracking-widest mb-6">
             Ready to experience the platform?
           </h3>
-          <a href="https://auto-bath.goodbrains.pro" target="_blank" className="inline-block bg-white text-[#050505] px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-electric-cyan hover:shadow-[0_0_40px_rgba(0,194,212,0.5)] transition-all">
+          <a href="https://auto-bath-detailing-melbourne.vercel.app" target="_blank" className="inline-block bg-white text-[#050505] px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-electric-cyan hover:shadow-[0_0_40px_rgba(0,194,212,0.5)] transition-all">
             Visit Auto-Bath
           </a>
         </motion.div>
