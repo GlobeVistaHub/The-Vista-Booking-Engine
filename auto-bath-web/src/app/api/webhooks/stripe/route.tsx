@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { Resend } from 'resend';
+import * as React from 'react';
 import BookingConfirmation from '@/emails/BookingConfirmation';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -63,19 +64,24 @@ export async function POST(req: Request) {
         const dateObj = new Date(booking.scheduled_time);
         const formattedDate = `${dateObj.toLocaleDateString('en-AU', { timeZone: 'UTC', weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} at ${dateObj.toLocaleTimeString('en-AU', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })}`;
         
-        await resend.emails.send({
+        const { data, error: resendError } = await resend.emails.send({
           from: 'Auto-Bath Booking <onboarding@resend.dev>',
           to: customerEmail,
           subject: 'Your Auto-Bath Booking is Confirmed',
-          react: BookingConfirmation({
-            customerName: (booking.profiles as any)?.full_name || 'Valued Customer',
-            serviceName: (booking.services as any)?.name || 'Auto Detailing',
-            vehicle: booking.vehicle_make,
-            date: formattedDate,
-            price: (booking.services as any)?.base_price ? ((booking.services as any).base_price / 100).toFixed(2) : '0.00'
-          }) as React.ReactElement
+          react: <BookingConfirmation 
+            customerName={(booking.profiles as any)?.full_name || 'Valued Customer'}
+            serviceName={(booking.services as any)?.name || 'Auto Detailing'}
+            vehicle={booking.vehicle_make}
+            date={formattedDate}
+            price={(booking.services as any)?.base_price ? ((booking.services as any).base_price / 100).toFixed(2) : '0.00'}
+          />
         });
-        console.log(`Confirmation email sent to ${customerEmail}`);
+        
+        if (resendError) {
+          console.error("Resend API failed to send email:", resendError);
+        } else {
+          console.log(`Confirmation email sent successfully! Resend ID: ${data?.id}`);
+        }
       }
 
       console.log(`Booking ${paymentIntentId} confirmed successfully!`);
