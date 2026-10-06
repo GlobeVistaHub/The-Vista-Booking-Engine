@@ -2,7 +2,8 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { CodeSnippet } from "@/components/ui/CodeSnippet";
-import Map, { Marker } from "react-map-gl/mapbox";
+import { useRef, useState } from "react";
+import Map, { Marker, MapRef, NavigationControl } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Script from "next/script";
 
@@ -90,6 +91,8 @@ export function ShowcaseClient() {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const mapRef = useRef<MapRef>(null);
+  const [currentZoom, setCurrentZoom] = useState(14);
 
   return (
     <main className="min-h-screen bg-[#050505] selection:bg-electric-cyan/30 selection:text-white relative overflow-hidden font-sans">
@@ -214,7 +217,11 @@ export function ShowcaseClient() {
             <div className="absolute inset-0 pointer-events-none rounded-2xl z-10 shadow-[inset_0_0_120px_rgba(0,255,255,0.15)] ring-1 ring-inset ring-white/10" />
             {MAPBOX_TOKEN ? (
               <Map
+                ref={mapRef}
                 style={{ width: "100%", height: "100%" }}
+                onZoom={(e) => setCurrentZoom(e.viewState.zoom)}
+                minZoom={8}
+                maxZoom={18}
                 initialViewState={{
                   latitude: LATITUDE,
                   longitude: LONGITUDE,
@@ -226,11 +233,33 @@ export function ShowcaseClient() {
                 mapboxAccessToken={MAPBOX_TOKEN}
                 interactive={true}
                 scrollZoom={false}
+                dragPan={true}
+                cooperativeGestures={true}
               >
+                <NavigationControl position="bottom-right" showCompass={false} />
+                
                 <Marker longitude={LONGITUDE} latitude={LATITUDE} anchor="bottom">
-                  <div className="relative flex items-center justify-center">
-                    <div className="absolute w-12 h-12 bg-electric-cyan rounded-full animate-ping opacity-30" />
-                    <div className="relative w-4 h-4 bg-electric-cyan rounded-full border-2 border-black shadow-[0_0_15px_rgba(0,255,255,0.8)]" />
+                  <div className="relative flex flex-col items-center justify-center group cursor-crosshair">
+                    
+                    {/* The Coordinates overlay */}
+                    <div 
+                      className={\`absolute bottom-full mb-2 flex flex-col items-center transition-all duration-700 ease-out \${
+                        currentZoom >= 14.5 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+                      }\`}
+                    >
+                      <div className="bg-[#050505]/95 border border-electric-cyan/40 backdrop-blur-xl px-3 py-1.5 rounded flex items-center gap-2 shadow-[0_0_20px_rgba(0,255,255,0.3)] mb-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-electric-cyan animate-pulse" />
+                        <span className="font-mono text-electric-cyan text-[11px] font-bold tracking-widest whitespace-nowrap">
+                          TARGET: {LATITUDE.toFixed(4)}°, {LONGITUDE.toFixed(4)}°
+                        </span>
+                      </div>
+                      <div className="w-[1px] h-4 bg-electric-cyan/60 absolute bottom-0 translate-y-full" />
+                    </div>
+
+                    <div className="relative flex items-center justify-center">
+                      <div className="absolute w-12 h-12 bg-electric-cyan rounded-full animate-ping opacity-30" />
+                      <div className="relative w-4 h-4 bg-electric-cyan rounded-full border-2 border-black shadow-[0_0_15px_rgba(0,255,255,0.8)]" />
+                    </div>
                   </div>
                 </Marker>
               </Map>
