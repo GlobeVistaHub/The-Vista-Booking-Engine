@@ -172,6 +172,32 @@ export function ShowcaseClient() {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const mapRef = useRef<MapRef>(null);
   const [currentZoom, setCurrentZoom] = useState(14);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const longWordRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const title = titleRef.current;
+    const word = longWordRef.current;
+    if (!title || !word) return;
+
+    const fit = () => {
+      if (window.innerWidth >= 640) {
+        title.style.fontSize = "";
+        return;
+      }
+      const REFERENCE_PX = 100;
+      title.style.fontSize = `${REFERENCE_PX}px`;
+      const wordWidth = word.offsetWidth;
+      const available = title.clientWidth;
+      if (!wordWidth || !available) return;
+      title.style.fontSize = `${Math.min((available / wordWidth) * REFERENCE_PX * 0.97, 48)}px`;
+    };
+
+    fit();
+    document.fonts?.ready.then(fit);
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#050505] selection:bg-electric-cyan/30 selection:text-white relative overflow-hidden font-sans">
@@ -200,8 +226,8 @@ export function ShowcaseClient() {
               Goodbrains Studio // Case Study
             </motion.span>
 
-            <h1 className="text-[8vw] sm:text-5xl md:text-7xl font-heading font-bold text-white uppercase tracking-tighter leading-tight mb-8" style={{ perspective: "1000px" }}>
-              <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }}>Engineering</motion.div>
+            <h1 ref={titleRef} className="text-[7.5vw] sm:text-5xl md:text-7xl font-heading font-bold text-white uppercase tracking-tighter leading-tight mb-8" style={{ perspective: "1000px" }}>
+              <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }}><span ref={longWordRef} className="inline-block whitespace-nowrap">Engineering</span></motion.div>
               <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }} className="text-transparent bg-clip-text bg-gradient-to-r from-electric-cyan to-cyber-orange">
                 Digital Machines.
               </motion.div>
