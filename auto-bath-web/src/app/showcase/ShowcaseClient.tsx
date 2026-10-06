@@ -200,7 +200,7 @@ export function ShowcaseClient() {
               Goodbrains Studio // Case Study
             </motion.span>
 
-            <h1 className="text-5xl md:text-7xl font-heading font-bold text-white uppercase tracking-tighter leading-tight mb-8" style={{ perspective: "1000px" }}>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-heading font-bold text-white uppercase tracking-tighter leading-tight mb-8 break-words" style={{ perspective: "1000px" }}>
               <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }}>Engineering</motion.div>
               <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }} className="text-transparent bg-clip-text bg-gradient-to-r from-electric-cyan to-cyber-orange">
                 Digital Machines.
@@ -224,7 +224,7 @@ export function ShowcaseClient() {
 
             {/* Native Spline Web Component via dangerouslySetInnerHTML to avoid React TS errors */}
             <div
-              className="absolute inset-0 pointer-events-auto mix-blend-screen"
+              className="absolute inset-0 pointer-events-auto mix-blend-screen touch-none"
               dangerouslySetInnerHTML={{
                 __html: '<spline-viewer url="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode" style="width: 100%; height: 100%;"></spline-viewer>'
               }}
@@ -246,7 +246,7 @@ export function ShowcaseClient() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-3xl font-heading font-bold text-white uppercase tracking-widest mb-4">
+            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-white uppercase tracking-wider sm:tracking-widest mb-4">
               <span className="text-electric-cyan">01.</span> Temporal Enforcement
             </h2>
             <p className="text-white/50 leading-relaxed mb-6">
@@ -268,7 +268,7 @@ export function ShowcaseClient() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-3xl font-heading font-bold text-white uppercase tracking-widest mb-4">
+            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-white uppercase tracking-wider sm:tracking-widest mb-4">
               <span className="text-cyber-orange">02.</span> Financial Pipelines
             </h2>
             <p className="text-white/50 leading-relaxed mb-6">
@@ -285,7 +285,7 @@ export function ShowcaseClient() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-3xl font-heading font-bold text-white uppercase tracking-widest mb-4">
+            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-white uppercase tracking-wider sm:tracking-widest mb-4">
               <span className="text-[#df1b41]">03.</span> WebGL Geospatial Data
             </h2>
             <p className="text-white/50 leading-relaxed mb-6">
@@ -370,7 +370,7 @@ export function ShowcaseClient() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-3xl font-heading font-bold text-white uppercase tracking-widest mb-4">
+            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-white uppercase tracking-wider sm:tracking-widest mb-4">
               <span className="text-[#25D366]">04.</span> Zero-Touch Operations
             </h2>
             <p className="text-white/50 leading-relaxed mb-6">
