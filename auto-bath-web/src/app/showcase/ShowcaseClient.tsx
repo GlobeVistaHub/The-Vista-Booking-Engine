@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { CodeSnippet } from "@/components/ui/CodeSnippet";
 import Map, { Marker } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
+import Script from "next/script";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -92,6 +93,7 @@ export function ShowcaseClient() {
 
   return (
     <main className="min-h-screen bg-[#050505] selection:bg-electric-cyan/30 selection:text-white relative overflow-hidden font-sans">
+      <Script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.7/build/spline-viewer.js" strategy="lazyOnload" />
       
       {/* Immersive WebGL-inspired Background */}
       <div className="fixed inset-0 pointer-events-none">
@@ -133,16 +135,15 @@ export function ShowcaseClient() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2, delay: 0.5 }}
-            className="w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden border border-white/10 relative mt-4 shadow-[0_0_50px_rgba(0,194,212,0.1)]"
+            className="w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden border border-white/10 relative mt-4 shadow-[0_0_50px_rgba(0,194,212,0.1)] bg-[#0A0A0A]"
           >
-            {/* Spline 3D Embed - Guaranteed live URL */}
-            <iframe 
-              src="https://my.spline.design/macbookpro-dbcc22ffbc7d35ce1eaf428801d91610/" 
-              frameBorder="0" 
-              width="100%" 
-              height="100%" 
+            {/* Native Spline Web Component via dangerouslySetInnerHTML to avoid React TS errors */}
+            <div 
               className="absolute inset-0 pointer-events-auto"
-            ></iframe>
+              dangerouslySetInnerHTML={{
+                __html: '<spline-viewer url="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode" style="width: 100%; height: 100%;"></spline-viewer>'
+              }}
+            />
             <div className="absolute top-4 left-4 pointer-events-none">
               <span className="bg-black/50 backdrop-blur-md text-white/70 px-3 py-1.5 rounded-full text-xs font-mono border border-white/10">WebGL Canvas Active</span>
             </div>
