@@ -94,12 +94,23 @@ const FloatingParticles = () => {
   
   useEffect(() => {
     setMounted(true);
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (e.pointerType === "touch") {
+        // Phone screens are tiny vs. the ±1000px desktop range, so scale to the full range
+        mouseX.set(((e.clientX - window.innerWidth / 2) / (window.innerWidth / 2)) * 1000);
+        mouseY.set(((e.clientY - window.innerHeight / 2) / (window.innerHeight / 2)) * 1000);
+        return;
+      }
       mouseX.set(e.clientX - window.innerWidth / 2);
       mouseY.set(e.clientY - window.innerHeight / 2);
     };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    const options = { passive: true, capture: true } as const;
+    window.addEventListener("pointermove", handlePointerMove, options);
+    window.addEventListener("pointerdown", handlePointerMove, options);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove, options);
+      window.removeEventListener("pointerdown", handlePointerMove, options);
+    };
   }, [mouseX, mouseY]);
 
   // Create smooth parallax layers
