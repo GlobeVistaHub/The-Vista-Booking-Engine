@@ -79,8 +79,7 @@ export default function StripeCheckout({ clientSecret, amount, serviceName }: { 
           colorDanger: '#df1b41',
           fontFamily: 'monospace',
           spacingUnit: '4px',
-          borderRadius: '12px',
-          colorBorder: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '12px'
         },
         rules: {
           '.Input': {
