@@ -4,6 +4,7 @@ import Stripe from 'stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { Resend } from 'resend';
 import * as React from 'react';
+import * as Sentry from '@sentry/nextjs';
 import BookingConfirmation from '@/emails/BookingConfirmation';
 
 const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
@@ -88,6 +89,7 @@ export async function POST(req: Request) {
 
     } catch (err) {
       console.error('Error updating booking in Supabase:', err);
+      Sentry.captureException(err, { tags: { area: 'stripe-webhook' }, extra: { sessionId } });
       return new NextResponse('Database Error', { status: 500 });
     }
   }

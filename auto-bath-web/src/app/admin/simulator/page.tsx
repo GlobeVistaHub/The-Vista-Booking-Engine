@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AlertTriangle, Bug, Zap, Activity, Database, ServerCrash } from "lucide-react";
+import { simulateServerErrorAction } from "@/app/actions/simulator";
 
 export default function SimulatorPage() {
   const [logs, setLogs] = useState<string[]>([]);
@@ -18,14 +19,11 @@ export default function SimulatorPage() {
 
   const triggerApiError = async () => {
     setIsLoading(true);
-    addLog("Sending request to failing API endpoint...");
+    addLog("Invoking failing server action...");
     try {
-      const res = await fetch("/api/webhooks/stripe?simulate_error=true", { method: "POST" });
-      if (!res.ok) {
-        addLog(`API responded with status: ${res.status}`);
-      }
-    } catch (e: any) {
-      addLog(`API call failed: ${e.message}`);
+      await simulateServerErrorAction();
+    } catch {
+      addLog("Server action failed as expected. Check Sentry for the server-side event.");
     }
     setIsLoading(false);
   };
@@ -68,7 +66,7 @@ export default function SimulatorPage() {
               disabled={isLoading}
               className="w-full flex items-center justify-between px-4 py-3 bg-electric-cyan/10 text-electric-cyan border border-electric-cyan/20 rounded-xl hover:bg-electric-cyan/20 transition-all disabled:opacity-50"
             >
-              <span className="font-bold text-sm">Simulate Webhook Failure</span>
+              <span className="font-bold text-sm">Simulate Server Failure</span>
               <Database size={16} />
             </button>
           </div>

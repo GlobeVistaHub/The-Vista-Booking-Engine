@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
 import * as React from "react";
 import Stripe from "stripe";
+import * as Sentry from "@sentry/nextjs";
 import BookingCancellation from "@/emails/BookingCancellation";
 
 const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
@@ -46,6 +47,7 @@ export async function cancelBookingAction(id: string) {
         console.log(`Refunded payment intent ${paymentIntentId}`);
       } catch (refundError) {
         console.error("Stripe refund failed:", refundError);
+        Sentry.captureException(refundError, { tags: { area: "refund" }, extra: { bookingId: id } });
       }
     } else {
       console.log(`No refund issued: Cancellation is within 48 hour window (${hoursDifference.toFixed(1)} hours away).`);
