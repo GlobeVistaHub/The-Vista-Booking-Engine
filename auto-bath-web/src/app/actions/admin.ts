@@ -79,3 +79,22 @@ export async function cancelBookingAction(id: string) {
   revalidatePath("/admin");
   return true;
 }
+
+export async function purgeTestDataAction() {
+  const admin = createAdminClient();
+  
+  // Delete all rows in the bookings table
+  // Supabase requires a filter for delete(), so we use .not('id', 'is', null) which matches all rows
+  const { error } = await admin
+    .from("bookings")
+    .delete()
+    .not('id', 'is', null);
+    
+  if (error) {
+    console.error("Failed to purge test data:", error);
+    return false;
+  }
+  
+  revalidatePath("/admin");
+  return true;
+}

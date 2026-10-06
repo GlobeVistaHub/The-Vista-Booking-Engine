@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/utils/supabase/admin";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 import { CancelButton } from "@/components/ui/CancelButton";
+import { PurgeButton } from "@/components/ui/PurgeButton";
 
 export const dynamic = "force-dynamic";
 
@@ -49,9 +50,12 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="p-8 md:p-12">
-      <header className="mb-12">
-        <h1 className="text-3xl font-heading font-bold text-white uppercase tracking-widest mb-2">CRM Overview</h1>
-        <p className="text-white/50 font-sans text-sm">Monitor live bookings, revenue, and customer data.</p>
+      <header className="mb-12 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-heading font-bold text-white uppercase tracking-widest mb-2">CRM Overview</h1>
+          <p className="text-white/50 font-sans text-sm">Monitor live bookings, revenue, and customer data.</p>
+        </div>
+        <PurgeButton />
       </header>
 
       {/* KPI Cards */}
