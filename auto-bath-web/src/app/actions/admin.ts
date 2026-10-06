@@ -7,7 +7,7 @@ import * as React from "react";
 import Stripe from "stripe";
 import BookingCancellation from "@/emails/BookingCancellation";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
 
 export async function cancelBookingAction(id: string) {
   const admin = createAdminClient();
