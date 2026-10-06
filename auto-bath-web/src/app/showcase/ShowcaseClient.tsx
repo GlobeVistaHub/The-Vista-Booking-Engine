@@ -135,9 +135,9 @@ export function ShowcaseClient() {
             transition={{ duration: 1.2, delay: 0.5 }}
             className="w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden border border-white/10 relative mt-4 shadow-[0_0_50px_rgba(0,194,212,0.1)]"
           >
-            {/* Spline 3D Porsche Embed - Reliable public URL */}
+            {/* Spline 3D Embed - Guaranteed live URL */}
             <iframe 
-              src="https://my.spline.design/porsche911-c918bfd4cb5f5ad2b13edefed4a9a463/" 
+              src="https://my.spline.design/macbookpro-dbcc22ffbc7d35ce1eaf428801d91610/" 
               frameBorder="0" 
               width="100%" 
               height="100%" 
@@ -213,6 +213,7 @@ export function ShowcaseClient() {
             <div className="absolute inset-0 pointer-events-none rounded-2xl z-10 shadow-[inset_0_0_120px_rgba(0,255,255,0.15)] ring-1 ring-inset ring-white/10" />
             {MAPBOX_TOKEN ? (
               <Map
+                style={{ width: "100%", height: "100%" }}
                 initialViewState={{
                   latitude: LATITUDE,
                   longitude: LONGITUDE,
