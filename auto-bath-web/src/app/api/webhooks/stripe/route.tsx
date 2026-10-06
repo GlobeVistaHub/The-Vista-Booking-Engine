@@ -30,11 +30,11 @@ export async function POST(req: Request) {
   }
 
   // Handle the specific event
-  if (event.type === 'payment_intent.succeeded') {
-    const paymentIntent = event.data.object as Stripe.PaymentIntent;
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
     
-    // We get the payment intent ID to match it with our Supabase booking
-    const paymentIntentId = paymentIntent.id;
+    // We get the checkout session ID to match it with our Supabase booking
+    const sessionId = session.id;
 
     try {
       const supabaseAdmin = createAdminClient();
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       const { error } = await supabaseAdmin
         .from('bookings')
         .update({ status: 'confirmed' })
-        .eq('stripe_payment_intent_id', paymentIntentId);
+        .eq('stripe_payment_intent_id', sessionId);
 
       if (error) throw error;
       
@@ -55,10 +55,10 @@ export async function POST(req: Request) {
           services ( name, base_price ),
           profiles ( full_name )
         `)
-        .eq('stripe_payment_intent_id', paymentIntentId)
+        .eq('stripe_payment_intent_id', sessionId)
         .single();
         
-      const customerEmail = paymentIntent.receipt_email || paymentIntent.metadata?.customer_email;
+      const customerEmail = session.customer_details?.email || session.customer_email || session.metadata?.customer_email;
       
       if (booking && customerEmail && process.env.RESEND_API_KEY) {
         const dateObj = new Date(booking.scheduled_time);
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
         }
       }
 
-      console.log(`Booking ${paymentIntentId} confirmed successfully!`);
+      console.log(`Booking ${sessionId} confirmed successfully!`);
 
     } catch (err) {
       console.error('Error updating booking in Supabase:', err);
