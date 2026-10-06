@@ -87,6 +87,50 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 const LATITUDE = -37.7346;
 const LONGITUDE = 144.9194;
 
+const FloatingParticles = () => {
+  const [mounted, setMounted] = useState(false);
+  
+  // Prevent hydration mismatch by rendering only after mount
+  import("react").then(() => {
+    if (!mounted) setMounted(true);
+  });
+
+  if (!mounted) return null;
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      {Array.from({ length: 40 }).map((_, i) => {
+        const isCyan = i % 2 === 0;
+        const size = Math.random() * 3 + 1;
+        return (
+          <motion.div
+            key={i}
+            className={`absolute rounded-full ${isCyan ? 'bg-electric-cyan shadow-[0_0_10px_rgba(0,194,212,0.8)]' : 'bg-cyber-orange shadow-[0_0_10px_rgba(255,102,0,0.8)]'}`}
+            style={{
+              width: size,
+              height: size,
+              left: Math.random() * 100 + "%",
+              top: Math.random() * 100 + "%",
+            }}
+            animate={{
+              y: [0, Math.random() * -150 - 50],
+              x: [0, (Math.random() - 0.5) * 100],
+              opacity: [0, Math.random() * 0.8 + 0.2, 0],
+              scale: [0, Math.random() * 1.5 + 0.5, 0]
+            }}
+            transition={{
+              duration: Math.random() * 8 + 7,
+              repeat: Infinity,
+              ease: "linear",
+              delay: Math.random() * 10,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
 export function ShowcaseClient() {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
@@ -140,15 +184,21 @@ export function ShowcaseClient() {
             transition={{ duration: 1.2, delay: 0.5 }}
             className="w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden border border-white/10 relative mt-4 shadow-[0_0_50px_rgba(0,194,212,0.1)] bg-[#0A0A0A]"
           >
+            {/* The Atmospheric WebGL Background Particles */}
+            <FloatingParticles />
+            
             {/* Native Spline Web Component via dangerouslySetInnerHTML to avoid React TS errors */}
             <div 
-              className="absolute inset-0 pointer-events-auto"
+              className="absolute inset-0 pointer-events-auto mix-blend-screen"
               dangerouslySetInnerHTML={{
                 __html: '<spline-viewer url="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode" style="width: 100%; height: 100%;"></spline-viewer>'
               }}
             />
-            <div className="absolute top-4 left-4 pointer-events-none">
-              <span className="bg-black/50 backdrop-blur-md text-white/70 px-3 py-1.5 rounded-full text-xs font-mono border border-white/10">WebGL Canvas Active</span>
+            <div className="absolute top-4 left-4 pointer-events-none z-10">
+              <span className="bg-black/50 backdrop-blur-md text-white/70 px-3 py-1.5 rounded-full text-xs font-mono border border-white/10 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-electric-cyan rounded-full animate-pulse" />
+                WebGL Canvas Active
+              </span>
             </div>
           </motion.div>
         </motion.div>
