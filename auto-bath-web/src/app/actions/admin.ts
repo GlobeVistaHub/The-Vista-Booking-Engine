@@ -3,6 +3,7 @@
 import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
+import * as React from "react";
 import BookingCancellation from "@/emails/BookingCancellation";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -34,7 +35,7 @@ export async function cancelBookingAction(id: string) {
       
       if (email) {
         const dateObj = new Date(booking.scheduled_time);
-        const formattedDate = `${dateObj.toLocaleDateString('en-AU', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} at ${dateObj.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}`;
+        const formattedDate = `${dateObj.toLocaleDateString('en-AU', { timeZone: 'UTC', weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} at ${dateObj.toLocaleTimeString('en-AU', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })}`;
         
         await resend.emails.send({
           from: 'Auto-Bath Booking <onboarding@resend.dev>',
