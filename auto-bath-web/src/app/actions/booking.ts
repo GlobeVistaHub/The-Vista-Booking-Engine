@@ -80,29 +80,23 @@ export async function createBookingAction(formData: {
     
     const scheduledTime = `${year}-${month}-${day}T${hours}:${minutes}:00.000Z`;
 
-    // 5. Create a Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      customer_email: formData.email,
-      line_items: [
-        {
-          price_data: {
-            currency: "aud", // Assuming Australia
-            product_data: {
-              name: `Auto-Bath: ${service.name}`,
-              description: `${formData.vehicle} - Scheduled for ${formData.date} at ${formData.time}`,
-            },
-            unit_amount: service.base_price, // Price is already in cents in the DB
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      // We will create these success/cancel pages later
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/`,
+    // 5. Create a Stripe PaymentIntent (Option B)
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: service.base_price,
+      currency: "aud",
+      receipt_email: formData.email,
+      metadata: {
+        customer_email: formData.email,
+        service_name: service.name,
+        vehicle: formData.vehicle,
+        date: formData.date,
+        time: formData.time
+      }
     });
 
-    if (!session.url || !session.id) throw new Error("Failed to create Stripe session");
+    if (!paymentIntent.client_secret || !paymentIntent.id) {
+      throw new Error("Failed to create Stripe PaymentIntent");
+    }
 
     // 6. Insert the Booking as 'pending' into Supabase
     const { error: bookingError } = await supabaseAdmin.from("bookings").insert({
@@ -111,13 +105,13 @@ export async function createBookingAction(formData: {
       scheduled_time: scheduledTime,
       vehicle_make: formData.vehicle,
       status: "pending",
-      stripe_payment_intent_id: session.id, // Store session ID to track it
+      stripe_payment_intent_id: paymentIntent.id, // Store PI id to track it
     });
 
     if (bookingError) throw bookingError;
 
-    // 7. Return the Stripe Checkout URL to the client
-    return { success: true, checkoutUrl: session.url };
+    // 7. Return the Stripe Client Secret to the client for React Elements
+    return { success: true, clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id };
   } catch (error: any) {
     console.error("Booking Action Error:", error);
     return { success: false, error: error.message || "An unexpected error occurred." };

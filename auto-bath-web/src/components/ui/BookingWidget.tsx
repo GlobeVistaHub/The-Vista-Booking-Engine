@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, Check, Calendar, Clock, Car, User, ChevronRight, ChevronLeft, CreditCard, Lock } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
 import { createBookingAction } from "@/app/actions/booking";
+import StripeCheckout from "@/components/ui/StripeCheckout";
 
 // Actual Data from PricingGrid
 const PACKAGES = [
@@ -17,6 +18,7 @@ export default function BookingWidget() {
   const { isBookingOpen, closeBooking, selectedPackage, setSelectedPackage } = useBooking();
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
   
   // Prevent background scrolling and fetch available slots when modal is open
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
@@ -551,48 +553,20 @@ export default function BookingWidget() {
                     </div>
                   </div>
 
-                  {/* Mocked Credit Card Form */}
+                  {/* Stripe Elements Integration */}
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-mono text-white/50 uppercase mb-2">Card Number</label>
-                      <div className="relative">
-                        <input 
-                          type="text" 
-                          className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white focus:outline-none focus:border-electric-cyan transition-colors font-mono tracking-widest placeholder:text-white/20"
-                          placeholder="0000 0000 0000 0000"
-                        />
-                        <CreditCard size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-mono text-white/50 uppercase mb-2">Expiry Date</label>
-                        <input 
-                          type="text" 
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-cyan transition-colors font-mono tracking-widest placeholder:text-white/20"
-                          placeholder="MM/YY"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-mono text-white/50 uppercase mb-2">CVC</label>
-                        <input 
-                          type="text" 
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-cyan transition-colors font-mono tracking-widest placeholder:text-white/20"
-                          placeholder="123"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-xs font-mono text-white/50 uppercase mb-2">Name on Card</label>
-                      <input 
-                        type="text" 
-                        defaultValue={formData.name}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-electric-cyan transition-colors placeholder:text-white/20"
-                        placeholder="John Doe"
+                    {clientSecret ? (
+                      <StripeCheckout 
+                        clientSecret={clientSecret} 
+                        amount={PACKAGES.find(p => p.id === selectedPackage)?.price || 0} 
+                        serviceName={PACKAGES.find(p => p.id === selectedPackage)?.name || ""} 
                       />
-                    </div>
+                    ) : (
+                      <div className="flex justify-center items-center py-12 text-white/50 font-mono">
+                        <div className="w-6 h-6 border-2 border-electric-cyan border-t-transparent rounded-full animate-spin mr-3"></div>
+                        Initializing Secure Checkout...
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -615,7 +589,9 @@ export default function BookingWidget() {
               if (step === 1 && !selectedPackage) return;
               if (step === 2 && (!selectedDate || !selectedTime)) return;
               if (step === 3 && !isFormValid) return;
-              if (step === 4) {
+              
+              if (step === 3) {
+                // When moving from 3 to 4, fetch the PaymentIntent clientSecret
                 setIsProcessing(true);
                 try {
                   const result = await createBookingAction({
@@ -628,31 +604,30 @@ export default function BookingWidget() {
                     time: selectedTime!
                   });
                   
-                  if (result.success && result.checkoutUrl) {
-                    window.location.href = result.checkoutUrl;
+                  if (result.success && result.clientSecret) {
+                    setClientSecret(result.clientSecret);
+                    setStep(4);
                   } else {
-                    alert("Booking failed: " + result.error);
-                    setIsProcessing(false);
+                    alert("Booking initialization failed: " + result.error);
                   }
                 } catch (e: any) {
-                  alert("Vercel Network Error: " + (e.message || "Failed to reach server. Please try again."));
-                  setIsProcessing(false);
+                  alert("Network Error: " + (e.message || "Failed to reach server. Please try again."));
                 }
+                setIsProcessing(false);
                 return;
               }
+              
               setStep(Math.min(4, step + 1));
             }}
             disabled={(step === 1 && !selectedPackage) || (step === 2 && (!selectedDate || !selectedTime)) || (step === 3 && !isFormValid) || isProcessing}
-            className={`px-8 py-3 rounded-full font-bold uppercase tracking-widest text-sm flex items-center gap-2 transition-all ${
+            className={`px-8 py-3 rounded-full font-bold uppercase tracking-widest text-sm flex items-center gap-2 transition-all ${step === 4 ? 'hidden' : ''} ${
               (step === 1 && !selectedPackage) || (step === 2 && (!selectedDate || !selectedTime)) || (step === 3 && !isFormValid) || isProcessing
                 ? "bg-white/5 text-white/30 cursor-not-allowed" 
-                : step === 4
-                  ? "bg-electric-cyan text-vantablack hover:bg-white shadow-[0_0_30px_rgba(0,194,212,0.4)]"
-                  : "bg-cyber-orange text-[#050505] hover:bg-white shadow-[0_0_30px_rgba(255,102,0,0.4)]"
+                : "bg-cyber-orange text-[#050505] hover:bg-white shadow-[0_0_30px_rgba(255,102,0,0.4)]"
             }`}
           >
-            {isProcessing ? "Processing..." : step === 4 ? `Pay $${PACKAGES.find(p => p.id === selectedPackage)?.price}` : step === 3 ? "Proceed to Payment" : step === 2 ? "Review Details" : "Continue"}
-            {step === 4 ? <Lock size={16} /> : <ChevronRight size={18} />}
+            {isProcessing ? "Processing..." : step === 3 ? "Proceed to Payment" : step === 2 ? "Review Details" : "Continue"}
+            <ChevronRight size={18} />
           </button>
         </div>
 
