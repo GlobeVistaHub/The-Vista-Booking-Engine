@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { CodeSnippet } from "@/components/ui/CodeSnippet";
-import { TheLocation } from "@/components/ui/TheLocation";
+import TheLocation from "@/components/ui/TheLocation";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
