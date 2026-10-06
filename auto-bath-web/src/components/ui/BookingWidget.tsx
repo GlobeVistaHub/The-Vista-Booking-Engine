@@ -295,7 +295,28 @@ export default function BookingWidget() {
                       {calendarDays.map((date, i) => {
                         if (!date) return <div key={i} className="aspect-square" />;
                         
-                        const isPast = date < new Date(new Date().setHours(0,0,0,0));
+                        let isPast = false;
+                        try {
+                          const melbFormatter = new Intl.DateTimeFormat('en-AU', { 
+                            timeZone: 'Australia/Melbourne', 
+                            year: 'numeric', month: '2-digit', day: '2-digit' 
+                          });
+                          const melbParts = melbFormatter.formatToParts(new Date());
+                          const getPart = (type: string) => melbParts.find(p => p.type === type)?.value;
+                          const mYear = parseInt(getPart('year') || '0');
+                          const mMonth = parseInt(getPart('month') || '0');
+                          const mDay = parseInt(getPart('day') || '0');
+                          
+                          const dYear = date.getFullYear();
+                          const dMonth = date.getMonth() + 1;
+                          const dDay = date.getDate();
+                          
+                          if (dYear < mYear || (dYear === mYear && dMonth < mMonth) || (dYear === mYear && dMonth === mMonth && dDay < mDay)) {
+                            isPast = true;
+                          }
+                        } catch(e) {
+                          isPast = date < new Date(new Date().setHours(0,0,0,0));
+                        }
                         const isSelected = selectedDate?.toDateString() === date.toDateString();
                         
                         return (
@@ -345,7 +366,43 @@ export default function BookingWidget() {
                           hours = hours.padStart(2, '0');
                           
                           const exactVercelString = `${year}-${month}-${day}T${hours}:${minutes}:00.000Z`;
-                          const isUnavailable = bookedSlots.includes(exactVercelString);
+                          
+                          // Check if time slot is in the past in Melbourne
+                          let isPastTime = false;
+                          try {
+                            const melbFormatter = new Intl.DateTimeFormat('en-AU', { 
+                              timeZone: 'Australia/Melbourne', 
+                              year: 'numeric', month: '2-digit', day: '2-digit', 
+                              hour: '2-digit', minute: '2-digit', hour12: false 
+                            });
+                            const melbParts = melbFormatter.formatToParts(new Date());
+                            const getPart = (type: string) => melbParts.find(p => p.type === type)?.value;
+                            const mYear = parseInt(getPart('year') || '0');
+                            const mMonth = parseInt(getPart('month') || '0');
+                            const mDay = parseInt(getPart('day') || '0');
+                            let mHour = parseInt(getPart('hour') || '0');
+                            // Handle midnight '24' edge case in some browsers
+                            if (mHour === 24) mHour = 0;
+                            const mMinute = parseInt(getPart('minute') || '0');
+
+                            const sYear = selectedDate.getFullYear();
+                            const sMonth = selectedDate.getMonth() + 1;
+                            const sDay = selectedDate.getDate();
+                            const sHour = parseInt(hours, 10);
+                            const sMinute = parseInt(minutes, 10);
+
+                            if (sYear === mYear && sMonth === mMonth && sDay === mDay) {
+                              if (sHour < mHour || (sHour === mHour && sMinute < mMinute)) {
+                                isPastTime = true;
+                              }
+                            } else if (sYear < mYear || (sYear === mYear && sMonth < mMonth) || (sYear === mYear && sMonth === mMonth && sDay < mDay)) {
+                              isPastTime = true;
+                            }
+                          } catch (e) {
+                            // fallback if browser doesn't support Intl properly
+                          }
+
+                          const isUnavailable = bookedSlots.includes(exactVercelString) || isPastTime;
                           
                           return (
                             <button
