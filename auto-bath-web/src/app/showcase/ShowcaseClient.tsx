@@ -201,7 +201,7 @@ export function ShowcaseClient() {
       const wordWidth = word.offsetWidth;
       const available = title.clientWidth;
       if (!wordWidth || !available) return;
-      title.style.fontSize = `${Math.min((available / wordWidth) * REFERENCE_PX * 0.92, 48)}px`;
+      title.style.fontSize = `${Math.min((available / wordWidth) * REFERENCE_PX * 0.97, 48)}px`;
     };
 
     fit();
@@ -247,7 +247,7 @@ export function ShowcaseClient() {
             </motion.span>
 
             <h1 ref={titleRef} className="text-[7.5vw] sm:text-5xl md:text-7xl font-heading font-bold text-white uppercase tracking-tighter leading-tight mb-8" style={{ perspective: "1000px" }}>
-              <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }}><span ref={longWordRef} className="inline-block whitespace-nowrap overflow-visible pr-[0.25em]">Engineering</span></motion.div>
+              <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }}><span ref={longWordRef} className="inline-block whitespace-nowrap pr-[0.04em]">Engineering</span></motion.div>
               <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }} className="text-transparent bg-clip-text bg-gradient-to-r from-electric-cyan to-cyber-orange">
                 Digital Machines.
               </motion.div>
