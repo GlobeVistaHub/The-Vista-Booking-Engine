@@ -1,7 +1,16 @@
 import Link from "next/link";
-import { LayoutDashboard, Users, Calendar, Settings, ShieldAlert, Image as ImageIcon } from "lucide-react";
+import { LayoutDashboard, Users, Calendar, Settings, ShieldAlert, Image as ImageIcon, LogOut } from "lucide-react";
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  async function handleSignOut() {
+    "use server";
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+    redirect("/admin/login");
+  }
+
   return (
     <div className="min-h-screen bg-[#020202] text-white flex">
       {/* Sidebar Navigation */}
@@ -30,14 +39,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
         
         <div className="p-4 border-t border-white/5">
-          <div className="flex items-center gap-3 px-4 py-3">
-            <div className="w-8 h-8 rounded-full bg-electric-cyan/20 flex items-center justify-center border border-electric-cyan/30">
-              <span className="text-xs font-bold text-electric-cyan">AD</span>
+          <div className="flex items-center justify-between px-2 py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-electric-cyan/20 flex items-center justify-center border border-electric-cyan/30">
+                <span className="text-xs font-bold text-electric-cyan">AD</span>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white uppercase">Admin</p>
+                <p className="text-[10px] text-white/40 font-mono">System Active</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-bold text-white uppercase">Admin</p>
-              <p className="text-[10px] text-white/40 font-mono">System Active</p>
-            </div>
+            <form action={handleSignOut}>
+              <button type="submit" className="text-white/40 hover:text-[#df1b41] transition-colors p-2 rounded-lg hover:bg-[#df1b41]/10">
+                <LogOut size={16} />
+              </button>
+            </form>
           </div>
         </div>
       </aside>

@@ -1,7 +1,19 @@
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
+import { verifyAndConfirmPayment } from "./actions";
 
-export default function BookingSuccessPage() {
+export default async function BookingSuccessPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ payment_intent?: string; payment_intent_client_secret?: string; redirect_status?: string }>;
+}) {
+  const resolvedParams = await searchParams;
+  
+  // Instantly verify and confirm the booking in Supabase without waiting for Webhooks!
+  if (resolvedParams.payment_intent && resolvedParams.redirect_status === "succeeded") {
+    await verifyAndConfirmPayment(resolvedParams.payment_intent);
+  }
+
   return (
     <div className="min-h-screen bg-vantablack flex flex-col items-center justify-center p-6 text-center">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-electric-cyan/10 rounded-full blur-[150px] pointer-events-none" />
