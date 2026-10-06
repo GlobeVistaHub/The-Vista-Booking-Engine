@@ -2,6 +2,27 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { CodeSnippet } from "@/components/ui/CodeSnippet";
+import { TheLocation } from "@/components/ui/TheLocation";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.65, 0.3, 0.9] } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const kineticText = {
+  hidden: { opacity: 0, rotateX: -90, y: 50 },
+  visible: { 
+    opacity: 1, 
+    rotateX: 0, 
+    y: 0, 
+    transition: { type: "spring", damping: 15, stiffness: 100 }
+  }
+};
 
 const CODE_TIMEZONE = `// Secure Timezone Enforcement Matrix
 const exactVercelString = \`\${year}-\${month}-\${day}T\${hours}:\${minutes}:00.000Z\`;
@@ -82,22 +103,44 @@ export function ShowcaseClient() {
           className="min-h-[70vh] flex flex-col justify-center mb-32"
         >
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
           >
-            <span className="inline-block py-1 px-3 rounded-full border border-white/10 bg-white/5 text-white/50 text-xs font-mono uppercase tracking-widest mb-6">
+            <motion.span variants={fadeInUp} className="inline-block py-1 px-3 rounded-full border border-white/10 bg-white/5 text-white/50 text-xs font-mono uppercase tracking-widest mb-6">
               Goodbrains Studio // Case Study
-            </span>
-            <h1 className="text-5xl md:text-7xl font-heading font-bold text-white uppercase tracking-tighter leading-tight mb-8">
-              Engineering <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-electric-cyan to-cyber-orange">
+            </motion.span>
+            
+            <h1 className="text-5xl md:text-7xl font-heading font-bold text-white uppercase tracking-tighter leading-tight mb-8" style={{ perspective: "1000px" }}>
+              <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }}>Engineering</motion.div>
+              <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }} className="text-transparent bg-clip-text bg-gradient-to-r from-electric-cyan to-cyber-orange">
                 Digital Machines.
-              </span>
+              </motion.div>
             </h1>
-            <p className="text-lg md:text-xl text-white/50 max-w-2xl font-light leading-relaxed">
+            
+            <motion.p variants={fadeInUp} className="text-lg md:text-xl text-white/50 max-w-2xl font-light leading-relaxed mb-12">
               We don't just build websites. We architect high-performance SaaS infrastructure, automate complex financial pipelines, and enforce zero-latency global state management.
-            </p>
+            </motion.p>
+          </motion.div>
+          
+          {/* 3D Car Kinetic Embed */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.2, delay: 0.5 }}
+            className="w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden border border-white/10 relative mt-4 shadow-[0_0_50px_rgba(0,194,212,0.1)]"
+          >
+            {/* Spline 3D Porsche Embed */}
+            <iframe 
+              src="https://my.spline.design/3dtextblue-032ce9ebbeff05ad2209e51c8db1e8a8/" 
+              frameBorder="0" 
+              width="100%" 
+              height="100%" 
+              className="absolute inset-0 pointer-events-auto"
+            ></iframe>
+            <div className="absolute top-4 left-4 pointer-events-none">
+              <span className="bg-black/50 backdrop-blur-md text-white/70 px-3 py-1.5 rounded-full text-xs font-mono border border-white/10">WebGL Canvas Active</span>
+            </div>
           </motion.div>
         </motion.div>
 
@@ -149,13 +192,45 @@ export function ShowcaseClient() {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-3xl font-heading font-bold text-white uppercase tracking-widest mb-4">
-              <span className="text-[#df1b41]">03.</span> Zero-Touch Operations
+              <span className="text-[#df1b41]">03.</span> WebGL Geospatial Data
+            </h2>
+            <p className="text-white/50 leading-relaxed mb-6">
+              We leverage Mapbox GL and hardware-accelerated mapping pipelines to render beautiful, ultra-responsive dark-mode geospatial coordinates, ensuring customers can flawlessly locate our localized headquarters globally.
+            </p>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="h-[400px] w-full rounded-2xl overflow-hidden border border-white/10 relative"
+          >
+            <TheLocation />
+            <div className="absolute top-4 right-4 pointer-events-none z-10">
+              <span className="bg-[#050505]/80 backdrop-blur-md text-white/70 px-3 py-1.5 rounded-full text-xs font-mono border border-white/10">Mapbox GL</span>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Feature 4: Automated Business Logic */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-40">
+          <div className="order-2 lg:order-1">
+            <CodeSnippet code={CODE_REFUNDS} language="TypeScript" title="admin.actions.ts" />
+          </div>
+          <motion.div 
+            className="order-1 lg:order-2"
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl font-heading font-bold text-white uppercase tracking-widest mb-4">
+              <span className="text-[#25D366]">04.</span> Zero-Touch Operations
             </h2>
             <p className="text-white/50 leading-relaxed mb-6">
               Software should eliminate operational overhead, not create it. We developed a strict server-side engine that calculates exact chronological deltas to enforce business policies (like the 48-hour cancellation rule) entirely automatically. If the math aligns, Stripe issues the refund. If not, it blocks it. No human intervention required.
             </p>
           </motion.div>
-          <CodeSnippet code={CODE_REFUNDS} language="TypeScript" title="admin.actions.ts" />
         </div>
         
         {/* Footer CTA */}
@@ -167,10 +242,10 @@ export function ShowcaseClient() {
           className="text-center py-24 border-t border-white/10"
         >
           <h3 className="text-2xl font-heading font-bold text-white uppercase tracking-widest mb-6">
-            Ready to scale your infrastructure?
+            Ready to experience the platform?
           </h3>
-          <a href="https://www.goodbrains.pro" target="_blank" className="inline-block bg-white text-[#050505] px-8 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-electric-cyan hover:shadow-[0_0_40px_rgba(0,194,212,0.5)] transition-all">
-            Visit Goodbrains Studio
+          <a href="https://auto-bath.goodbrains.pro" target="_blank" className="inline-block bg-white text-[#050505] px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-electric-cyan hover:shadow-[0_0_40px_rgba(0,194,212,0.5)] transition-all">
+            Visit Auto-Bath
           </a>
         </motion.div>
 
