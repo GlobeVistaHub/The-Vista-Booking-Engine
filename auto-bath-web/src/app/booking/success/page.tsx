@@ -5,13 +5,13 @@ import { verifyAndConfirmPayment } from "./actions";
 export default async function BookingSuccessPage({
   searchParams,
 }: {
-  searchParams: Promise<{ payment_intent?: string; payment_intent_client_secret?: string; redirect_status?: string }>;
+  searchParams: Promise<{ session_id?: string }>;
 }) {
   const resolvedParams = await searchParams;
   
   // Instantly verify and confirm the booking in Supabase without waiting for Webhooks!
-  if (resolvedParams.payment_intent && resolvedParams.redirect_status === "succeeded") {
-    await verifyAndConfirmPayment(resolvedParams.payment_intent);
+  if (resolvedParams.session_id) {
+    await verifyAndConfirmPayment(resolvedParams.session_id);
   }
 
   return (

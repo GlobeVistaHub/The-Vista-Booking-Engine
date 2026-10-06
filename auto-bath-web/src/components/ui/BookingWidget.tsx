@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { X, Check, Calendar, Clock, Car, User, ChevronRight, ChevronLeft, CreditCard, Lock } from "lucide-react";
 import { useBooking } from "@/context/BookingContext";
 import { createBookingAction } from "@/app/actions/booking";
-import StripeCheckout from "@/components/ui/StripeCheckout";
 
 // Actual Data from PricingGrid
 const PACKAGES = [
@@ -18,7 +17,6 @@ export default function BookingWidget() {
   const { isBookingOpen, closeBooking, selectedPackage, setSelectedPackage } = useBooking();
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
   
   // Prevent background scrolling and fetch available slots when modal is open
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
@@ -524,51 +522,15 @@ export default function BookingWidget() {
             </div>
           )}
 
-          {/* STEP 4: CHECKOUT (STRIPE MOCK) */}
+          {/* STEP 4: REDIRECTING TO STRIPE */}
           {step === 4 && (
             <div className="animate-in fade-in slide-in-from-right-8 duration-500 h-full flex flex-col justify-center max-w-xl mx-auto">
-              <div className="mb-8 text-center">
-                <h3 className="text-white text-3xl font-heading uppercase mb-2">Secure Checkout</h3>
-                <p className="text-white/50 font-sans flex items-center justify-center gap-2">
-                  <Lock size={14} /> Payments are processed securely via Stripe.
+              <div className="p-8 rounded-2xl border border-white/10 bg-[#050505] shadow-2xl relative overflow-hidden text-center">
+                <div className="w-12 h-12 border-2 border-electric-cyan border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+                <h3 className="text-white text-2xl font-heading uppercase mb-2">Redirecting to Secure Checkout</h3>
+                <p className="text-white/50 font-sans">
+                  Please wait while we transfer you to Stripe to complete your reservation securely.
                 </p>
-              </div>
-
-              <div className="p-8 rounded-2xl border border-white/10 bg-[#050505] shadow-2xl relative overflow-hidden">
-                {/* Subtle gradient glow inside the card */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-cyber-orange/5 blur-3xl pointer-events-none" />
-                
-                <div className="relative z-10 space-y-6">
-                  {/* Total Amount */}
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 sm:gap-0 border-b border-white/10 pb-6">
-                    <div>
-                      <p className="text-white/50 text-xs font-mono uppercase mb-1">Selected Service</p>
-                      <p className="text-xl text-white font-bold pr-4">{PACKAGES.find(p => p.id === selectedPackage)?.name}</p>
-                    </div>
-                    <div className="sm:text-right">
-                      <p className="text-white/50 text-xs font-mono uppercase mb-1">Total Due Today</p>
-                      <p className="text-4xl text-cyber-orange font-heading whitespace-nowrap">
-                        ${PACKAGES.find(p => p.id === selectedPackage)?.price}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Stripe Elements Integration */}
-                  <div className="space-y-4">
-                    {clientSecret ? (
-                      <StripeCheckout 
-                        clientSecret={clientSecret} 
-                        amount={PACKAGES.find(p => p.id === selectedPackage)?.price || 0} 
-                        serviceName={PACKAGES.find(p => p.id === selectedPackage)?.name || ""} 
-                      />
-                    ) : (
-                      <div className="flex justify-center items-center py-12 text-white/50 font-mono">
-                        <div className="w-6 h-6 border-2 border-electric-cyan border-t-transparent rounded-full animate-spin mr-3"></div>
-                        Initializing Secure Checkout...
-                      </div>
-                    )}
-                  </div>
-                </div>
               </div>
             </div>
           )}
@@ -604,9 +566,8 @@ export default function BookingWidget() {
                     time: selectedTime!
                   });
                   
-                  if (result.success && result.clientSecret) {
-                    setClientSecret(result.clientSecret);
-                    setStep(4);
+                  if (result.success && result.checkoutUrl) {
+                    window.location.href = result.checkoutUrl;
                   } else {
                     alert("Booking initialization failed: " + result.error);
                   }

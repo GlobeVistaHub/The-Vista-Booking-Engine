@@ -5,18 +5,18 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "dummy", {});
 
-export async function verifyAndConfirmPayment(paymentIntentId: string) {
+export async function verifyAndConfirmPayment(sessionId: string) {
   try {
-    if (!paymentIntentId) return { success: false };
+    if (!sessionId) return { success: false };
     
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
     
-    if (paymentIntent.status === "succeeded") {
+    if (session.payment_status === "paid") {
       const supabaseAdmin = createAdminClient();
       await supabaseAdmin
         .from('bookings')
         .update({ status: 'confirmed' })
-        .eq('stripe_payment_intent_id', paymentIntentId);
+        .eq('stripe_payment_intent_id', sessionId);
         
       return { success: true };
     }

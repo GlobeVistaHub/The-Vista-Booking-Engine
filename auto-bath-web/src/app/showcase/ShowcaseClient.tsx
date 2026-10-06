@@ -121,17 +121,17 @@ const FloatingParticles = () => {
     <>
       <motion.div className="absolute inset-0 overflow-hidden pointer-events-none z-0 mix-blend-screen" style={{ x: layer1X, y: layer1Y }}>
         {Array.from({ length: 15 }).map((_, i) => (
-          <Particle key={\`l1-\${i}\`} />
+          <Particle key={`l1-${i}`} />
         ))}
       </motion.div>
       <motion.div className="absolute inset-0 overflow-hidden pointer-events-none z-0 mix-blend-screen" style={{ x: layer2X, y: layer2Y }}>
         {Array.from({ length: 15 }).map((_, i) => (
-          <Particle key={\`l2-\${i}\`} />
+          <Particle key={`l2-${i}`} />
         ))}
       </motion.div>
       <motion.div className="absolute inset-0 overflow-hidden pointer-events-none z-0 mix-blend-screen" style={{ x: layer3X, y: layer3Y }}>
         {Array.from({ length: 10 }).map((_, i) => (
-          <Particle key={\`l3-\${i}\`} />
+          <Particle key={`l3-${i}`} />
         ))}
       </motion.div>
     </>
@@ -143,7 +143,7 @@ const Particle = () => {
   const size = Math.random() * 3 + 1;
   return (
     <motion.div
-      className={\`absolute rounded-full \${isCyan ? 'bg-electric-cyan shadow-[0_0_10px_rgba(0,194,212,0.8)]' : 'bg-cyber-orange shadow-[0_0_10px_rgba(255,102,0,0.8)]'}\`}
+      className={`absolute rounded-full ${isCyan ? 'bg-electric-cyan shadow-[0_0_10px_rgba(0,194,212,0.8)]' : 'bg-cyber-orange shadow-[0_0_10px_rgba(255,102,0,0.8)]'}`}
       style={{
         width: size,
         height: size,

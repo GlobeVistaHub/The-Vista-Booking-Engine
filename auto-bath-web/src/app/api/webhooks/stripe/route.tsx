@@ -6,9 +6,9 @@ import { Resend } from 'resend';
 import * as React from 'react';
 import BookingConfirmation from '@/emails/BookingConfirmation';
 
-const resend = new Resend(process.env.RESEND_API_KEY || "dummy_key");
+const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
 
-const stripe = new Stripe((process.env.STRIPE_SECRET_KEY || "dummy_key") as string);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy");
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
 export async function POST(req: Request) {
