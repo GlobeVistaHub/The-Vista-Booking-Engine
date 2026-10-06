@@ -28,10 +28,22 @@ export async function cancelBookingAction(id: string) {
     if (hoursDifference >= 48) {
       try {
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+        let paymentIntentId = booking.stripe_payment_intent_id;
+        
+        // Extract true payment intent from checkout session if necessary
+        if (paymentIntentId.startsWith('cs_')) {
+          const session = await stripe.checkout.sessions.retrieve(paymentIntentId);
+          if (session.payment_intent) {
+            paymentIntentId = typeof session.payment_intent === 'string' 
+              ? session.payment_intent 
+              : session.payment_intent.id;
+          }
+        }
+
         await stripe.refunds.create({
-          payment_intent: booking.stripe_payment_intent_id,
+          payment_intent: paymentIntentId,
         });
-        console.log(`Refunded payment intent ${booking.stripe_payment_intent_id}`);
+        console.log(`Refunded payment intent ${paymentIntentId}`);
       } catch (refundError) {
         console.error("Stripe refund failed:", refundError);
       }
@@ -59,7 +71,7 @@ export async function cancelBookingAction(id: string) {
         const dateObj = new Date(booking.scheduled_time);
         const formattedDate = `${dateObj.toLocaleDateString('en-AU', { timeZone: 'UTC', weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} at ${dateObj.toLocaleTimeString('en-AU', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })}`;
         
-        await resend.emails.send({
+        const { data, error } = await resend.emails.send({
           from: 'Auto-Bath Booking <onboarding@resend.dev>',
           to: email,
           subject: 'Booking Cancelled - Auto-Bath',
@@ -69,7 +81,12 @@ export async function cancelBookingAction(id: string) {
             date: formattedDate,
           }) as React.ReactElement
         });
-        console.log(`Cancellation email sent to ${email}`);
+        
+        if (error) {
+          console.error(`Resend API failed to send cancellation email to ${email}:`, error);
+        } else {
+          console.log(`Cancellation email sent successfully to ${email}! Resend ID: ${data?.id}`);
+        }
       }
     } catch (e) {
       console.error("Failed to send cancellation email:", e);
