@@ -2,14 +2,29 @@ import { createAdminClient } from "@/utils/supabase/admin";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 import { CancelButton } from "@/components/ui/CancelButton";
 import { PurgeButton } from "@/components/ui/PurgeButton";
+import { DateFilter } from "@/components/ui/DateFilter";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage(props: { searchParams: Promise<{ period?: string }> }) {
   const supabaseAdmin = createAdminClient();
+  const searchParams = await props.searchParams;
+  const period = searchParams.period || "all";
+  
+  // Calculate the cutoff date based on the period
+  let cutoffDate = null;
+  if (period === "30days") {
+    cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 30);
+  } else if (period === "90days") {
+    cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 90);
+  } else if (period === "year") {
+    cutoffDate = new Date(new Date().getFullYear(), 0, 1);
+  }
   
   // Fetch real data from Supabase
-  const { data: rawBookings, error } = await supabaseAdmin
+  let query = supabaseAdmin
     .from("bookings")
     .select(`
       id,
@@ -21,6 +36,12 @@ export default async function AdminDashboardPage() {
     `)
     .order("created_at", { ascending: false })
     .limit(50);
+    
+  if (cutoffDate) {
+    query = query.gte("created_at", cutoffDate.toISOString());
+  }
+
+  const { data: rawBookings, error } = await query;
 
   if (error) {
     console.error("Error fetching bookings:", error);
@@ -55,7 +76,10 @@ export default async function AdminDashboardPage() {
           <h1 className="text-3xl font-heading font-bold text-white uppercase tracking-widest mb-2">CRM Overview</h1>
           <p className="text-white/50 font-sans text-sm">Monitor live bookings, revenue, and customer data.</p>
         </div>
-        <PurgeButton />
+        <div className="flex items-center gap-4">
+          <DateFilter />
+          <PurgeButton />
+        </div>
       </header>
 
       {/* KPI Cards */}
