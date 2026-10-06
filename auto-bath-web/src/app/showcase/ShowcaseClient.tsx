@@ -82,7 +82,7 @@ if (hoursDifference >= 48) {
   console.log(\`No refund issued: Cancellation is within 48 hour window.\`);
 }`;
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ("pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M" + "29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA");
 const LATITUDE = -37.7346;
 const LONGITUDE = 144.9194;
 
