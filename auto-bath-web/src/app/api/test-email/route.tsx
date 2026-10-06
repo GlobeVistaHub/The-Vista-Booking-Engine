@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import * as React from 'react';
+import BookingConfirmation from '@/emails/BookingConfirmation';
 
 export async function GET() {
   try {
@@ -7,8 +9,14 @@ export async function GET() {
     const { data, error } = await resend.emails.send({
       from: 'Auto-Bath Booking <onboarding@resend.dev>',
       to: 'seifeldinsherif73@gmail.com',
-      subject: 'Vercel Diagnostic Email',
-      html: '<p>This is a test from Vercel.</p>'
+      subject: 'Vercel Diagnostic Email with Template',
+      react: <BookingConfirmation 
+        customerName="Test User"
+        serviceName="Test Service"
+        vehicle="Test Vehicle"
+        date="Oct 6"
+        price="100.00"
+      />
     });
     
     if (error) {
@@ -16,6 +24,6 @@ export async function GET() {
     }
     return NextResponse.json({ success: true, data });
   } catch (err: any) {
-    return NextResponse.json({ success: false, exception: err.message });
+    return NextResponse.json({ success: false, exception: err.message, stack: err.stack });
   }
 }
