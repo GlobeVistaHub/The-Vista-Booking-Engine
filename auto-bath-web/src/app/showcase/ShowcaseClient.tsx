@@ -390,7 +390,7 @@ export function ShowcaseClient() {
           <h3 className="text-2xl font-heading font-bold text-white uppercase tracking-widest mb-6">
             Ready to experience the platform?
           </h3>
-          <a href="https://auto-bath-detailing-melbourne.vercel.app" target="_blank" className="inline-block bg-electric-cyan shadow-[0_0_40px_rgba(0,194,212,0.5)] md:bg-white md:shadow-none text-[#050505] px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm md:hover:bg-electric-cyan md:hover:shadow-[0_0_40px_rgba(0,194,212,0.5)] active:scale-95 active:shadow-[0_0_60px_rgba(0,194,212,0.8)] transition-all duration-300">
+          <a href="https://auto-bath-detailing-melbourne.vercel.app" target="_blank" className="inline-block bg-white text-[#050505] px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-electric-cyan hover:shadow-[0_0_40px_rgba(0,194,212,0.5)] active:bg-electric-cyan active:shadow-[0_0_60px_rgba(0,194,212,0.8)] active:scale-95 transition-all duration-300">
             Visit Auto-Bath
           </a>
         </motion.div>
