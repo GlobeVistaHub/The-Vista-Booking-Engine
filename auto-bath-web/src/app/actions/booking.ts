@@ -16,6 +16,7 @@ export async function createBookingAction(formData: {
   packageId: string;
   date: string;
   time: string;
+  origin?: string;
 }) {
   try {
     const supabaseAdmin = createAdminClient();
@@ -81,10 +82,11 @@ export async function createBookingAction(formData: {
     const scheduledTime = `${year}-${month}-${day}T${hours}:${minutes}:00.000Z`;
 
     // 5. Create a Stripe Checkout Session
+    const baseUrl = formData.origin || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/`,
+      success_url: `${baseUrl}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/`,
       customer_email: formData.email,
       line_items: [
         {

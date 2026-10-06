@@ -563,7 +563,8 @@ export default function BookingWidget() {
                     vehicle: formData.vehicle,
                     packageId: selectedPackage!,
                     date: selectedDate!.toDateString(),
-                    time: selectedTime!
+                    time: selectedTime!,
+                    origin: window.location.origin
                   });
                   
                   if (result.success && result.checkoutUrl) {
