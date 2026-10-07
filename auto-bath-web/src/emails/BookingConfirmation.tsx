@@ -51,6 +51,12 @@ export default function BookingConfirmation({
             <Text style={paragraph}>
               <strong style={{color: "#FF6600"}}>Preparation Policy:</strong> Please ensure your vehicle is completely emptied of all personal belongings prior to arrival. If you need to cancel or reschedule, you must do so at least 48 hours in advance to receive a refund.
             </Text>
+
+            <Section style={{ textAlign: 'center', marginTop: '32px' }}>
+              <a href="https://auto-bath.com.au/my-bookings" style={button}>
+                Manage Your Booking
+              </a>
+            </Section>
           </Section>
 
           <Hr style={hr} />
@@ -150,4 +156,17 @@ const footer = {
 const footerText = {
   color: '#555555',
   fontSize: '12px',
+};
+
+const button = {
+  backgroundColor: '#FF6600',
+  borderRadius: '4px',
+  color: '#ffffff',
+  display: 'inline-block',
+  fontSize: '14px',
+  fontWeight: 'bold',
+  lineHeight: '1',
+  padding: '16px 24px',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
 };

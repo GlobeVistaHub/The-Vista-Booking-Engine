@@ -66,7 +66,7 @@ export default async function AdminDashboardPage(props: { searchParams: Promise<
   const activeBookings = bookings.filter(b => b.status === 'confirmed').length;
   const failedBookings = bookings.filter(b => b.status === 'failed').length;
   const totalRevenue = bookings
-    .filter(b => b.status === 'confirmed')
+    .filter(b => b.status === 'confirmed' || b.status === 'completed')
     .reduce((sum, b) => sum + parseFloat(b.price), 0);
 
   return (
@@ -155,6 +155,16 @@ export default async function AdminDashboardPage(props: { searchParams: Promise<
                     {booking.status === 'cancelled' && (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 text-xs font-bold uppercase tracking-wider">
                         <XCircle size={12} /> Cancelled
+                      </span>
+                    )}
+                    {booking.status === 'completed' && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#25D366]/10 text-[#25D366] text-xs font-bold uppercase tracking-wider">
+                        <CheckCircle size={12} /> Completed
+                      </span>
+                    )}
+                    {booking.status === 'no_show' && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyber-orange/10 text-cyber-orange text-xs font-bold uppercase tracking-wider">
+                        <XCircle size={12} /> No-show
                       </span>
                     )}
                   </td>

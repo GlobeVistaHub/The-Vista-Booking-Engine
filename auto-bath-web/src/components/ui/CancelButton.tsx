@@ -10,10 +10,14 @@ export function CancelButton({ id }: { id: string }) {
     <button 
       onClick={async () => {
         setLoading(true);
-        const success = await cancelBookingAction(id);
-        if (!success) {
-          alert("Failed to cancel booking. Please try again.");
+        const result = await cancelBookingAction(id);
+        if (!result.success) {
+          alert(result.error ?? "Failed to cancel booking. Please try again.");
           setLoading(false);
+          return;
+        }
+        if (result.refund === "failed") {
+          alert("Booking cancelled, but the automatic refund failed. Please refund the customer manually in Stripe.");
         }
       }}
       disabled={loading}
