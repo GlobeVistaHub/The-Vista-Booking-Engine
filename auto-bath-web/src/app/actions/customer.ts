@@ -15,7 +15,7 @@ import { CancelResult, RefundOutcome } from "./admin";
 const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
 
 export async function customerCancelBookingAction(bookingId: string): Promise<CancelResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   // 1. Authenticate user
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -118,7 +118,7 @@ export async function customerCancelBookingAction(bookingId: string): Promise<Ca
 }
 
 export async function sendMagicLinkAction(email: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   
   const { error } = await supabase.auth.signInWithOtp({

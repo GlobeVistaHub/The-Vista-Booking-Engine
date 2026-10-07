@@ -12,7 +12,7 @@ import {
   shiftAnchor,
   toDateKey,
   wallClockToInstant,
-} from "./schedule.ts";
+} from "./schedule";
 
 const key = (value: string) => parseDateKey(value)!;
 
