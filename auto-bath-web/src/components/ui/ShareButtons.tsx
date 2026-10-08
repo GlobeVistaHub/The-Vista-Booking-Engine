@@ -48,7 +48,7 @@ export default function ShareButtons({ title }: { title: string }) {
 
   return (
     <div className="flex items-center gap-4 py-8 border-t border-b border-white/10 my-12">
-      <span className="text-white/50 text-sm font-bold uppercase tracking-widest">Share Article</span>
+      <span className="text-white/50 text-sm font-bold uppercase tracking-widest">Share Insight</span>
       <div className="flex gap-2">
         <button 
           onClick={handleShare}

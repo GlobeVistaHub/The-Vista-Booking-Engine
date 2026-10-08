@@ -25,7 +25,7 @@ export default function RecentInsights({ insights }: { insights: any[] }) {
             href="/insights" 
             className="group flex items-center gap-3 text-cyber-orange hover:text-white font-bold uppercase tracking-widest text-sm transition-colors whitespace-nowrap"
           >
-            View All Articles 
+            View All Insights 
             <span className="w-8 h-8 rounded-full border border-cyber-orange/30 group-hover:border-white/30 flex items-center justify-center transition-colors">
               <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </span>

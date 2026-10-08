@@ -114,14 +114,14 @@ export default async function InsightArticlePage({ params }: Props) {
           <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between gap-8">
             {prevPost ? (
               <Link href={`/insights/${prevPost.slug}`} className="group flex flex-col items-start text-left flex-1">
-                <span className="text-white/50 text-xs font-bold uppercase tracking-widest mb-2 group-hover:text-electric-cyan transition-colors">← Previous Article</span>
+                <span className="text-white/50 text-xs font-bold uppercase tracking-widest mb-2 group-hover:text-electric-cyan transition-colors">← Previous Insight</span>
                 <span className="text-white font-bold text-lg group-hover:text-electric-cyan transition-colors line-clamp-2">{prevPost.title}</span>
               </Link>
             ) : <div className="flex-1" />}
             
             {nextPost ? (
               <Link href={`/insights/${nextPost.slug}`} className="group flex flex-col items-end text-right flex-1">
-                <span className="text-white/50 text-xs font-bold uppercase tracking-widest mb-2 group-hover:text-electric-cyan transition-colors">Next Article →</span>
+                <span className="text-white/50 text-xs font-bold uppercase tracking-widest mb-2 group-hover:text-electric-cyan transition-colors">Next Insight →</span>
                 <span className="text-white font-bold text-lg group-hover:text-electric-cyan transition-colors line-clamp-2">{nextPost.title}</span>
               </Link>
             ) : <div className="flex-1" />}

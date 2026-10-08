@@ -145,7 +145,7 @@ export default function InsightsClient({ initialInsights }: { initialInsights: I
           </div>
 
           <div>
-            <label className="block text-white/70 text-sm font-bold uppercase tracking-widest mb-2">Article Content (Markdown Supported)</label>
+            <label className="block text-white/70 text-sm font-bold uppercase tracking-widest mb-2">Insight Content (Markdown Supported)</label>
             <textarea 
               rows={12} required
               value={editing.content || ''} 
@@ -188,7 +188,7 @@ export default function InsightsClient({ initialInsights }: { initialInsights: I
   return (
     <div className="bg-[#0A0A0A] border border-white/10 rounded-xl p-6 md:p-8">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl font-bold uppercase tracking-widest">Articles</h2>
+        <h2 className="text-xl font-bold uppercase tracking-widest">Insights</h2>
         <button 
           onClick={() => setEditing({ title: '', slug: '', excerpt: '', content: '', published: false })}
           className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded transition-colors flex items-center gap-2 text-sm uppercase tracking-widest"

@@ -76,7 +76,7 @@ export default async function InsightsPage() {
                     </p>
                     
                     <div className="flex items-center gap-2 text-electric-cyan text-sm font-bold uppercase tracking-widest group-hover:translate-x-2 transition-transform duration-300 mt-auto">
-                      Read Article <ArrowRight size={16} />
+                      Read Insight <ArrowRight size={16} />
                     </div>
                   </div>
                 </Link>
