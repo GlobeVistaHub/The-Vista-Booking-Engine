@@ -33,8 +33,21 @@ export async function generateMetadata(
     openGraph: {
       title: title,
       description: excerpt,
-      images: cover_image ? [cover_image] : [],
+      images: cover_image ? [
+        {
+          url: cover_image,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ] : [],
       type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: title,
+      description: excerpt,
+      images: cover_image ? [cover_image] : [],
     },
   };
 }
