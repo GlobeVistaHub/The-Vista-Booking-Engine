@@ -32,8 +32,17 @@ const services = [
   }
 ];
 
-export default function PricingGrid() {
+export default function PricingGrid({ dynamicServices = [] }: { dynamicServices?: any[] }) {
   const { openBooking } = useBooking();
+
+  // Map dynamic prices to static services
+  const mappedServices = services.map(service => {
+    const dbService = dynamicServices.find(s => s.name === service.title);
+    return {
+      ...service,
+      price: dbService ? `FROM $${dbService.base_price / 100}` : service.price
+    };
+  });
 
   return (
     <section id="services" className="relative w-full bg-[#050505] py-8 md:py-32 px-6 lg:px-12 z-20">
@@ -50,7 +59,7 @@ export default function PricingGrid() {
 
         {/* The Glassmorphism Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
-          {services.map((service, i) => (
+          {mappedServices.map((service, i) => (
             <div 
               key={i} 
               tabIndex={0}

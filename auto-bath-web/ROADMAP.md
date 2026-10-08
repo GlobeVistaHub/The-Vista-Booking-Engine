@@ -7,9 +7,9 @@ Status of the six sequential build steps. Update after each step ships.
 | 1 | Sentry injection & debug simulator | ✅ Shipped. Production build green; verify events via `/admin/simulator` |
 | 2 | Admin schedule / calendar | ✅ Shipped. Calendar board is live and authenticated. |
 | 3 | Customer ghost profile (view + cancel own bookings) | ✅ Shipped. Magic Link + 48h Cancel Logic |
-| 4 | CMS manager (content + assets) | ⏳ Next |
-| 5 | SEO & tracking (GA4, Facebook CAPI, schema markup) | ⏳ Do last among pages — needs final page set |
-| 6 | Text AI chatbot (voice-ready) | ⏳ |
+| 4 | CMS manager (content + assets) | ✅ Shipped. Full content + Supabase public-assets bucket |
+| 5 | SEO, tracking & Detailing Insights blog | ✅ Shipped. Dynamic OpenGraph, JSON-LD Schema, and FB/GA4 Tracking. |
+| 6 | Text AI chatbot (voice-ready) | ⏳ Next |
 
 ---
 

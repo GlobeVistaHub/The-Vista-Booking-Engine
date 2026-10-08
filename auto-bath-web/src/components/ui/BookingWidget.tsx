@@ -5,18 +5,27 @@ import { X, Check, Calendar, Clock, Car, User, ChevronRight, ChevronLeft, Credit
 import { useBooking } from "@/context/BookingContext";
 import { createBookingAction } from "@/app/actions/booking";
 
-// Actual Data from PricingGrid
-const PACKAGES = [
-  { id: "wash", name: "Premium Hand Wash", price: 80, time: "1.5 Hours", type: "standard" },
-  { id: "interior", name: "Interior Detailing", price: 150, time: "2.5 Hours", type: "standard" },
-  { id: "paint", name: "Paint Correction", price: 400, time: "1 Day", type: "standard" },
-  { id: "ceramic", name: "Ceramic Coating", price: 1200, time: "2 Days", type: "premium" },
+// Static metadata for packages. Prices will be overwritten by DB if provided.
+const STATIC_PACKAGES = [
+  { id: "wash", name: "Premium Hand Wash", price: 150, time: "1.0 Hours", type: "standard" },
+  { id: "interior", name: "Interior Detailing", price: 300, time: "3.0 Hours", type: "standard" },
+  { id: "paint", name: "Paint Correction", price: 800, time: "1 Day", type: "standard" },
+  { id: "ceramic", name: "Ceramic Coating", price: 1200, time: "1.5 Days", type: "premium" },
 ];
 
-export default function BookingWidget() {
+export default function BookingWidget({ dynamicServices = [] }: { dynamicServices?: any[] }) {
   const { isBookingOpen, closeBooking, selectedPackage, setSelectedPackage } = useBooking();
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Map static packages with dynamic prices from the DB
+  const PACKAGES = STATIC_PACKAGES.map(pkg => {
+    const dbService = dynamicServices.find(s => s.name === pkg.name);
+    return {
+      ...pkg,
+      price: dbService ? (dbService.base_price / 100) : pkg.price
+    };
+  });
   
   // Prevent background scrolling and fetch available slots when modal is open
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);

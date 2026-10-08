@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useBooking } from '@/context/BookingContext';
 
-export default function Navbar() {
+export default function Navbar({ dynamicContent = {} }: { dynamicContent?: Record<string, string> }) {
   const [scrolled, setScrolled] = useState(false);
   const { openBooking } = useBooking();
 
@@ -17,7 +17,7 @@ export default function Navbar() {
         <div className="flex-shrink-0">
           <Link href="/" className="flex items-center">
             <Image 
-              src="/transparent.png" 
+              src={dynamicContent['site_logo'] || "/transparent.png"} 
               alt="Auto-Bath Luxury Detailing" 
               width={500} 
               height={160} 
@@ -29,13 +29,13 @@ export default function Navbar() {
 
         {/* Center Navigation Links (Scaled to fit mobile) */}
         <div className="flex items-center space-x-2 md:space-x-12 translate-y-1 md:translate-y-0">
-          <a href="#services" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-electric-cyan active:text-electric-cyan active:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] md:hover:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] transition-all duration-300 tracking-wide uppercase md:capitalize whitespace-nowrap">
+          <a href="/#services" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-electric-cyan active:text-electric-cyan active:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] md:hover:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] transition-all duration-300 tracking-wide uppercase md:capitalize whitespace-nowrap">
             Services
           </a>
-          <a href="#vault" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-electric-cyan active:text-electric-cyan active:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] md:hover:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] transition-all duration-300 tracking-wide uppercase md:capitalize whitespace-nowrap">
+          <a href="/#vault" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-electric-cyan active:text-electric-cyan active:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] md:hover:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] transition-all duration-300 tracking-wide uppercase md:capitalize whitespace-nowrap">
             The Vault
           </a>
-          <a href="#location" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-electric-cyan active:text-electric-cyan active:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] md:hover:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] transition-all duration-300 tracking-wide uppercase md:capitalize whitespace-nowrap">
+          <a href="/#location" className="text-[9px] md:text-lg font-semibold text-liquid-silver hover:text-electric-cyan active:text-electric-cyan active:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] md:hover:drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] transition-all duration-300 tracking-wide uppercase md:capitalize whitespace-nowrap">
             Location
           </a>
         </div>

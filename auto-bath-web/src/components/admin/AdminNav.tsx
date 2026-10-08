@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Image as ImageIcon, LayoutDashboard, ShieldAlert } from "lucide-react";
+import { Calendar, Image as ImageIcon, LayoutDashboard, ShieldAlert, FileText } from "lucide-react";
 
 const ITEMS = [
   { href: "/admin", label: "CRM Overview", short: "CRM", icon: LayoutDashboard, exact: true },
   { href: "/admin/calendar", label: "Schedule", short: "Schedule", icon: Calendar },
   { href: "/admin/cms", label: "CMS Manager", short: "CMS", icon: ImageIcon },
+  { href: "/admin/insights", label: "Insights Editor", short: "Insights", icon: FileText },
   { href: "/admin/simulator", label: "Debug & Simulate", short: "Debug", icon: ShieldAlert, danger: true },
 ] as const;
 

@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-export default function TheVault() {
+export default function TheVault({ dynamicContent = {} }: { dynamicContent?: Record<string, string> }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -32,6 +32,8 @@ export default function TheVault() {
     setIsDragging(true);
     handleMove(clientX);
   };
+
+  const vaultImage = dynamicContent['vault_image'] || "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=2669&auto=format&fit=crop";
 
   return (
     <section id="vault" className="relative w-full py-8 md:py-32 bg-vantablack overflow-hidden border-t border-white/5">
@@ -62,7 +64,7 @@ export default function TheVault() {
           {/* Dirty Car (Base Layer) */}
           <div className="absolute inset-0 w-full h-full pointer-events-none">
             <img 
-              src="https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=2669&auto=format&fit=crop" 
+              src={vaultImage}
               alt="Dirty Car Placeholder" 
               className="absolute inset-0 w-full h-full object-cover grayscale-[40%] brightness-[0.55] contrast-[1.1] sepia-[30%]"
               draggable={false}
@@ -87,7 +89,7 @@ export default function TheVault() {
             style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
           >
             <img 
-              src="https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=2669&auto=format&fit=crop" 
+              src={vaultImage}
               alt="Clean Car Placeholder" 
               className="absolute inset-0 w-full h-full object-cover brightness-110 contrast-125 saturate-150"
               draggable={false}

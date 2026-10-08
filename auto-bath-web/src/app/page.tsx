@@ -5,8 +5,24 @@ import TheVault from '@/components/ui/TheVault';
 import TheLocation from '@/components/ui/TheLocation';
 import FAQ from '@/components/ui/FAQ';
 import Footer from '@/components/ui/Footer';
+import RecentInsights from '@/components/ui/RecentInsights';
+import { getSiteContentAction, getServicesAction } from '@/app/actions/cms';
+import { getInsightsAction } from '@/app/actions/insights';
 
-export default function Home() {
+export default async function Home() {
+  const [contentRes, servicesRes, insightsRes] = await Promise.all([
+    getSiteContentAction(),
+    getServicesAction(),
+    getInsightsAction(false) // Only published
+  ]);
+  
+  const content = contentRes.success ? contentRes.content : {};
+  const services = servicesRes.success ? servicesRes.services : [];
+  const insights = insightsRes.success ? insightsRes.insights : [];
+
+  const headline = content['hero_headline'] || "Melbourne's Premier Auto Detailing";
+  // If the user typed "CLEANER CARS HAPPIER DRIVERS", it renders directly. But for styling, we might just render it raw for now.
+  const subheadline = content['hero_subheadline'] || "We restore your vehicle to showroom condition with surgical precision.";
   return (
     <main className="bg-[#050505] min-h-screen overflow-x-hidden">
       
@@ -20,14 +36,12 @@ export default function Home() {
 
         {/* Hero Text */}
         <div className="relative z-40 text-center -mt-24 md:mt-20 pointer-events-none flex flex-col items-center gap-4 md:gap-6">
-          <h1 className="font-heading font-bold text-4xl md:text-7xl text-white tracking-tighter uppercase leading-tight [text-shadow:0_4px_20px_rgba(0,0,0,1)] md:[text-shadow:0_10px_40px_rgba(0,0,0,1),_0_2px_10px_rgba(0,0,0,0.8)]">
-            CLEANER <span className="text-cyber-orange bg-electric-cyan/20 md:backdrop-blur-md px-3 py-1 md:px-4 md:py-1 rounded-xl border border-electric-cyan/30 inline-block shadow-[0_0_10px_rgba(0,194,212,0.2)] md:shadow-[0_0_20px_rgba(0,194,212,0.2)]">CARS</span><br/>
-            HAPPIER DRIVERS
+          <h1 className="font-heading font-bold text-4xl md:text-7xl text-white tracking-tighter uppercase leading-tight [text-shadow:0_4px_20px_rgba(0,0,0,1)] md:[text-shadow:0_10px_40px_rgba(0,0,0,1),_0_2px_10px_rgba(0,0,0,0.8)]" dangerouslySetInnerHTML={{ __html: headline.replace('CARS', '<span class="text-cyber-orange bg-electric-cyan/20 md:backdrop-blur-md px-3 py-1 md:px-4 md:py-1 rounded-xl border border-electric-cyan/30 inline-block shadow-[0_0_10px_rgba(0,194,212,0.2)] md:shadow-[0_0_20px_rgba(0,194,212,0.2)]">CARS</span>') }}>
           </h1>
           
           <div className="mt-24 md:mt-0 inline-block bg-[#050505]/60 backdrop-blur-xl border border-white/10 px-4 py-2 md:px-8 md:py-3 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.8)] mx-4 md:mx-0">
             <p className="shimmer-text text-xs md:text-lg max-w-lg mx-auto tracking-wide">
-              Melbourne&apos;s premier hand car wash and uncompromising luxury detailing facility
+              {subheadline}
             </p>
           </div>
         </div>
@@ -51,10 +65,13 @@ export default function Home() {
       </section>
 
       {/* ================= SERVICES PRICING GRID ================= */}
-      <PricingGrid />
+      <PricingGrid dynamicServices={services} />
       
       {/* ================= THE VAULT ================= */}
-      <TheVault />
+      <TheVault dynamicContent={content} />
+
+      {/* ================= DETAILING INSIGHTS ================= */}
+      <RecentInsights insights={insights} />
 
       {/* ================= FAQ ================= */}
       <FAQ />
@@ -63,7 +80,7 @@ export default function Home() {
       <TheLocation />
       
       {/* ================= FOOTER ================= */}
-      <Footer />
+      <Footer dynamicContent={content} />
       
     </main>
   );
