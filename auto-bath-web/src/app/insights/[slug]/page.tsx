@@ -55,9 +55,10 @@ export async function generateMetadata(
 export default async function InsightArticlePage({ params }: Props) {
   const resolvedParams = await params;
   
-  const [contentRes, insightRes] = await Promise.all([
+  const [contentRes, insightRes, allInsightsRes] = await Promise.all([
     getSiteContentAction(),
-    getInsightBySlugAction(resolvedParams.slug, false)
+    getInsightBySlugAction(resolvedParams.slug, false),
+    getInsightsAction(false)
   ]);
   
   if (!insightRes.success || !insightRes.insight) {
@@ -66,6 +67,11 @@ export default async function InsightArticlePage({ params }: Props) {
 
   const content = contentRes.success ? contentRes.content : {};
   const post = insightRes.insight;
+  const allInsights = allInsightsRes.success ? allInsightsRes.insights : [];
+  
+  const currentIndex = allInsights.findIndex((i: any) => i.slug === post.slug);
+  const nextPost = currentIndex > 0 ? allInsights[currentIndex - 1] : null;
+  const prevPost = currentIndex < allInsights.length - 1 ? allInsights[currentIndex + 1] : null;
 
   return (
     <main className="min-h-screen bg-[#050505] overflow-x-hidden flex flex-col">
@@ -104,6 +110,28 @@ export default async function InsightArticlePage({ params }: Props) {
           </div>
 
           <ShareButtons title={post.title} />
+
+          <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between gap-8">
+            {prevPost ? (
+              <Link href={`/insights/${prevPost.slug}`} className="group flex flex-col items-start text-left flex-1">
+                <span className="text-white/50 text-xs font-bold uppercase tracking-widest mb-2 group-hover:text-electric-cyan transition-colors">← Previous Article</span>
+                <span className="text-white font-bold text-lg group-hover:text-electric-cyan transition-colors line-clamp-2">{prevPost.title}</span>
+              </Link>
+            ) : <div className="flex-1" />}
+            
+            {nextPost ? (
+              <Link href={`/insights/${nextPost.slug}`} className="group flex flex-col items-end text-right flex-1">
+                <span className="text-white/50 text-xs font-bold uppercase tracking-widest mb-2 group-hover:text-electric-cyan transition-colors">Next Article →</span>
+                <span className="text-white font-bold text-lg group-hover:text-electric-cyan transition-colors line-clamp-2">{nextPost.title}</span>
+              </Link>
+            ) : <div className="flex-1" />}
+          </div>
+
+          <div className="mt-16 text-center">
+            <Link href="/insights" className="inline-flex items-center justify-center bg-[#111] hover:bg-[#1a1a1a] border border-white/10 hover:border-electric-cyan/50 px-8 py-4 rounded text-white text-sm font-bold uppercase tracking-widest transition-all duration-300">
+              View All Insights
+            </Link>
+          </div>
 
         </div>
       </article>
