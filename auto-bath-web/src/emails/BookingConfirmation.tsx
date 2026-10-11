@@ -53,7 +53,7 @@ export default function BookingConfirmation({
             </Text>
 
             <Section style={{ textAlign: 'center', marginTop: '32px' }}>
-              <a href="https://auto-bath.com.au/my-bookings" style={button}>
+              <a href="https://autobathmelbourne.com/my-bookings" style={button}>
                 Manage Your Booking
               </a>
             </Section>

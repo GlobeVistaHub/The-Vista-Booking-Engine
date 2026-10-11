@@ -53,7 +53,7 @@ export default function AdminLogin() {
                 type="email" 
                 required
                 className="w-full bg-[#111] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-electric-cyan/50 focus:ring-1 focus:ring-electric-cyan/50 transition-all font-mono text-sm"
-                placeholder="admin@autobath.com.au"
+                placeholder="admin@autobathmelbourne.com"
               />
             </div>
 

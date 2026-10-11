@@ -51,7 +51,7 @@ export default function PrivacyPolicy() {
 
           <h3>6. Contact Us</h3>
           <p>
-            For any inquiries regarding this Privacy Policy, please contact our management team at: <strong>booking@autobath.com.au</strong> or <strong>+61 400 764 508</strong>.
+            For any inquiries regarding this Privacy Policy, please contact our management team at: <strong>booking@autobathmelbourne.com</strong> or <strong>+61 400 764 508</strong>.
           </p>
         </div>
       </div>

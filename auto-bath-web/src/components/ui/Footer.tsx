@@ -14,7 +14,7 @@ export default function Footer({ dynamicContent = {} }: { dynamicContent?: Recor
   const instagram = ensureHttp(dynamicContent['social_instagram'] || "https://instagram.com");
   const facebook = ensureHttp(dynamicContent['social_facebook'] || "https://facebook.com");
   const tiktok = ensureHttp(dynamicContent['social_tiktok'] || "https://tiktok.com");
-  const email = dynamicContent['contact_email'] || "booking@autobath.com.au";
+  const email = dynamicContent['contact_email'] || "booking@autobathmelbourne.com";
   const phone = dynamicContent['contact_phone'] || "+61 400 764 508";
   
   // Clean phone number for WhatsApp link

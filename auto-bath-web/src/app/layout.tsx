@@ -45,9 +45,9 @@ export default async function RootLayout({
     "@context": "https://schema.org",
     "@type": "AutoBodyShop",
     "name": businessName,
-    "image": content['site_logo'] || "https://auto-bath.com.au/transparent.png",
+    "image": content['site_logo'] || "https://autobathmelbourne.com/transparent.png",
     "@id": "",
-    "url": "https://auto-bath.com.au",
+    "url": "https://autobathmelbourne.com",
     "telephone": phone,
     "address": {
       "@type": "PostalAddress",

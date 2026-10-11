@@ -55,6 +55,7 @@ export async function createBookingAction(formData: {
       interior: "Interior Detailing",
       paint: "Paint Correction",
       ceramic: "Ceramic Coating",
+      concourse: "Concourse Full Detail",
     };
     
     const serviceName = packageMap[formData.packageId];
