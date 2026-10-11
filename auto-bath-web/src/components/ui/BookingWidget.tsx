@@ -11,6 +11,7 @@ const STATIC_PACKAGES = [
   { id: "interior", name: "Interior Detailing", price: 300, time: "3.0 Hours", type: "standard" },
   { id: "paint", name: "Paint Correction", price: 800, time: "1 Day", type: "standard" },
   { id: "ceramic", name: "Ceramic Coating", price: 1200, time: "1.5 Days", type: "premium" },
+  { id: "concourse", name: "Concourse Full Detail", price: 650, time: "2 Days", type: "premium" },
 ];
 
 export default function BookingWidget({ dynamicServices = [] }: { dynamicServices?: any[] }) {
@@ -182,6 +183,8 @@ export default function BookingWidget({ dynamicServices = [] }: { dynamicService
                     onMouseMove={(e) => handleInteraction(e, pkg.id)}
                     onTouchMove={(e) => handleInteraction(e, pkg.id)}
                     className={`relative group text-left p-6 rounded-2xl border transition-all duration-300 overflow-hidden ${
+                      pkg.id === "concourse" ? "md:col-span-2" : ""
+                    } ${
                       selectedPackage === pkg.id 
                         ? "border-electric-cyan bg-electric-cyan/10" 
                         : "border-white/10 bg-white/5 hover:border-white/30"

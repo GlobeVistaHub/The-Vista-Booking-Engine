@@ -235,8 +235,29 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
               </div>
 
               {/* Package 1: Wash */}
-              <div className="bg-[#111] border border-white/10 p-4 rounded-lg space-y-3">
-                <h4 className="text-white font-bold text-sm uppercase tracking-wider text-[#00C2D4]">1. Premium Hand Wash</h4>
+              <div className="bg-[#111] border border-white/10 p-5 rounded-lg space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <label className="block text-white/60 text-xs mb-1">Service 1 Title</label>
+                    <input 
+                      type="text" 
+                      placeholder="Premium Hand Wash"
+                      value={content['service_title_wash'] || ''} 
+                      onChange={e => handleContentChange('service_title_wash', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-bold text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                  <div className="w-full sm:w-40">
+                    <label className="block text-white/60 text-xs mb-1">Display Price</label>
+                    <input 
+                      type="text" 
+                      placeholder="FROM $80"
+                      value={content['service_price_wash'] || ''} 
+                      onChange={e => handleContentChange('service_price_wash', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                </div>
                 <div>
                   <label className="block text-white/60 text-xs mb-1">Package Description</label>
                   <textarea 
@@ -260,8 +281,29 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
               </div>
 
               {/* Package 2: Interior */}
-              <div className="bg-[#111] border border-white/10 p-4 rounded-lg space-y-3">
-                <h4 className="text-white font-bold text-sm uppercase tracking-wider text-[#00C2D4]">2. Interior Detailing</h4>
+              <div className="bg-[#111] border border-white/10 p-5 rounded-lg space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <label className="block text-white/60 text-xs mb-1">Service 2 Title</label>
+                    <input 
+                      type="text" 
+                      placeholder="Interior Detailing"
+                      value={content['service_title_interior'] || ''} 
+                      onChange={e => handleContentChange('service_title_interior', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-bold text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                  <div className="w-full sm:w-40">
+                    <label className="block text-white/60 text-xs mb-1">Display Price</label>
+                    <input 
+                      type="text" 
+                      placeholder="FROM $150"
+                      value={content['service_price_interior'] || ''} 
+                      onChange={e => handleContentChange('service_price_interior', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                </div>
                 <div>
                   <label className="block text-white/60 text-xs mb-1">Package Description</label>
                   <textarea 
@@ -285,8 +327,29 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
               </div>
 
               {/* Package 3: Paint Correction */}
-              <div className="bg-[#111] border border-white/10 p-4 rounded-lg space-y-3">
-                <h4 className="text-white font-bold text-sm uppercase tracking-wider text-[#00C2D4]">3. Paint Correction</h4>
+              <div className="bg-[#111] border border-white/10 p-5 rounded-lg space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <label className="block text-white/60 text-xs mb-1">Service 3 Title</label>
+                    <input 
+                      type="text" 
+                      placeholder="Paint Correction"
+                      value={content['service_title_paint'] || ''} 
+                      onChange={e => handleContentChange('service_title_paint', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-bold text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                  <div className="w-full sm:w-40">
+                    <label className="block text-white/60 text-xs mb-1">Display Price</label>
+                    <input 
+                      type="text" 
+                      placeholder="FROM $400"
+                      value={content['service_price_paint'] || ''} 
+                      onChange={e => handleContentChange('service_price_paint', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                </div>
                 <div>
                   <label className="block text-white/60 text-xs mb-1">Package Description</label>
                   <textarea 
@@ -310,8 +373,29 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
               </div>
 
               {/* Package 4: Ceramic Coating */}
-              <div className="bg-[#111] border border-white/10 p-4 rounded-lg space-y-3">
-                <h4 className="text-white font-bold text-sm uppercase tracking-wider text-[#00C2D4]">4. Ceramic Coating</h4>
+              <div className="bg-[#111] border border-white/10 p-5 rounded-lg space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <label className="block text-white/60 text-xs mb-1">Service 4 Title</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ceramic Coating"
+                      value={content['service_title_ceramic'] || ''} 
+                      onChange={e => handleContentChange('service_title_ceramic', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-bold text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                  <div className="w-full sm:w-40">
+                    <label className="block text-white/60 text-xs mb-1">Display Price</label>
+                    <input 
+                      type="text" 
+                      placeholder="FROM $1,200"
+                      value={content['service_price_ceramic'] || ''} 
+                      onChange={e => handleContentChange('service_price_ceramic', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                </div>
                 <div>
                   <label className="block text-white/60 text-xs mb-1">Package Description</label>
                   <textarea 
@@ -329,6 +413,52 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
                     placeholder={"5-Year Protection\nExtreme Hydrophobics\nSelf-Cleaning\nChemical Resistance"}
                     value={content['service_features_ceramic'] || ''} 
                     onChange={e => handleContentChange('service_features_ceramic', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+              </div>
+
+              {/* Package 5: Concourse Full Detail */}
+              <div className="bg-[#111] border border-white/10 p-5 rounded-lg space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <label className="block text-white/60 text-xs mb-1">Service 5 Title (Flagship)</label>
+                    <input 
+                      type="text" 
+                      placeholder="Concourse Full Detail"
+                      value={content['service_title_concourse'] || ''} 
+                      onChange={e => handleContentChange('service_title_concourse', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-bold text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                  <div className="w-full sm:w-40">
+                    <label className="block text-white/60 text-xs mb-1">Display Price</label>
+                    <input 
+                      type="text" 
+                      placeholder="FROM $650"
+                      value={content['service_price_concourse'] || ''} 
+                      onChange={e => handleContentChange('service_price_concourse', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Package Description</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="The ultimate preservation package. Multi-stage machine paint correction, interior steam restoration, and engine bay detailing."
+                    value={content['service_desc_concourse'] || ''} 
+                    onChange={e => handleContentChange('service_desc_concourse', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Features / Inclusions (One bullet per line)</label>
+                  <textarea 
+                    rows={3}
+                    placeholder={"Comprehensive Interior Steam & Feed\nMulti-Stage Machine Correction\nEngine Bay Deep Rejuvenation\nCeramic Sealant Finish\nConcourse Certificate"}
+                    value={content['service_features_concourse'] || ''} 
+                    onChange={e => handleContentChange('service_features_concourse', e.target.value)}
                     className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
                   />
                 </div>
