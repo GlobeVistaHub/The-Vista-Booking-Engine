@@ -2,7 +2,7 @@
 
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows, useGLTF, Html } from '@react-three/drei';
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState, Component, type ReactNode } from 'react';
 
 // Added global activeHotspot state to ensure mobile perfection
 function Hotspot({ id, position, label, price, activeHotspot, setActiveHotspot, isMobile }: { id: string, position: [number, number, number], label: string, price: string, activeHotspot: string | null, setActiveHotspot: (id: string | null) => void, isMobile: boolean }) {
@@ -88,52 +88,103 @@ function Lamborghini({ activeHotspot, setActiveHotspot, isMobile }: { activeHots
   );
 }
 
+class WebGLErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.warn("WebGL renderer context error gracefully handled:", error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="absolute inset-0 w-full h-full z-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[600px] h-[300px] bg-gradient-to-t from-electric-cyan/10 to-transparent rounded-full blur-[120px]" />
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function checkWebGLSupport(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const canvas = document.createElement('canvas');
+    return Boolean(
+      window.WebGLRenderingContext &&
+      (canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+    );
+  } catch {
+    return false;
+  }
+}
+
 useGLTF.preload('/free_lamborghini_revuelto.glb');
 
 export default function HeroCar() {
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [hasWebGL, setHasWebGL] = useState<boolean | null>(null);
   const isInteracting = activeHotspot !== null;
 
   useEffect(() => {
+    setHasWebGL(checkWebGLSupport());
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  if (hasWebGL === false) {
+    return (
+      <div className="absolute inset-0 w-full h-full z-0 flex items-center justify-center pointer-events-none">
+        <div className="w-[600px] h-[300px] bg-gradient-to-t from-electric-cyan/10 to-transparent rounded-full blur-[120px]" />
+      </div>
+    );
+  }
+
   return (
     <div className="absolute inset-0 w-full h-full z-0">
-      <Canvas 
-        style={{ touchAction: 'pan-y' }}
-        dpr={isMobile ? [1, 1.2] : [1, 1.5]}
-        gl={{ antialias: true, alpha: true, logarithmicDepthBuffer: !isMobile }}
-        camera={{ position: [0, 1.5, 7], fov: 45 }}
-        // Bulletproof Mobile Close: Tapping ANYWHERE on the background canvas instantly closes all popups and resumes car rotation
-        onPointerMissed={() => setActiveHotspot(null)}
-      >
-        <Suspense fallback={null}>
-          <Environment preset="studio" background={false} resolution={isMobile ? 256 : 1024} />
-          
-          <ambientLight intensity={2} />
-          <spotLight position={[10, 10, 10]} angle={0.5} penumbra={1} intensity={300} color="#ffffff" />
-          <pointLight position={[-10, 5, -10]} intensity={200} color="#00C2D4" />
+      <WebGLErrorBoundary>
+        <Canvas 
+          style={{ touchAction: 'pan-y' }}
+          dpr={isMobile ? [1, 1.2] : [1, 1.5]}
+          gl={{ antialias: true, alpha: true, logarithmicDepthBuffer: !isMobile }}
+          camera={{ position: [0, 1.5, 7], fov: 45 }}
+          // Bulletproof Mobile Close: Tapping ANYWHERE on the background canvas instantly closes all popups and resumes car rotation
+          onPointerMissed={() => setActiveHotspot(null)}
+        >
+          <Suspense fallback={null}>
+            <Environment preset="studio" background={false} resolution={isMobile ? 256 : 1024} />
+            
+            <ambientLight intensity={2} />
+            <spotLight position={[10, 10, 10]} angle={0.5} penumbra={1} intensity={300} color="#ffffff" />
+            <pointLight position={[-10, 5, -10]} intensity={200} color="#00C2D4" />
 
-          <Lamborghini activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} isMobile={isMobile} />
+            <Lamborghini activeHotspot={activeHotspot} setActiveHotspot={setActiveHotspot} isMobile={isMobile} />
 
-          <ContactShadows position={[0, -1.5, 0]} opacity={0.9} scale={20} blur={3} far={4} color="#00C2D4" frames={1} resolution={256} />
+            <ContactShadows position={[0, -1.5, 0]} opacity={0.9} scale={20} blur={3} far={4} color="#00C2D4" frames={1} resolution={256} />
 
-          <OrbitControls 
-            enableZoom={false} 
-            enablePan={false}
-            autoRotate={!isInteracting}
-            autoRotateSpeed={isInteracting ? 0 : 0.5}
-            enableDamping={!isInteracting}
-            maxPolarAngle={Math.PI / 2 + 0.1}
-            minPolarAngle={Math.PI / 3}
-          />
-        </Suspense>
-      </Canvas>
+            <OrbitControls 
+              enableZoom={false} 
+              enablePan={false}
+              autoRotate={!isInteracting}
+              autoRotateSpeed={isInteracting ? 0 : 0.5}
+              enableDamping={!isInteracting}
+              maxPolarAngle={Math.PI / 2 + 0.1}
+              minPolarAngle={Math.PI / 3}
+            />
+          </Suspense>
+        </Canvas>
+      </WebGLErrorBoundary>
     </div>
   );
 }
