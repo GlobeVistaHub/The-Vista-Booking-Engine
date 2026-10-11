@@ -65,7 +65,7 @@ export default async function Home() {
       </section>
 
       {/* ================= SERVICES PRICING GRID ================= */}
-      <PricingGrid dynamicServices={services} />
+      <PricingGrid dynamicServices={services} dynamicContent={content} />
       
       {/* ================= THE VAULT ================= */}
       <TheVault dynamicContent={content} />

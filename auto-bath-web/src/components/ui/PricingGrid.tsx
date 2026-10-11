@@ -1,8 +1,14 @@
 'use client';
 import { useBooking } from "@/context/BookingContext";
 
-const services = [
+interface PricingGridProps {
+  dynamicServices?: any[];
+  dynamicContent?: Record<string, string>;
+}
+
+const defaultServices = [
   {
+    id: "wash",
     title: "Premium Hand Wash",
     price: "FROM $80",
     description: "Meticulous two-bucket exterior wash, wheel face & barrel cleaning, and streak-free glass.",
@@ -10,6 +16,7 @@ const services = [
     popular: false,
   },
   {
+    id: "interior",
     title: "Interior Detailing",
     price: "FROM $150",
     description: "Deep extraction, steam cleaning, and UV protection for all interior surfaces.",
@@ -17,6 +24,7 @@ const services = [
     popular: true,
   },
   {
+    id: "paint",
     title: "Paint Correction",
     price: "FROM $400",
     description: "Multi-stage machine polishing to remove swirls, scratches, and oxidation.",
@@ -24,6 +32,7 @@ const services = [
     popular: false,
   },
   {
+    id: "ceramic",
     title: "Ceramic Coating",
     price: "FROM $1,200",
     description: "9H hardness liquid quartz coating offering years of extreme gloss and protection.",
@@ -32,15 +41,27 @@ const services = [
   }
 ];
 
-export default function PricingGrid({ dynamicServices = [] }: { dynamicServices?: any[] }) {
+export default function PricingGrid({ dynamicServices = [], dynamicContent = {} }: PricingGridProps) {
   const { openBooking } = useBooking();
 
-  // Map dynamic prices to static services
-  const mappedServices = services.map(service => {
+  // Map dynamic prices, descriptions, and features from CMS / DB
+  const mappedServices = defaultServices.map(service => {
     const dbService = dynamicServices.find(s => s.name === service.title);
+    
+    // Check if customized description exists in CMS
+    const customDesc = dynamicContent[`service_desc_${service.id}`];
+    
+    // Check if customized features exist in CMS (one per line)
+    const customFeaturesRaw = dynamicContent[`service_features_${service.id}`];
+    const customFeatures = customFeaturesRaw
+      ? customFeaturesRaw.split('\n').map(f => f.trim()).filter(Boolean)
+      : null;
+
     return {
       ...service,
-      price: dbService ? `FROM $${dbService.base_price / 100}` : service.price
+      price: dbService ? `FROM $${dbService.base_price / 100}` : service.price,
+      description: customDesc || service.description,
+      features: customFeatures && customFeatures.length > 0 ? customFeatures : service.features,
     };
   });
 
@@ -50,10 +71,12 @@ export default function PricingGrid({ dynamicServices = [] }: { dynamicServices?
         {/* Section Header */}
         <div className="text-center mb-20 relative z-10">
           <h2 className="font-heading font-bold text-xl md:text-5xl text-white tracking-tighter uppercase mb-4">
-            Uncompromising <span className="text-electric-cyan">Detail</span>
+            {dynamicContent['services_headline'] || (
+              <>Uncompromising <span className="text-electric-cyan">Detail</span></>
+            )}
           </h2>
           <p className="font-mono text-white/80 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-            Melbourne&apos;s finest automotive rejuvenation services. We don&apos;t just wash cars; we restore them to concourse condition.
+            {dynamicContent['services_subheadline'] || "Melbourne's finest automotive rejuvenation services. We don't just wash cars; we restore them to concourse condition."}
           </p>
         </div>
 

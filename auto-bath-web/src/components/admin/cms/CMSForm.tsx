@@ -204,6 +204,137 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
               </div>
             </section>
 
+            {/* SERVICES SECTION & DESCRIPTIONS */}
+            <section className="border-t border-white/10 pt-6 space-y-6">
+              <div>
+                <h3 className="text-white/40 text-xs font-bold uppercase tracking-widest mb-1">Services Section & Descriptions</h3>
+                <p className="text-white/40 text-xs mb-4">Edit the text and bullet features for all 4 packages displayed in the Pricing & Services Grid.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-white/70 text-sm mb-2">Services Section Headline</label>
+                  <input 
+                    type="text" 
+                    placeholder="Uncompromising Detail"
+                    value={content['services_headline'] || ''} 
+                    onChange={e => handleContentChange('services_headline', e.target.value)}
+                    className="w-full bg-[#111] border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-[#00C2D4] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/70 text-sm mb-2">Services Section Subtitle</label>
+                  <input 
+                    type="text" 
+                    placeholder="Melbourne's finest automotive rejuvenation services..."
+                    value={content['services_subheadline'] || ''} 
+                    onChange={e => handleContentChange('services_subheadline', e.target.value)}
+                    className="w-full bg-[#111] border border-white/10 rounded px-4 py-3 text-white focus:outline-none focus:border-[#00C2D4] transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Package 1: Wash */}
+              <div className="bg-[#111] border border-white/10 p-4 rounded-lg space-y-3">
+                <h4 className="text-white font-bold text-sm uppercase tracking-wider text-[#00C2D4]">1. Premium Hand Wash</h4>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Package Description</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="Meticulous two-bucket exterior wash, wheel face & barrel cleaning, and streak-free glass."
+                    value={content['service_desc_wash'] || ''} 
+                    onChange={e => handleContentChange('service_desc_wash', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Features / Inclusions (One bullet per line)</label>
+                  <textarea 
+                    rows={3}
+                    placeholder={"PH-Neutral Foam\nMicrofiber Drying\nTire Dressing\nInterior Vacuum"}
+                    value={content['service_features_wash'] || ''} 
+                    onChange={e => handleContentChange('service_features_wash', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+              </div>
+
+              {/* Package 2: Interior */}
+              <div className="bg-[#111] border border-white/10 p-4 rounded-lg space-y-3">
+                <h4 className="text-white font-bold text-sm uppercase tracking-wider text-[#00C2D4]">2. Interior Detailing</h4>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Package Description</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="Deep extraction, steam cleaning, and UV protection for all interior surfaces."
+                    value={content['service_desc_interior'] || ''} 
+                    onChange={e => handleContentChange('service_desc_interior', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Features / Inclusions (One bullet per line)</label>
+                  <textarea 
+                    rows={3}
+                    placeholder={"Steam Sterilization\nLeather Conditioning\nStain Removal\nOdor Neutralization"}
+                    value={content['service_features_interior'] || ''} 
+                    onChange={e => handleContentChange('service_features_interior', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+              </div>
+
+              {/* Package 3: Paint Correction */}
+              <div className="bg-[#111] border border-white/10 p-4 rounded-lg space-y-3">
+                <h4 className="text-white font-bold text-sm uppercase tracking-wider text-[#00C2D4]">3. Paint Correction</h4>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Package Description</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="Multi-stage machine polishing to remove swirls, scratches, and oxidation."
+                    value={content['service_desc_paint'] || ''} 
+                    onChange={e => handleContentChange('service_desc_paint', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Features / Inclusions (One bullet per line)</label>
+                  <textarea 
+                    rows={3}
+                    placeholder={"Clay Bar Treatment\nSwirl Removal\nGloss Enhancement\nPanel Wipe Prep"}
+                    value={content['service_features_paint'] || ''} 
+                    onChange={e => handleContentChange('service_features_paint', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+              </div>
+
+              {/* Package 4: Ceramic Coating */}
+              <div className="bg-[#111] border border-white/10 p-4 rounded-lg space-y-3">
+                <h4 className="text-white font-bold text-sm uppercase tracking-wider text-[#00C2D4]">4. Ceramic Coating</h4>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Package Description</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="9H hardness liquid quartz coating offering years of extreme gloss and protection."
+                    value={content['service_desc_ceramic'] || ''} 
+                    onChange={e => handleContentChange('service_desc_ceramic', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Features / Inclusions (One bullet per line)</label>
+                  <textarea 
+                    rows={3}
+                    placeholder={"5-Year Protection\nExtreme Hydrophobics\nSelf-Cleaning\nChemical Resistance"}
+                    value={content['service_features_ceramic'] || ''} 
+                    onChange={e => handleContentChange('service_features_ceramic', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+              </div>
+            </section>
+
             <div className="pt-6 border-t border-white/10 flex items-center justify-between">
               <span className={`text-sm ${contentStatus.includes('Failed') ? 'text-red-400' : 'text-green-400'}`}>
                 {contentStatus}
