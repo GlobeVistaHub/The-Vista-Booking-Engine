@@ -327,75 +327,7 @@ const staggerContainer: any = {
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
 };
 
-// Parallax Optical Particles
-function FloatingOpticalParticles() {
-  const [mounted, setMounted] = useState(false);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
 
-  useEffect(() => {
-    setMounted(true);
-    const handleMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX - window.innerWidth / 2);
-      mouseY.set(e.clientY - window.innerHeight / 2);
-    };
-    window.addEventListener("mousemove", handleMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handleMove);
-  }, [mouseX, mouseY]);
-
-  const smoothX = useSpring(mouseX, { stiffness: 35, damping: 25 });
-  const smoothY = useSpring(mouseY, { stiffness: 35, damping: 25 });
-
-  const layer1X = useTransform(smoothX, [-1000, 1000], [-18, 18]);
-  const layer1Y = useTransform(smoothY, [-1000, 1000], [-18, 18]);
-  const layer2X = useTransform(smoothX, [-1000, 1000], [-45, 45]);
-  const layer2Y = useTransform(smoothY, [-1000, 1000], [-45, 45]);
-
-  if (!mounted) return null;
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      <motion.div 
-        style={{ x: layer1X, y: layer1Y }}
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[1.5px] bg-gradient-to-r from-transparent via-[#00C2D4]/40 to-transparent blur-[1px] rotate-[-4deg]"
-      />
-      <motion.div 
-        style={{ x: layer2X, y: layer2Y }}
-        className="absolute top-2/3 left-1/3 -translate-x-1/2 w-[700px] h-[1px] bg-gradient-to-r from-transparent via-[#FF6600]/30 to-transparent blur-[1px] rotate-[3deg]"
-      />
-
-      <motion.div style={{ x: layer1X, y: layer1Y }} className="absolute inset-0">
-        {[...Array(14)].map((_, i) => (
-          <div
-            key={`p1-${i}`}
-            className="absolute rounded-full bg-[#00C2D4]/25 shadow-[0_0_12px_rgba(0,194,212,0.8)]"
-            style={{
-              top: `${(i * 7 + 13) % 95}%`,
-              left: `${(i * 13 + 7) % 95}%`,
-              width: `${(i % 3) + 2}px`,
-              height: `${(i % 3) + 2}px`,
-            }}
-          />
-        ))}
-      </motion.div>
-
-      <motion.div style={{ x: layer2X, y: layer2Y }} className="absolute inset-0">
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={`p2-${i}`}
-            className="absolute rounded-full bg-[#FF6600]/25 shadow-[0_0_10px_rgba(255,102,0,0.8)]"
-            style={{
-              top: `${(i * 11 + 23) % 90}%`,
-              left: `${(i * 17 + 19) % 90}%`,
-              width: `${(i % 2) + 2.5}px`,
-              height: `${(i % 2) + 2.5}px`,
-            }}
-          />
-        ))}
-      </motion.div>
-    </div>
-  );
-}
 
 // Interactive Audio Frequency Visualizer Bars
 function FrequencyVisualizer() {
@@ -1966,8 +1898,7 @@ export function StudioClient() {
   return (
     <main className="min-h-screen bg-[#050505] text-white selection:bg-[#00C2D4] selection:text-black font-sans relative overflow-x-hidden">
       
-      {/* Background Optical Parallax & Particles */}
-      <FloatingOpticalParticles />
+
 
       {/* Optical Ambient Blur Blooms */}
       <div className="fixed top-0 left-1/4 w-[750px] h-[550px] bg-[#00C2D4]/5 rounded-full blur-[170px] pointer-events-none -z-10" />
