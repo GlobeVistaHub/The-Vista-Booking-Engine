@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { X, Sparkles, Send, Bot, MessageCircle, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
@@ -9,6 +10,9 @@ type ChatMessage = { id: string; role: "user" | "assistant"; content: string };
 const FALLBACK_REPLY = "Apologies, I'm having trouble connecting right now. Please try again in a moment, or message us directly on WhatsApp.";
 
 export default function AIConcierge() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/studio") || pathname?.includes("/studio")) return null;
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
