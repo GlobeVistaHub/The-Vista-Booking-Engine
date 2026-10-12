@@ -781,7 +781,7 @@ const FAIRLIGHT_DYNAMICS_BANDS: DynamicsBand[] = [
 // Animated Studio Sound Engineer with Headphones and Thumbs Up!
 function SoundEngineerAvatar() {
   return (
-    <div className="relative w-52 h-52 sm:w-64 sm:h-64 mx-auto flex items-center justify-center">
+    <div className="relative w-40 h-40 sm:w-56 sm:h-56 mx-auto flex items-center justify-center">
       {/* Outer Acoustic Waves */}
       <motion.div
         animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.65, 0.25] }}
@@ -977,17 +977,40 @@ function FairlightAudioConsole() {
     { num: 5, label: "Master Approved", desc: "Sound Engineer Sign-off 👍" }
   ];
 
-  // Autonomous Camera Glide: Smoothly glides mobile / desktop viewport to active audio stage
-  const glideCameraToStage = (stageNum?: number) => {
+  // Autonomous Camera Glide: Smoothly frames and centers active audio stage in viewport
+  const glideCameraToStage = (stageNum: number = currentStage) => {
     if (typeof window === "undefined" || !stageAreaRef.current) return;
-    const rect = stageAreaRef.current.getBoundingClientRect();
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    // 85px offset accounts for fixed navbar and top breathing room
-    const targetY = rect.top + scrollTop - 85;
-    window.scrollTo({
-      top: Math.max(0, targetY),
-      behavior: "smooth"
-    });
+    
+    // Defer slightly to ensure the new stage DOM element has mounted
+    setTimeout(() => {
+      if (!stageAreaRef.current) return;
+      const rect = stageAreaRef.current.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const viewportHeight = window.innerHeight;
+      const navBarClearance = 72; // sticky header clearance
+      const availableHeight = viewportHeight - navBarClearance;
+
+      let targetY: number;
+
+      if (stageNum === 5) {
+        // Stage 5 is the animated Sound Engineer Avatar
+        // Center the avatar and sign-off card directly in the visible screen!
+        const centerOffset = Math.max(0, (availableHeight - rect.height) / 2);
+        targetY = rect.top + scrollTop - navBarClearance - centerOffset;
+      } else if (rect.height <= availableHeight) {
+        // If block fits within available viewport, center it smoothly!
+        const centerOffset = (availableHeight - rect.height) / 2;
+        targetY = rect.top + scrollTop - navBarClearance - Math.max(10, centerOffset);
+      } else {
+        // If card is taller than viewport (e.g. mobile Stage 1), position comfortably with breathing room
+        targetY = rect.top + scrollTop - navBarClearance - 8;
+      }
+
+      window.scrollTo({
+        top: Math.max(0, Math.round(targetY)),
+        behavior: "smooth"
+      });
+    }, 90);
   };
 
   const scrollToHeader = () => {
@@ -1018,26 +1041,23 @@ function FairlightAudioConsole() {
     setCurrentStage(1);
 
     // AUTONOMOUS CAMERA TRACKING: Glide down immediately so mobile viewers see Stage 1 live!
-    setTimeout(() => {
-      glideCameraToStage(1);
-    }, 120);
+    glideCameraToStage(1);
 
     const interval = setInterval(() => {
       stage += 1;
       if (stage <= 5) {
         setCurrentStage(stage);
         // Autonomously keep the active grid centered in view
-        setTimeout(() => {
-          glideCameraToStage(stage);
-        }, 80);
+        glideCameraToStage(stage);
       } else {
         clearInterval(interval);
+        // Final Stage 5 Sign-off: Calmly stay on Stage 5 and smoothly fade out tracking indicator with ZERO jerk
         setTimeout(() => {
           setIsSimulatingAudio(false);
           setAutoCameraActive(false);
-        }, 800);
+        }, 2500);
       }
-    }, 1900); // 1.9s per stage gives optimal tempo for camera tracking and telemetry absorption
+    }, 2100); // 2.1s per stage gives optimal tempo for camera tracking and telemetry absorption
   };
 
   return (
@@ -1078,13 +1098,13 @@ function FairlightAudioConsole() {
               {isSimulatingAudio ? `Processing Stage 0${currentStage}/05...` : "Run Fairlight Mastering Chain"}
             </button>
 
-            {/* Live Camera Glide Mobile Hint */}
-            {isSimulatingAudio && (
-              <div className="mt-2 flex items-center justify-center lg:justify-end gap-1.5 text-amber-400 font-mono text-[11px] animate-pulse">
-                <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-                <span>Autonomous camera tracking Stage 0{currentStage}/05...</span>
-              </div>
-            )}
+            {/* Live Camera Glide Mobile Hint (Fixed h-5 to prevent layout shift jerk when stopping) */}
+            <div className={`mt-2 h-5 flex items-center justify-center lg:justify-end gap-1.5 text-amber-400 font-mono text-[11px] transition-opacity duration-300 ${
+              isSimulatingAudio ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}>
+              <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0 animate-ping" />
+              <span>Autonomous camera tracking Stage 0{currentStage}/05...</span>
+            </div>
           </div>
         </div>
 
@@ -1253,32 +1273,71 @@ function FairlightAudioConsole() {
                     className="filter drop-shadow-[0_0_10px_rgba(0,194,212,0.8)]"
                   />
 
-                  {/* Clickable Band Handles */}
+                  {/* Clickable Band Handles (Flicker-Free with 22px Hit Targets) */}
                   {FAIRLIGHT_EQ_BANDS.map((band) => {
                     const isSelected = selectedBand.id === band.id;
                     return (
                       <g 
                         key={band.id} 
                         onClick={() => setSelectedBand(band)}
-                        className="cursor-pointer group"
+                        className="cursor-pointer group select-none"
                       >
+                        {/* 1. Large 22px Stable Hit Target: Mouse never loses hover boundary */}
                         <circle
                           cx={band.cx}
                           cy={band.cy}
-                          r={isSelected ? 10 : 7}
+                          r={22}
+                          fill="transparent"
+                          className="cursor-pointer"
+                        />
+
+                        {/* 2. Ambient Hover Halo (Pure CSS opacity transition, ZERO coordinate displacement) */}
+                        <circle
+                          cx={band.cx}
+                          cy={band.cy}
+                          r={isSelected ? 16 : 13}
+                          fill={isSelected ? "rgba(255,102,0,0.25)" : "rgba(0,194,212,0.2)"}
+                          className={`transition-opacity duration-200 pointer-events-none ${
+                            isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                          }`}
+                        />
+
+                        {/* 3. Outer Selected Dashed Ring */}
+                        {isSelected && (
+                          <circle
+                            cx={band.cx}
+                            cy={band.cy}
+                            r={14}
+                            fill="none"
+                            stroke="#FF6600"
+                            strokeWidth="1.5"
+                            strokeDasharray="3 3"
+                            className="pointer-events-none animate-spin"
+                            style={{ transformOrigin: `${band.cx}px ${band.cy}px`, animationDuration: "8s" }}
+                          />
+                        )}
+
+                        {/* 4. Core Node Circle (No CSS transform scale to prevent 60Hz hover jerking!) */}
+                        <circle
+                          cx={band.cx}
+                          cy={band.cy}
+                          r={isSelected ? 9.5 : 7.5}
                           fill={isSelected ? "#FF6600" : "#00C2D4"}
                           stroke="#050505"
                           strokeWidth="2.5"
-                          className="transition-all duration-200 group-hover:scale-125 filter drop-shadow-[0_0_8px_currentColor]"
+                          className="transition-colors duration-200 filter drop-shadow-[0_0_8px_currentColor] pointer-events-none"
                         />
+
+                        {/* 5. Frequency Band Text Label */}
                         <text
                           x={band.cx}
-                          y={band.cy - 12}
+                          y={band.cy - 14}
                           textAnchor="middle"
-                          fill={isSelected ? "#FF6600" : "#FFF"}
-                          fontSize="9"
+                          fill={isSelected ? "#FF6600" : "#FFFFFF"}
+                          fontSize="10"
                           fontFamily="monospace"
                           fontWeight="bold"
+                          className="select-none pointer-events-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]"
                         >
                           B{band.id}
                         </text>
@@ -1313,13 +1372,13 @@ function FairlightAudioConsole() {
           </div>
 
           {/* Right: Selected Band Engineering Card (5 Cols) */}
-          <div className="lg:col-span-5 bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+          <div className="lg:col-span-5 bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3 sm:pb-4 sm:mb-4">
               <div>
                 <span className="text-[10px] font-mono text-[#00C2D4] uppercase font-bold tracking-wider block">
                   {selectedBand.fairlightModule}
                 </span>
-                <h4 className="text-lg font-bold text-white uppercase tracking-tight">
+                <h4 className="text-base sm:text-lg font-bold text-white uppercase tracking-tight">
                   {selectedBand.name}
                 </h4>
               </div>
@@ -1328,45 +1387,45 @@ function FairlightAudioConsole() {
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 p-3 bg-white/5 rounded-xl border border-white/10 font-mono text-center mb-5">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 p-2.5 sm:p-3 bg-white/5 rounded-xl border border-white/10 font-mono text-center mb-3 sm:mb-5">
               <div>
-                <span className="text-[9px] text-white/40 uppercase block">Gain / Slope</span>
+                <span className="text-[8px] sm:text-[9px] text-white/40 uppercase block">Gain / Slope</span>
                 <span className="text-xs sm:text-sm font-bold text-[#00C2D4]">{selectedBand.gain}</span>
               </div>
               <div>
-                <span className="text-[9px] text-white/40 uppercase block">Q / Bandwidth</span>
+                <span className="text-[8px] sm:text-[9px] text-white/40 uppercase block">Q / Bandwidth</span>
                 <span className="text-xs sm:text-sm font-bold text-white">{selectedBand.q}</span>
               </div>
               <div>
-                <span className="text-[9px] text-white/40 uppercase block">Filter Type</span>
+                <span className="text-[8px] sm:text-[9px] text-white/40 uppercase block">Filter Type</span>
                 <span className="text-xs sm:text-sm font-bold text-[#FF6600]">{selectedBand.type}</span>
               </div>
             </div>
 
-            <div className="space-y-3 text-xs sm:text-sm">
-              <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 space-y-1">
-                <h5 className="font-mono text-[10px] uppercase font-bold text-red-400 flex items-center gap-1.5">
+            <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+              <div className="p-2.5 sm:p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 space-y-1">
+                <h5 className="font-mono text-[9px] sm:text-[10px] uppercase font-bold text-red-400 flex items-center gap-1.5">
                   <AlertTriangle size={12} /> The Raw AI Audio Flaw
                 </h5>
-                <p className="text-white/80 leading-relaxed text-xs">
+                <p className="text-white/80 leading-relaxed text-[11px] sm:text-xs">
                   {selectedBand.whyAILacksThis}
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                <h5 className="font-mono text-[10px] uppercase font-bold text-white/90 flex items-center gap-1.5">
+              <div className="p-2.5 sm:p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                <h5 className="font-mono text-[9px] sm:text-[10px] uppercase font-bold text-white/90 flex items-center gap-1.5">
                   <Sliders size={12} className="text-[#00C2D4]" /> Fairlight Action
                 </h5>
-                <p className="text-white/70 leading-relaxed text-xs">
+                <p className="text-white/70 leading-relaxed text-[11px] sm:text-xs">
                   {selectedBand.role}
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-green-500/10 border border-green-500/20 space-y-1">
-                <h5 className="font-mono text-[10px] uppercase font-bold text-green-400 flex items-center gap-1.5">
+              <div className="p-2.5 sm:p-3.5 rounded-xl bg-green-500/10 border border-green-500/20 space-y-1">
+                <h5 className="font-mono text-[9px] sm:text-[10px] uppercase font-bold text-green-400 flex items-center gap-1.5">
                   <CheckCircle2 size={12} /> Conversion ROI
                 </h5>
-                <p className="text-white/80 leading-relaxed text-xs">
+                <p className="text-white/80 leading-relaxed text-[11px] sm:text-xs">
                   {selectedBand.clientROI}
                 </p>
               </div>
@@ -1381,43 +1440,43 @@ function FairlightAudioConsole() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl"
+          className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl"
         >
-          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4 sm:pb-4 sm:mb-6">
             <div>
               <span className="text-[10px] font-mono text-[#00C2D4] uppercase font-bold">
                 STAGE 02 // DYNAMICS
               </span>
-              <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-white mt-1">
+              <h3 className="text-lg sm:text-2xl font-bold uppercase tracking-tight text-white mt-1">
                 Fairlight Dynamic Spectral De-Esser
               </h3>
             </div>
-            <span className="px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 font-mono text-xs font-bold rounded">
+            <span className="px-2.5 sm:px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 font-mono text-[10px] sm:text-xs font-bold rounded">
               Active Suppression
             </span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
-              <span className="text-xs font-mono font-bold text-[#00C2D4] uppercase">Listening Band</span>
-              <div className="text-2xl font-bold text-white font-mono">6,800 Hz – 8,400 Hz</div>
-              <p className="text-xs text-white/60 leading-relaxed">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
+            <div className="p-4 sm:p-5 bg-white/5 rounded-xl sm:rounded-2xl border border-white/10 space-y-1.5 sm:space-y-3">
+              <span className="text-[10px] sm:text-xs font-mono font-bold text-[#00C2D4] uppercase">Listening Band</span>
+              <div className="text-xl sm:text-2xl font-bold text-white font-mono">6,800 Hz – 8,400 Hz</div>
+              <p className="text-[11px] sm:text-xs text-white/60 leading-relaxed">
                 Targets the exact resonant whistle frequency generated by diffusion text-to-speech vocoders.
               </p>
             </div>
 
-            <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
-              <span className="text-xs font-mono font-bold text-[#FF6600] uppercase">Dynamic Threshold</span>
-              <div className="text-2xl font-bold text-white font-mono">-24.0 dBFS // -5.5 dB GR</div>
-              <p className="text-xs text-white/60 leading-relaxed">
+            <div className="p-4 sm:p-5 bg-white/5 rounded-xl sm:rounded-2xl border border-white/10 space-y-1.5 sm:space-y-3">
+              <span className="text-[10px] sm:text-xs font-mono font-bold text-[#FF6600] uppercase">Dynamic Threshold</span>
+              <div className="text-xl sm:text-2xl font-bold text-white font-mono">-24.0 dBFS // -5.5 dB GR</div>
+              <p className="text-[11px] sm:text-xs text-white/60 leading-relaxed">
                 Only triggers when harsh sibilants ("S", "T", "CH") occur, preserving high-frequency acoustic brilliance.
               </p>
             </div>
 
-            <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-3">
-              <span className="text-xs font-mono font-bold text-green-400 uppercase">Acoustic Result</span>
-              <div className="text-2xl font-bold text-white font-mono">Zero Ear Fatigue</div>
-              <p className="text-xs text-white/60 leading-relaxed">
+            <div className="p-4 sm:p-5 bg-white/5 rounded-xl sm:rounded-2xl border border-white/10 space-y-1.5 sm:space-y-3">
+              <span className="text-[10px] sm:text-xs font-mono font-bold text-green-400 uppercase">Acoustic Result</span>
+              <div className="text-xl sm:text-2xl font-bold text-white font-mono">Zero Ear Fatigue</div>
+              <p className="text-[11px] sm:text-xs text-white/60 leading-relaxed">
                 Listeners on AirPods and studio headphones experience silky, comfortable dialogue without piercing hiss.
               </p>
             </div>
@@ -1447,30 +1506,30 @@ function FairlightAudioConsole() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
             {FAIRLIGHT_DYNAMICS_BANDS.map((band, idx) => (
               <div 
                 key={band.id}
-                className="p-4 rounded-2xl bg-black/60 border border-white/10 flex flex-col justify-between"
+                className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-black/60 border border-white/10 flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-mono text-xs font-bold" style={{ color: band.color }}>
+                    <span className="font-mono text-[11px] sm:text-xs font-bold" style={{ color: band.color }}>
                       {band.id} BAND
                     </span>
-                    <span className="text-[10px] font-mono text-white/50">{band.ratio}</span>
+                    <span className="text-[9px] sm:text-[10px] font-mono text-white/50">{band.ratio}</span>
                   </div>
-                  <div className="text-[11px] font-mono text-white/70 mb-3">{band.range}</div>
-                  <p className="text-[11px] text-white/60 leading-relaxed mb-4">{band.role}</p>
+                  <div className="text-[10px] sm:text-[11px] font-mono text-white/70 mb-2 truncate">{band.range}</div>
+                  <p className="text-[10px] sm:text-[11px] text-white/60 leading-relaxed mb-3 line-clamp-2 sm:line-clamp-none">{band.role}</p>
                 </div>
 
                 {/* Animated GR Meter */}
-                <div className="space-y-1.5 my-2">
-                  <div className="flex justify-between text-[9px] font-mono text-white/50">
+                <div className="space-y-1 my-1.5">
+                  <div className="flex justify-between text-[8px] sm:text-[9px] font-mono text-white/50">
                     <span>GAIN REDUCTION</span>
                     <span className="text-[#00C2D4] font-bold">{band.gainReduction} dB</span>
                   </div>
-                  <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden flex justify-end">
+                  <div className="w-full h-2.5 sm:h-3 bg-white/10 rounded-full overflow-hidden flex justify-end">
                     <motion.div
                       animate={{ width: ["20%", "55%", "30%", "70%", "25%"] }}
                       transition={{
@@ -1484,7 +1543,7 @@ function FairlightAudioConsole() {
                   </div>
                 </div>
 
-                <div className="text-[9px] font-mono text-white/40 pt-3 border-t border-white/10 flex justify-between">
+                <div className="text-[8px] sm:text-[9px] font-mono text-white/40 pt-2 border-t border-white/10 flex justify-between">
                   <span>ATT: {band.attack}</span>
                   <span>REL: {band.release}</span>
                 </div>
@@ -1500,45 +1559,45 @@ function FairlightAudioConsole() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl"
+          className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl"
         >
-          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4 sm:mb-6">
             <div>
               <span className="text-[10px] font-mono text-[#00C2D4] uppercase font-bold">
                 STAGE 04 // BROADCAST COMPLIANCE
               </span>
-              <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-white mt-1">
+              <h3 className="text-lg sm:text-2xl font-bold uppercase tracking-tight text-white mt-1">
                 EBU R128 & True Peak Limiter Telemetry
               </h3>
             </div>
-            <span className="px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 font-mono text-xs font-bold rounded flex items-center gap-1.5">
+            <span className="px-2.5 sm:px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 font-mono text-[10px] sm:text-xs font-bold rounded flex items-center gap-1.5">
               <CheckCircle2 size={13} /> ITU BS.1770-4 PASS
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-              <span className="text-[10px] text-white/40 uppercase block mb-1">Integrated Loudness</span>
-              <div className="text-xl font-bold text-green-400">-14.0 LUFS</div>
-              <span className="text-[10px] text-white/50 block mt-1">Web / YouTube Target Legal</span>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 font-mono">
+            <div className="p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/10">
+              <span className="text-[9px] sm:text-[10px] text-white/40 uppercase block mb-1">Integrated Loudness</span>
+              <div className="text-lg sm:text-xl font-bold text-green-400">-14.0 LUFS</div>
+              <span className="text-[9px] sm:text-[10px] text-white/50 block mt-1">Web / YouTube Legal</span>
             </div>
 
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-              <span className="text-[10px] text-white/40 uppercase block mb-1">True Peak Ceiling</span>
-              <div className="text-xl font-bold text-[#00C2D4]">-1.00 dBTP</div>
-              <span className="text-[10px] text-white/50 block mt-1">Zero Inter-Sample DAC Clipping</span>
+            <div className="p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/10">
+              <span className="text-[9px] sm:text-[10px] text-white/40 uppercase block mb-1">True Peak Ceiling</span>
+              <div className="text-lg sm:text-xl font-bold text-[#00C2D4]">-1.00 dBTP</div>
+              <span className="text-[9px] sm:text-[10px] text-white/50 block mt-1">Zero DAC Clipping</span>
             </div>
 
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-              <span className="text-[10px] text-white/40 uppercase block mb-1">Loudness Range (LRA)</span>
-              <div className="text-xl font-bold text-[#FF6600]">6.5 LU</div>
-              <span className="text-[10px] text-white/50 block mt-1">Cinema Dynamic Cohesion</span>
+            <div className="p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/10">
+              <span className="text-[9px] sm:text-[10px] text-white/40 uppercase block mb-1">Loudness Range (LRA)</span>
+              <div className="text-lg sm:text-xl font-bold text-[#FF6600]">6.5 LU</div>
+              <span className="text-[9px] sm:text-[10px] text-white/50 block mt-1">Cinema Cohesion</span>
             </div>
 
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-              <span className="text-[10px] text-white/40 uppercase block mb-1">Stereo Phase Correlation</span>
-              <div className="text-xl font-bold text-white">+0.92</div>
-              <span className="text-[10px] text-white/50 block mt-1">100% Mono-Safe Phone Playback</span>
+            <div className="p-3 sm:p-4 bg-white/5 rounded-xl sm:rounded-2xl border border-white/10">
+              <span className="text-[9px] sm:text-[10px] text-white/40 uppercase block mb-1">Stereo Phase Correlation</span>
+              <div className="text-lg sm:text-xl font-bold text-white">+0.92</div>
+              <span className="text-[9px] sm:text-[10px] text-white/50 block mt-1">100% Mono-Safe Playback</span>
             </div>
           </div>
         </motion.div>
@@ -1547,10 +1606,10 @@ function FairlightAudioConsole() {
       {/* ================= STAGE 5: FINAL APPROVAL - ANIMATED SOUND ENGINEER WITH HEADPHONES & THUMBS UP! ================= */}
       {currentStage === 5 && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="bg-[#0A0A0A] border border-[#00C2D4]/40 rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-[0_0_50px_rgba(0,194,212,0.15)] relative overflow-hidden text-center"
+          transition={{ duration: 0.4 }}
+          className="bg-[#0A0A0A] border border-[#00C2D4]/40 rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-10 shadow-[0_0_50px_rgba(0,194,212,0.15)] relative overflow-hidden text-center"
         >
           {/* Cyan Ambient Glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-[#00C2D4]/10 rounded-full blur-[140px] pointer-events-none" />
@@ -1558,24 +1617,24 @@ function FairlightAudioConsole() {
           {/* THE ANIMATED SOUND ENGINEER AVATAR! */}
           <SoundEngineerAvatar />
 
-          <div className="max-w-2xl mx-auto space-y-3 mt-4 relative z-10">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-green-500/10 border border-green-500/30 text-green-400 font-mono text-xs uppercase tracking-widest font-bold">
+          <div className="max-w-2xl mx-auto space-y-2.5 sm:space-y-3 mt-3 sm:mt-4 relative z-10">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-green-500/10 border border-green-500/30 text-green-400 font-mono text-[10px] sm:text-xs uppercase tracking-widest font-bold">
               <CheckCircle2 size={13} /> Sound Engineer Approved // 100% Broadcast Ready
             </span>
 
-            <h3 className="text-2xl sm:text-4xl font-heading font-bold uppercase tracking-tight text-white">
+            <h3 className="text-xl sm:text-3xl md:text-4xl font-heading font-bold uppercase tracking-tight text-white">
               Pristine Hollywood Master Verified
             </h3>
 
-            <p className="text-white/70 text-xs sm:text-base leading-relaxed font-sans">
+            <p className="text-white/70 text-xs sm:text-sm md:text-base leading-relaxed font-sans max-w-xl mx-auto">
               "The audio stem has been sculpted through DaVinci Resolve Fairlight. The 420Hz boxy AI resonance is eliminated, sibilants are tamed without dulling highs, and loudness is locked at -14.0 LUFS with a -1.0 dBTP ceiling. This commercial will sound immense on Apple AirPods, OLED TVs, and smartphone speakers."
             </p>
 
-            <div className="pt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-mono">
-              <span className="px-3 py-1 bg-white/5 rounded-full border border-white/10 text-white/80">32-Bit Float 48kHz</span>
-              <span className="px-3 py-1 bg-white/5 rounded-full border border-white/10 text-white/80">EBU R128 Certified</span>
-              <span className="px-3 py-1 bg-white/5 rounded-full border border-white/10 text-white/80">Linear Phase EQ</span>
-              <span className="px-3 py-1 bg-white/5 rounded-full border border-white/10 text-white/80">Dialogue Intimacy Lock</span>
+            <div className="pt-2 sm:pt-4 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono">
+              <span className="px-2.5 py-1 bg-white/5 rounded-full border border-white/10 text-white/80">32-Bit Float 48kHz</span>
+              <span className="px-2.5 py-1 bg-white/5 rounded-full border border-white/10 text-white/80">EBU R128 Certified</span>
+              <span className="px-2.5 py-1 bg-white/5 rounded-full border border-white/10 text-white/80">Linear Phase EQ</span>
+              <span className="px-2.5 py-1 bg-white/5 rounded-full border border-white/10 text-white/80">Dialogue Intimacy Lock</span>
             </div>
           </div>
         </motion.div>
