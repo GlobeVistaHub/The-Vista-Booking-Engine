@@ -1676,21 +1676,21 @@ export function StudioClient() {
               </motion.span>
             </div>
 
-            {/* Line 2: RAW AI second line */}
-            <div className="whitespace-nowrap mt-1 sm:mt-2">
+            {/* Line 2: RAW AI INTO */}
+            <div className="whitespace-nowrap mt-1 sm:mt-2 flex items-center justify-center gap-2.5 sm:gap-4">
               <motion.span variants={kineticText} className="inline-block text-[#00C2D4]">
                 RAW AI
+              </motion.span>{" "}
+              <motion.span variants={kineticText} className="inline-block text-white">
+                INTO
               </motion.span>
             </div>
 
-            {/* Line 3: INTO HOLLYWOOD CINEMA (centered) */}
+            {/* Line 3: HOLLYWOOD CINEMA (centered, gradient) */}
             <div 
               ref={wordRef}
-              className="whitespace-nowrap mt-1 sm:mt-2 flex items-center justify-center gap-2.5 sm:gap-4"
+              className="whitespace-nowrap mt-1 sm:mt-2"
             >
-              <motion.span variants={kineticText} className="inline-block text-white">
-                INTO
-              </motion.span>{" "}
               <motion.span 
                 variants={kineticText} 
                 className="inline-block bg-gradient-to-r from-white via-[#00C2D4] to-[#FF6600] bg-clip-text text-transparent"
