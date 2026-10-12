@@ -327,9 +327,114 @@ const staggerContainer: any = {
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
 };
 
+// Cinematic Anamorphic Optical Flare & Bokeh Horizon
+function AnamorphicOpticalHorizon() {
+  return (
+    <div className="relative my-6 sm:my-8 max-w-2xl mx-auto flex flex-col items-center justify-center select-none group pointer-events-auto">
+      {/* 1. Ambient Volumetric Lens Bloom (Behind Streak) */}
+      <div className="absolute w-3/4 h-10 bg-gradient-to-r from-transparent via-[#00C2D4]/20 to-transparent blur-xl pointer-events-none -top-5" />
+      <div className="absolute w-1/2 h-6 bg-gradient-to-r from-transparent via-[#FF6600]/15 to-transparent blur-md pointer-events-none -top-3" />
+
+      {/* 2. Horizontal Anamorphic Flare Streak Beam */}
+      <div className="relative w-full flex items-center justify-center">
+        {/* Outer Tapering Flare Horizon */}
+        <motion.div 
+          animate={{ opacity: [0.55, 0.9, 0.55], scaleX: [0.97, 1.03, 0.97] }}
+          transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+          className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#00C2D4]/70 via-white/80 to-transparent" 
+        />
+
+        {/* High-Intensity Core Laser Beam */}
+        <motion.div
+          animate={{ opacity: [0.75, 1, 0.75], width: ["45%", "60%", "45%"] }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute h-[1.5px] bg-gradient-to-r from-transparent via-[#00C2D4] via-white to-transparent filter drop-shadow-[0_0_10px_rgba(0,194,212,0.95)]"
+        />
+
+        {/* 3. Central Optical Aperture Star & Diamond Glint */}
+        <div className="absolute flex items-center justify-center">
+          {/* Subtle Precision Lens Crosshair */}
+          <div className="absolute w-8 h-[1px] bg-white/60 pointer-events-none" />
+          <div className="absolute h-8 w-[1px] bg-white/60 pointer-events-none" />
+
+          {/* 4-Point Cinema Diamond Star Flare */}
+          <motion.svg
+            viewBox="0 0 24 24"
+            className="w-5 h-5 text-white filter drop-shadow-[0_0_12px_#00C2D4] pointer-events-none"
+            animate={{ scale: [0.85, 1.25, 0.85], rotate: [0, 90, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <path
+              d="M 12 0 Q 12 12 24 12 Q 12 12 12 24 Q 12 12 0 12 Q 12 12 12 0 Z"
+              fill="#FFFFFF"
+            />
+          </motion.svg>
+
+          {/* Core White Photon Point */}
+          <div className="w-1.5 h-1.5 rounded-full bg-white filter drop-shadow-[0_0_6px_#FFFFFF]" />
+
+          {/* Chromatic Red/Amber Halation Edge */}
+          <motion.div
+            animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.7, 0.3] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute w-7 h-7 rounded-full bg-gradient-to-tr from-[#00C2D4]/30 via-white/20 to-[#FF6600]/30 blur-[2px] pointer-events-none"
+          />
+        </div>
+      </div>
+
+      {/* 4. Film Optics Demarcation (Explaining clearly what this is!) */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.65 }}
+        className="mt-2.5 flex items-center gap-2 sm:gap-3 text-[8px] sm:text-[9px] font-mono tracking-[0.2em] uppercase text-white/50"
+      >
+        <span className="text-[#00C2D4] font-bold">2.39:1</span>
+        <span className="w-1 h-1 rounded-full bg-white/30" />
+        <span>1.33x ANAMORPHIC OPTICAL FLARE</span>
+        <span className="w-1 h-1 rounded-full bg-white/30" />
+        <span className="text-[#FF6600] font-bold">650nm HALATION</span>
+      </motion.div>
+
+      {/* 5. Cinematic Floating Bokeh Motes / Dust Light Particles */}
+      <div className="absolute inset-x-0 -top-6 -bottom-6 pointer-events-none overflow-visible">
+        {[
+          { x: "16%", y: "25%", size: 3, delay: 0, color: "#00C2D4" },
+          { x: "26%", y: "75%", size: 2, delay: 0.8, color: "#FFFFFF" },
+          { x: "38%", y: "20%", size: 2.5, delay: 1.4, color: "#00C2D4" },
+          { x: "62%", y: "80%", size: 2, delay: 0.5, color: "#FF6600" },
+          { x: "74%", y: "30%", size: 3, delay: 1.9, color: "#00C2D4" },
+          { x: "85%", y: "70%", size: 2, delay: 1.1, color: "#FFFFFF" },
+        ].map((mote, i) => (
+          <motion.div
+            key={`mote-${i}`}
+            className="absolute rounded-full"
+            style={{
+              left: mote.x,
+              top: mote.y,
+              width: `${mote.size}px`,
+              height: `${mote.size}px`,
+              backgroundColor: mote.color,
+              boxShadow: `0 0 8px ${mote.color}`
+            }}
+            animate={{
+              y: [0, -12, 0],
+              x: [0, (i % 2 === 0 ? 4 : -4), 0],
+              opacity: [0.2, 0.9, 0.2]
+            }}
+            transition={{
+              duration: 3.2 + (i * 0.4),
+              repeat: Infinity,
+              delay: mote.delay,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 
-// Interactive Audio Frequency Visualizer Bars
 function FrequencyVisualizer() {
   return (
     <div className="flex items-end gap-[3px] h-6 px-3 py-1 bg-black/40 border border-white/10 rounded-lg">
@@ -2005,6 +2110,9 @@ export function StudioClient() {
             </div>
           </h1>
         </motion.div>
+
+        {/* Intentional Cinematic Anamorphic Optical Horizon */}
+        <AnamorphicOpticalHorizon />
 
         {/* Subtitle with Kinetic Fade */}
         <motion.p 
