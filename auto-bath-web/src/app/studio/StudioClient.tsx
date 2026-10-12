@@ -327,33 +327,97 @@ const staggerContainer: any = {
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
 };
 
-// Cinematic Anamorphic Optical Flare & Bokeh Horizon
+// Cinematic Anamorphic Optical Flare & Bokeh Horizon (Touch & Cursor Reactive)
 function AnamorphicOpticalHorizon() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isInteracting, setIsInteracting] = useState(false);
+
+  // Motion physics spring for silky responsive glint tracking
+  const rawX = useMotionValue(0);
+  const springX = useSpring(rawX, { stiffness: 180, damping: 22, mass: 0.5 });
+  const bloomX = useTransform(springX, (v) => v * 0.65);
+
+  // Parallax transforms for the 6 bokeh motes
+  const mote0X = useTransform(springX, (v) => v * 0.22);
+  const mote1X = useTransform(springX, (v) => v * 0.38);
+  const mote2X = useTransform(springX, (v) => v * 0.16);
+  const mote3X = useTransform(springX, (v) => v * 0.42);
+  const mote4X = useTransform(springX, (v) => v * 0.28);
+  const mote5X = useTransform(springX, (v) => v * 0.34);
+  const moteTransforms = [mote0X, mote1X, mote2X, mote3X, mote4X, mote5X];
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const relX = e.clientX - (rect.left + rect.width / 2);
+    const maxRange = rect.width * 0.44;
+    const clampedX = Math.max(-maxRange, Math.min(maxRange, relX));
+    rawX.set(clampedX);
+    setIsInteracting(true);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {}
+    handlePointerMove(e);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+    rawX.set(0);
+    setIsInteracting(false);
+  };
+
+  const handlePointerLeave = () => {
+    rawX.set(0);
+    setIsInteracting(false);
+  };
+
   return (
-    <div className="relative my-7 sm:my-9 max-w-2xl mx-auto flex flex-col items-center justify-center select-none group pointer-events-auto">
-      {/* 1. Ambient Volumetric Lens Bloom (Behind Streak - Broad, Silky, Natural) */}
-      <div className="absolute w-3/4 h-12 bg-gradient-to-r from-transparent via-[#00C2D4]/15 to-transparent blur-2xl pointer-events-none -top-6" />
-      <div className="absolute w-1/2 h-8 bg-gradient-to-r from-transparent via-[#FF6600]/10 to-transparent blur-lg pointer-events-none -top-4" />
+    <div 
+      ref={containerRef}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerLeave}
+      onPointerCancel={handlePointerLeave}
+      className="relative my-7 sm:my-9 max-w-2xl mx-auto flex flex-col items-center justify-center select-none group cursor-ew-resize touch-pan-y py-4 px-2"
+    >
+      {/* 1. Ambient Volumetric Lens Bloom (Behind Streak - Broad, Silky, Natural, Tracks Pointer) */}
+      <motion.div 
+        style={{ x: bloomX }}
+        className="absolute w-3/4 h-12 bg-gradient-to-r from-transparent via-[#00C2D4]/15 to-transparent blur-2xl pointer-events-none -top-6" 
+      />
+      <motion.div 
+        style={{ x: bloomX }}
+        className="absolute w-1/2 h-8 bg-gradient-to-r from-transparent via-[#FF6600]/10 to-transparent blur-lg pointer-events-none -top-4" 
+      />
 
       {/* 2. Horizontal Anamorphic Flare Streak Beam */}
-      <div className="relative w-full flex items-center justify-center">
+      <div className="relative w-full flex items-center justify-center pointer-events-none">
         {/* Outer Tapering Flare Horizon */}
         <motion.div 
-          animate={{ opacity: [0.45, 0.75, 0.45], scaleX: [0.97, 1.03, 0.97] }}
+          animate={{ opacity: isInteracting ? 0.9 : [0.45, 0.75, 0.45], scaleX: [0.97, 1.03, 0.97] }}
           transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
           className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#00C2D4]/50 via-white/60 to-transparent" 
         />
 
         {/* High-Intensity Core Laser Beam (Softened falloff, silky optical glow) */}
         <motion.div
-          animate={{ opacity: [0.6, 0.85, 0.6], width: ["45%", "60%", "45%"] }}
+          animate={{ opacity: isInteracting ? 1 : [0.6, 0.85, 0.6], width: isInteracting ? "70%" : ["45%", "60%", "45%"] }}
           transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
           className="absolute h-[1.5px] bg-gradient-to-r from-transparent via-[#00C2D4]/80 via-white/90 to-transparent filter drop-shadow-[0_0_8px_rgba(0,194,212,0.6)]"
         />
 
-        {/* 3. Central Optical Aperture Star & Diamond Glint (Softened glow, no harsh edges) */}
-        <div className="absolute flex items-center justify-center">
-          {/* Subtle Precision Lens Reticle (Contained neatly within beam to prevent overlap below) */}
+        {/* 3. Central Optical Aperture Star & Diamond Glint (Smoothly tracks cursor/finger via springX) */}
+        <motion.div 
+          style={{ x: springX }}
+          className="absolute flex items-center justify-center"
+        >
+          {/* Subtle Precision Lens Reticle */}
           <div className="absolute w-6 h-[1px] bg-white/40 pointer-events-none" />
           <div className="absolute h-3 w-[1px] bg-white/40 pointer-events-none" />
 
@@ -361,7 +425,10 @@ function AnamorphicOpticalHorizon() {
           <motion.svg
             viewBox="0 0 24 24"
             className="w-4 h-4 sm:w-5 sm:h-5 text-white/90 filter drop-shadow-[0_0_6px_rgba(0,194,212,0.7)] pointer-events-none"
-            animate={{ scale: [0.85, 1.15, 0.85], rotate: [0, 90, 0] }}
+            animate={{ 
+              scale: isInteracting ? 1.25 : [0.85, 1.15, 0.85], 
+              rotate: [0, 90, 0] 
+            }}
             transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
           >
             <path
@@ -376,18 +443,18 @@ function AnamorphicOpticalHorizon() {
 
           {/* Chromatic Red/Amber Halation Edge (Soft optical dispersion) */}
           <motion.div
-            animate={{ scale: [1, 1.4, 1], opacity: [0.25, 0.55, 0.25] }}
+            animate={{ scale: isInteracting ? 1.5 : [1, 1.4, 1], opacity: isInteracting ? 0.6 : [0.25, 0.55, 0.25] }}
             transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
             className="absolute w-8 h-8 rounded-full bg-gradient-to-tr from-[#00C2D4]/25 via-white/15 to-[#FF6600]/25 blur-[3px] pointer-events-none"
           />
-        </div>
+        </motion.div>
       </div>
 
       {/* 4. Film Optics Demarcation (Lowered with mt-5, boosted size for crisp desktop & mobile legibility) */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="mt-4 sm:mt-5 flex items-center justify-center flex-wrap gap-2 sm:gap-3 text-[10px] sm:text-[11.5px] font-mono font-medium tracking-[0.18em] sm:tracking-[0.24em] uppercase text-white/80"
+        className="mt-4 sm:mt-5 flex items-center justify-center flex-wrap gap-2 sm:gap-3 text-[10px] sm:text-[11.5px] font-mono font-medium tracking-[0.18em] sm:tracking-[0.24em] uppercase text-white/80 pointer-events-none"
       >
         <span className="text-[#00C2D4] font-bold">2.39:1</span>
         <span className="w-1.5 h-1.5 rounded-full bg-[#00C2D4]/40" />
@@ -396,7 +463,13 @@ function AnamorphicOpticalHorizon() {
         <span className="text-[#FF6600] font-bold">650nm HALATION</span>
       </motion.div>
 
-      {/* 5. Cinematic Floating Bokeh Motes / Dust Light Particles */}
+      {/* 5. Subtle Interactive Scrubber Telemetry / Indicator */}
+      <div className="mt-1.5 text-[8.5px] sm:text-[9px] font-mono tracking-widest text-[#00C2D4]/70 uppercase flex items-center gap-1.5 pointer-events-none transition-all">
+        <span className={`w-1.5 h-1.5 rounded-full ${isInteracting ? "bg-[#FF6600] animate-ping" : "bg-[#00C2D4] animate-pulse"}`} />
+        <span>{isInteracting ? "OPTICAL ANAMORPHIC DEFLECTION ACTIVE" : "SCRUB WITH CURSOR OR TOUCH TO DEFLECT FLARE"}</span>
+      </div>
+
+      {/* 6. Cinematic Floating Bokeh Motes / Dust Light Particles (With Parallax Cursor/Finger Deflection) */}
       <div className="absolute inset-x-0 -top-6 -bottom-6 pointer-events-none overflow-visible">
         {[
           { x: "16%", y: "25%", size: 3, delay: 0, color: "#00C2D4" },
@@ -415,11 +488,11 @@ function AnamorphicOpticalHorizon() {
               width: `${mote.size}px`,
               height: `${mote.size}px`,
               backgroundColor: mote.color,
-              boxShadow: `0 0 8px ${mote.color}`
+              boxShadow: `0 0 8px ${mote.color}`,
+              x: moteTransforms[i]
             }}
             animate={{
               y: [0, -12, 0],
-              x: [0, (i % 2 === 0 ? 4 : -4), 0],
               opacity: [0.15, 0.75, 0.15]
             }}
             transition={{
