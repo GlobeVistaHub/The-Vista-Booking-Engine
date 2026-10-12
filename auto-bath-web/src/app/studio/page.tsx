@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { StudioClient } from "./StudioClient";
+import StudioClient from "./StudioClient";
 
 export const metadata: Metadata = {
   title: "Good Brains Studio | Cinematic AI & Optical Engineering",
