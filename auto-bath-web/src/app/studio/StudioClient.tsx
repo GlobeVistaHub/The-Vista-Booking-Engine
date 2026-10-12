@@ -1501,7 +1501,7 @@ export function StudioClient() {
 
   // Responsive typography auto-fit references
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const wordRef = useRef<HTMLSpanElement>(null);
+  const wordRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const title = titleRef.current;
@@ -1509,7 +1509,7 @@ export function StudioClient() {
     if (!title || !word) return;
 
     const fit = () => {
-      if (window.innerWidth >= 640) {
+      if (window.innerWidth >= 1024) {
         title.style.fontSize = "";
         return;
       }
@@ -1518,7 +1518,7 @@ export function StudioClient() {
       const wordWidth = word.offsetWidth;
       const available = title.clientWidth;
       if (!wordWidth || !available) return;
-      title.style.fontSize = `${Math.min((available / wordWidth) * REFERENCE_PX * 0.97, 44)}px`;
+      title.style.fontSize = `${Math.min((available / wordWidth) * REFERENCE_PX * 0.95, 64)}px`;
     };
 
     fit();
@@ -1666,23 +1666,32 @@ export function StudioClient() {
         >
           <h1 
             ref={titleRef}
-            className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-heading font-bold text-white tracking-tight uppercase leading-[1.1] mb-6 max-w-5xl mx-auto"
+            className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-heading font-bold text-white tracking-tight uppercase leading-[1.05] sm:leading-[1.08] mb-6 max-w-5xl mx-auto flex flex-col items-center justify-center text-center"
             style={{ perspective: "1000px" }}
           >
+            {/* Line 1: TRANSFORMING alone */}
             <div className="whitespace-nowrap">
               <motion.span variants={kineticText} className="inline-block">
                 TRANSFORMING
-              </motion.span>{" "}
+              </motion.span>
+            </div>
+
+            {/* Line 2: RAW AI second line */}
+            <div className="whitespace-nowrap mt-1 sm:mt-2">
               <motion.span variants={kineticText} className="inline-block text-[#00C2D4]">
                 RAW AI
               </motion.span>
             </div>
-            <div className="whitespace-nowrap mt-1 sm:mt-2">
-              <motion.span variants={kineticText} className="inline-block">
+
+            {/* Line 3: INTO HOLLYWOOD CINEMA (centered) */}
+            <div 
+              ref={wordRef}
+              className="whitespace-nowrap mt-1 sm:mt-2 flex items-center justify-center gap-2.5 sm:gap-4"
+            >
+              <motion.span variants={kineticText} className="inline-block text-white">
                 INTO
               </motion.span>{" "}
               <motion.span 
-                ref={wordRef}
                 variants={kineticText} 
                 className="inline-block bg-gradient-to-r from-white via-[#00C2D4] to-[#FF6600] bg-clip-text text-transparent"
               >
