@@ -22,7 +22,10 @@ import {
   Volume2,
   Wand2,
   Crosshair,
-  Gauge
+  Gauge,
+  BarChart3,
+  AlertTriangle,
+  Radio
 } from "lucide-react";
 
 interface NodeData {
@@ -34,8 +37,20 @@ interface NodeData {
   clientROI: string;
   status: string;
   ireLevel: string;
-  x: number; // Node graph layout coordinate
+  x: number;
   y: number;
+  scopeProfile: {
+    saturation: string;
+    statusText: string;
+    isLegal: boolean;
+    lumaPeak: string;
+    blackFloor: string;
+    activeTargets: string[];
+    tracePath: string;
+    redIRE: number;
+    greenIRE: number;
+    blueIRE: number;
+  };
 }
 
 const FUSION_NODES: NodeData[] = [
@@ -49,7 +64,19 @@ const FUSION_NODES: NodeData[] = [
     status: "100% RAW PASS",
     ireLevel: "0 - 100 IRE",
     x: 40,
-    y: 80
+    y: 85,
+    scopeProfile: {
+      saturation: "118.4%",
+      statusText: "NON-LEGAL CHROMA CLIPPING",
+      isLegal: false,
+      lumaPeak: "109 IRE (CLIPPING)",
+      blackFloor: "0.0 IRE (CRUSHED)",
+      activeTargets: ["R", "B", "Mg"],
+      tracePath: "M 95 105 Q 60 70 35 45 Q 65 30 110 50 Q 170 65 160 140 Q 120 170 75 145 Z",
+      redIRE: 98,
+      greenIRE: 65,
+      blueIRE: 95
+    }
   },
   {
     id: "BrightnessContrast1",
@@ -61,7 +88,19 @@ const FUSION_NODES: NodeData[] = [
     status: "LOG COMPRESSION",
     ireLevel: "18% MID-GREY",
     x: 230,
-    y: 80
+    y: 85,
+    scopeProfile: {
+      saturation: "28.5%",
+      statusText: "LOG S-CURVE COMPRESSION",
+      isLegal: true,
+      lumaPeak: "72 IRE (EXPANDABLE)",
+      blackFloor: "12 IRE (PROTECTED)",
+      activeTargets: [],
+      tracePath: "M 98 102 Q 90 92 85 88 Q 95 85 105 90 Q 112 95 110 108 Q 105 112 98 102 Z",
+      redIRE: 55,
+      greenIRE: 52,
+      blueIRE: 50
+    }
   },
   {
     id: "LumaKeyer1",
@@ -73,7 +112,19 @@ const FUSION_NODES: NodeData[] = [
     status: "LUMA ISOLATION",
     ireLevel: ">85 IRE",
     x: 420,
-    y: 40
+    y: 35,
+    scopeProfile: {
+      saturation: "34.0%",
+      statusText: "HIGHLIGHT LUMA ISOLATION",
+      isLegal: true,
+      lumaPeak: "89 IRE (ISOLATED)",
+      blackFloor: "0.0 IRE",
+      activeTargets: ["Yl", "R"],
+      tracePath: "M 97 103 Q 92 80 88 55 Q 102 50 112 60 Q 118 78 108 104 Z",
+      redIRE: 88,
+      greenIRE: 82,
+      blueIRE: 60
+    }
   },
   {
     id: "ColorCorrector1",
@@ -85,7 +136,19 @@ const FUSION_NODES: NodeData[] = [
     status: "KODAK 2383 MATRIX",
     ireLevel: "DCI-P3 GAMUT",
     x: 420,
-    y: 130
+    y: 135,
+    scopeProfile: {
+      saturation: "68.2%",
+      statusText: "KODAK 2383 TEAL/AMBER SPLIT",
+      isLegal: true,
+      lumaPeak: "94 IRE",
+      blackFloor: "4.5 IRE",
+      activeTargets: ["R", "Yl", "Cy"],
+      tracePath: "M 96 104 Q 80 82 55 60 Q 75 65 95 85 Q 120 115 145 135 Q 125 130 96 104 Z",
+      redIRE: 78,
+      greenIRE: 60,
+      blueIRE: 72
+    }
   },
   {
     id: "SoftGlow1",
@@ -97,7 +160,19 @@ const FUSION_NODES: NodeData[] = [
     status: "HALATION ACTIVE",
     ireLevel: "RED-FRINGE 650nm",
     x: 610,
-    y: 40
+    y: 35,
+    scopeProfile: {
+      saturation: "74.5%",
+      statusText: "650nm RED OPTICAL HALATION",
+      isLegal: true,
+      lumaPeak: "96 IRE",
+      blackFloor: "5.0 IRE",
+      activeTargets: ["R", "Mg"],
+      tracePath: "M 95 105 Q 75 75 42 58 Q 68 50 92 78 Q 112 90 120 108 Q 105 118 95 105 Z",
+      redIRE: 92,
+      greenIRE: 64,
+      blueIRE: 58
+    }
   },
   {
     id: "FilmGrain1",
@@ -109,7 +184,19 @@ const FUSION_NODES: NodeData[] = [
     status: "35MM 500T GRAIN",
     ireLevel: "ORGANIC DITHER",
     x: 610,
-    y: 130
+    y: 135,
+    scopeProfile: {
+      saturation: "56.8%",
+      statusText: "35MM SILVER-HALIDE DITHER",
+      isLegal: true,
+      lumaPeak: "95 IRE",
+      blackFloor: "6.2 IRE",
+      activeTargets: ["Cy", "Yl"],
+      tracePath: "M 94 106 Q 84 88 72 78 Q 90 74 104 84 Q 124 96 116 112 Q 102 116 94 106 Z",
+      redIRE: 70,
+      greenIRE: 68,
+      blueIRE: 69
+    }
   },
   {
     id: "LensDistort1",
@@ -121,7 +208,19 @@ const FUSION_NODES: NodeData[] = [
     status: "BARREL CHROMATIC",
     ireLevel: "0.015 SQUEEZE",
     x: 800,
-    y: 40
+    y: 35,
+    scopeProfile: {
+      saturation: "62.0%",
+      statusText: "1.33x ANAMORPHIC GLASS SQUEEZE",
+      isLegal: true,
+      lumaPeak: "95 IRE",
+      blackFloor: "5.5 IRE",
+      activeTargets: ["B", "Cy"],
+      tracePath: "M 92 108 Q 78 95 65 92 Q 85 80 110 82 Q 135 90 130 112 Q 110 118 92 108 Z",
+      redIRE: 68,
+      greenIRE: 65,
+      blueIRE: 76
+    }
   },
   {
     id: "PlanarTracker1",
@@ -133,7 +232,19 @@ const FUSION_NODES: NodeData[] = [
     status: "SURFACE LOCK 99.8%",
     ireLevel: "6-DOF PERSPECTIVE",
     x: 800,
-    y: 130
+    y: 135,
+    scopeProfile: {
+      saturation: "54.2%",
+      statusText: "6-DOF 0.02px SUB-PIXEL LOCK",
+      isLegal: true,
+      lumaPeak: "93 IRE",
+      blackFloor: "5.0 IRE",
+      activeTargets: ["G", "Cy"],
+      tracePath: "M 96 104 Q 88 92 80 85 Q 100 82 110 88 Q 118 98 112 110 Q 104 112 96 104 Z",
+      redIRE: 66,
+      greenIRE: 74,
+      blueIRE: 68
+    }
   },
   {
     id: "Polygon1",
@@ -144,8 +255,20 @@ const FUSION_NODES: NodeData[] = [
     clientROI: "Maintains absolute editorial control over lighting emphasis, directing viewer gaze directly to the CTA.",
     status: "FEATHERED ALPHA",
     ireLevel: "64-PT BEZIER",
-    x: 980,
-    y: 80
+    x: 990,
+    y: 85,
+    scopeProfile: {
+      saturation: "59.4%",
+      statusText: "FEATHERED POWER WINDOW MASK",
+      isLegal: true,
+      lumaPeak: "97 IRE",
+      blackFloor: "4.8 IRE",
+      activeTargets: ["R", "Yl"],
+      tracePath: "M 95 105 Q 82 85 68 70 Q 92 68 112 80 Q 128 100 115 115 Q 102 118 95 105 Z",
+      redIRE: 82,
+      greenIRE: 70,
+      blueIRE: 62
+    }
   },
   {
     id: "MediaOut1",
@@ -156,8 +279,20 @@ const FUSION_NODES: NodeData[] = [
     clientROI: "Gives clients pristine broadcast-grade assets that never degrade on 85-inch 4K HDR displays.",
     status: "PRORES 4444 MASTER",
     ireLevel: "REC.2020 HDR",
-    x: 1160,
-    y: 80
+    x: 1180,
+    y: 85,
+    scopeProfile: {
+      saturation: "74.9%",
+      statusText: "100% EBU R103 / REC.709 LEGAL",
+      isLegal: true,
+      lumaPeak: "95.0 IRE (LEGAL)",
+      blackFloor: "5.0 IRE (LEGAL)",
+      activeTargets: ["R", "Mg", "B", "Cy", "G", "Yl"],
+      tracePath: "M 96 104 Q 72 82 50 65 Q 70 55 96 75 Q 128 85 142 125 Q 118 135 96 104 Z",
+      redIRE: 80,
+      greenIRE: 72,
+      blueIRE: 75
+    }
   }
 ];
 
@@ -219,7 +354,6 @@ function FloatingOpticalParticles() {
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Anamorphic Blue Streak Optics */}
       <motion.div 
         style={{ x: layer1X, y: layer1Y }}
         className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[1.5px] bg-gradient-to-r from-transparent via-[#00C2D4]/40 to-transparent blur-[1px] rotate-[-4deg]"
@@ -229,7 +363,6 @@ function FloatingOpticalParticles() {
         className="absolute top-2/3 left-1/3 -translate-x-1/2 w-[700px] h-[1px] bg-gradient-to-r from-transparent via-[#FF6600]/30 to-transparent blur-[1px] rotate-[3deg]"
       />
 
-      {/* Floating Photons */}
       <motion.div style={{ x: layer1X, y: layer1Y }} className="absolute inset-0">
         {[...Array(14)].map((_, i) => (
           <div
@@ -288,74 +421,195 @@ function FrequencyVisualizer() {
   );
 }
 
-// Live Interactive Vectorscope SVG
-function VectorscopeWidget() {
+// Live Interactive Reactive Vectorscope & RGB Parade Inspector
+interface ScopeProps {
+  node: NodeData;
+}
+
+function OpticalScopeInspector({ node }: ScopeProps) {
+  const [scopeMode, setScopeMode] = useState<"vectorscope" | "rgbParade">("vectorscope");
+  const p = node.scopeProfile;
+
   return (
-    <div className="p-4 rounded-2xl bg-black/80 border border-white/15 relative overflow-hidden">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-mono uppercase tracking-wider text-[#00C2D4] flex items-center gap-1.5">
-          <Crosshair size={12} /> VECTORSCOPE // CHROMA TARGETS
+    <div className={`p-5 rounded-3xl bg-[#090909] border transition-all duration-300 relative overflow-hidden shadow-2xl ${
+      p.isLegal ? "border-[#00C2D4]/30" : "border-red-500/50 shadow-[0_0_30px_rgba(239,68,68,0.2)]"
+    }`}>
+      
+      {/* Scope Header & Mode Switcher */}
+      <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-3">
+        <div className="flex items-center gap-2">
+          <Crosshair size={14} className={p.isLegal ? "text-[#00C2D4]" : "text-red-400 animate-pulse"} />
+          <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-white">
+            OPTICAL SCOPE
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10 text-[10px] font-mono">
+          <button
+            onClick={() => setScopeMode("vectorscope")}
+            className={`px-2 py-0.5 rounded transition-all ${
+              scopeMode === "vectorscope" ? "bg-[#00C2D4] text-black font-bold" : "text-white/60 hover:text-white"
+            }`}
+          >
+            VECTORSCOPE
+          </button>
+          <button
+            onClick={() => setScopeMode("rgbParade")}
+            className={`px-2 py-0.5 rounded transition-all ${
+              scopeMode === "rgbParade" ? "bg-[#00C2D4] text-black font-bold" : "text-white/60 hover:text-white"
+            }`}
+          >
+            RGB PARADE
+          </button>
+        </div>
+      </div>
+
+      {/* Scope Status Banner */}
+      <div className={`mb-4 px-3 py-1.5 rounded-xl border flex items-center justify-between text-[10px] font-mono font-bold ${
+        p.isLegal 
+          ? "bg-[#00C2D4]/10 border-[#00C2D4]/30 text-[#00C2D4]" 
+          : "bg-red-500/15 border-red-500/40 text-red-400"
+      }`}>
+        <span className="flex items-center gap-1.5">
+          {!p.isLegal && <AlertTriangle size={12} className="animate-bounce" />}
+          {p.statusText}
         </span>
-        <span className="text-[9px] font-mono text-white/40">75% GRATICULE</span>
+        <span>SAT: {p.saturation}</span>
       </div>
 
-      <div className="relative w-full aspect-square max-w-[200px] mx-auto flex items-center justify-center">
-        <svg viewBox="0 0 200 200" className="w-full h-full">
-          {/* Circular reticle rings */}
-          <circle cx="100" cy="100" r="90" fill="none" stroke="#222" strokeWidth="1" />
-          <circle cx="100" cy="100" r="67" fill="none" stroke="#00C2D4" strokeOpacity="0.25" strokeDasharray="3 3" />
-          <circle cx="100" cy="100" r="35" fill="none" stroke="#333" strokeWidth="1" />
+      {/* Scope Mode 1: Dynamic Vectorscope with Node-Reactive Trace */}
+      {scopeMode === "vectorscope" ? (
+        <div className="relative w-full aspect-square max-w-[210px] mx-auto flex items-center justify-center my-2">
+          <svg viewBox="0 0 200 200" className="w-full h-full">
+            {/* Circular Graticule Rings */}
+            <circle cx="100" cy="100" r="92" fill="none" stroke="#222" strokeWidth="1" />
+            <circle cx="100" cy="100" r="67" fill="none" stroke="#00C2D4" strokeOpacity="0.25" strokeDasharray="3 3" />
+            <circle cx="100" cy="100" r="35" fill="none" stroke="#333" strokeWidth="1" />
 
-          {/* Crosshairs */}
-          <line x1="10" y1="100" x2="190" y2="100" stroke="#222" strokeWidth="1" />
-          <line x1="100" y1="10" x2="100" y2="190" stroke="#222" strokeWidth="1" />
+            {/* Crosshairs */}
+            <line x1="8" y1="100" x2="192" y2="100" stroke="#222" strokeWidth="1" />
+            <line x1="100" y1="8" x2="100" y2="192" stroke="#222" strokeWidth="1" />
 
-          {/* Skin Tone Indicator Line (I-Bar around 10:30 position) */}
-          <line x1="100" y1="100" x2="45" y2="45" stroke="#FF6600" strokeWidth="1.5" strokeDasharray="4 2" />
-          <text x="35" y="40" fill="#FF6600" fontSize="8" fontFamily="monospace">SKIN I-BAR</text>
+            {/* Skin Tone Indicator Line (I-Bar) */}
+            <line x1="100" y1="100" x2="45" y2="45" stroke="#FF6600" strokeWidth="1.5" strokeDasharray="4 2" />
+            <text x="32" y="38" fill="#FF6600" fontSize="7" fontFamily="monospace">I-SKIN</text>
 
-          {/* Color Graticule Targets (R, Mg, B, Cy, G, Yl) */}
-          <rect x="45" y="70" width="8" height="8" fill="none" stroke="#FF6600" strokeWidth="1" />
-          <text x="35" y="77" fill="#FF6600" fontSize="8" fontFamily="monospace">R</text>
+            {/* Target Boxes (R, Mg, B, Cy, G, Yl) - Dynamic Glow on Target Hit */}
+            {[
+              { id: "R", x: 45, y: 70, color: "#FF4444" },
+              { id: "Mg", x: 70, y: 45, color: "#E6007A" },
+              { id: "B", x: 145, y: 70, color: "#0066FF" },
+              { id: "Cy", x: 145, y: 125, color: "#00C2D4" },
+              { id: "G", x: 70, y: 145, color: "#00FF66" },
+              { id: "Yl", x: 45, y: 125, color: "#FFCC00" }
+            ].map((target) => {
+              const isHit = p.activeTargets.includes(target.id);
+              return (
+                <g key={target.id}>
+                  <rect
+                    x={target.x}
+                    y={target.y}
+                    width="10"
+                    height="10"
+                    fill={isHit ? target.color : "none"}
+                    fillOpacity={isHit ? 0.4 : 0}
+                    stroke={target.color}
+                    strokeWidth={isHit ? 1.8 : 0.8}
+                    className={isHit ? "filter drop-shadow-[0_0_6px_currentColor]" : ""}
+                  />
+                  <text
+                    x={target.x > 100 ? target.x + 13 : target.x - 10}
+                    y={target.y + 8}
+                    fill={isHit ? target.color : "#666"}
+                    fontSize="7"
+                    fontFamily="monospace"
+                    fontWeight={isHit ? "bold" : "normal"}
+                  >
+                    {target.id}
+                  </text>
+                </g>
+              );
+            })}
 
-          <rect x="70" y="45" width="8" height="8" fill="none" stroke="#E6007A" strokeWidth="1" />
-          <text x="68" y="38" fill="#E6007A" fontSize="8" fontFamily="monospace">Mg</text>
+            {/* Dynamic Node-Specific Chroma Cloud Path */}
+            <motion.path
+              key={node.id}
+              d={p.tracePath}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              fill={p.isLegal ? "#00C2D4" : "#EF4444"}
+              fillOpacity={p.isLegal ? 0.35 : 0.55}
+              stroke={p.isLegal ? "#00C2D4" : "#EF4444"}
+              strokeWidth="2"
+            />
+          </svg>
+        </div>
+      ) : (
+        /* Scope Mode 2: RGB Waveform Parade */
+        <div className="h-[200px] flex items-end justify-between gap-3 px-3 py-2 bg-black/60 rounded-xl border border-white/10 my-2">
+          {/* Red Channel */}
+          <div className="flex-1 flex flex-col items-center h-full justify-between">
+            <span className="text-[9px] font-mono text-red-400 font-bold">R CHANNEL</span>
+            <div className="w-full flex-1 flex items-end justify-center px-2">
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${p.redIRE}%` }}
+                transition={{ duration: 0.4 }}
+                className="w-full bg-gradient-to-t from-red-950 to-red-500 rounded-t-sm relative shadow-[0_0_15px_rgba(239,68,68,0.5)]"
+              >
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] font-mono text-red-300">
+                  {p.redIRE}%
+                </span>
+              </motion.div>
+            </div>
+            <span className="text-[8px] font-mono text-white/30">0-100 IRE</span>
+          </div>
 
-          <rect x="145" y="70" width="8" height="8" fill="none" stroke="#0066FF" strokeWidth="1" />
-          <text x="156" y="77" fill="#0066FF" fontSize="8" fontFamily="monospace">B</text>
+          {/* Green Channel */}
+          <div className="flex-1 flex flex-col items-center h-full justify-between">
+            <span className="text-[9px] font-mono text-green-400 font-bold">G CHANNEL</span>
+            <div className="w-full flex-1 flex items-end justify-center px-2">
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${p.greenIRE}%` }}
+                transition={{ duration: 0.4 }}
+                className="w-full bg-gradient-to-t from-green-950 to-green-500 rounded-t-sm relative shadow-[0_0_15px_rgba(34,197,94,0.5)]"
+              >
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] font-mono text-green-300">
+                  {p.greenIRE}%
+                </span>
+              </motion.div>
+            </div>
+            <span className="text-[8px] font-mono text-white/30">0-100 IRE</span>
+          </div>
 
-          <rect x="145" y="125" width="8" height="8" fill="none" stroke="#00C2D4" strokeWidth="1" />
-          <text x="156" y="132" fill="#00C2D4" fontSize="8" fontFamily="monospace">Cy</text>
+          {/* Blue Channel */}
+          <div className="flex-1 flex flex-col items-center h-full justify-between">
+            <span className="text-[9px] font-mono text-blue-400 font-bold">B CHANNEL</span>
+            <div className="w-full flex-1 flex items-end justify-center px-2">
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${p.blueIRE}%` }}
+                transition={{ duration: 0.4 }}
+                className="w-full bg-gradient-to-t from-blue-950 to-blue-500 rounded-t-sm relative shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+              >
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[8px] font-mono text-blue-300">
+                  {p.blueIRE}%
+                </span>
+              </motion.div>
+            </div>
+            <span className="text-[8px] font-mono text-white/30">0-100 IRE</span>
+          </div>
+        </div>
+      )}
 
-          <rect x="70" y="145" width="8" height="8" fill="none" stroke="#00FF66" strokeWidth="1" />
-          <text x="68" y="160" fill="#00FF66" fontSize="8" fontFamily="monospace">G</text>
-
-          <rect x="45" y="125" width="8" height="8" fill="none" stroke="#FFCC00" strokeWidth="1" />
-          <text x="35" y="132" fill="#FFCC00" fontSize="8" fontFamily="monospace">Yl</text>
-
-          {/* Dynamic Chroma Cloud (Simulated organic graded trace) */}
-          <motion.path
-            d="M 95 105 Q 85 90 70 82 Q 80 75 90 85 Q 105 85 115 95 Q 120 110 100 115 Z"
-            fill="#00C2D4"
-            fillOpacity="0.4"
-            stroke="#00C2D4"
-            strokeWidth="1.5"
-            animate={{
-              d: [
-                "M 95 105 Q 85 90 70 82 Q 80 75 90 85 Q 105 85 115 95 Q 120 110 100 115 Z",
-                "M 93 103 Q 80 88 65 79 Q 82 72 92 82 Q 108 83 118 97 Q 118 112 98 113 Z",
-                "M 95 105 Q 85 90 70 82 Q 80 75 90 85 Q 105 85 115 95 Q 120 110 100 115 Z",
-              ]
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </svg>
+      {/* Scope Footer Telemetry */}
+      <div className="grid grid-cols-2 gap-2 text-[9px] font-mono pt-3 border-t border-white/10 text-white/60">
+        <div>PEAK: <span className="text-white font-bold">{p.lumaPeak}</span></div>
+        <div>BLACK: <span className="text-white font-bold">{p.blackFloor}</span></div>
       </div>
 
-      <div className="flex items-center justify-between text-[9px] font-mono text-white/50 pt-2 border-t border-white/10">
-        <span>SAT: 42.8%</span>
-        <span className="text-[#00C2D4]">BROADCAST LEGAL</span>
-      </div>
     </div>
   );
 }
@@ -365,6 +619,9 @@ export function StudioClient() {
   const [activeTab, setActiveTab] = useState<"reel" | "fusion" | "matrix">("reel");
   const [isSimulating, setIsSimulating] = useState(false);
   const [simProgress, setSimProgress] = useState(0);
+
+  // Canvas auto-scroll reference
+  const canvasScrollRef = useRef<HTMLDivElement>(null);
 
   // Responsive typography auto-fit references
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -393,24 +650,57 @@ export function StudioClient() {
     return () => window.removeEventListener("resize", fit);
   }, []);
 
-  // Optical simulation trigger
+  // Autonomous Optical simulation trigger with auto-scrolling
   const runSimulation = () => {
     if (isSimulating) return;
     setIsSimulating(true);
     setSimProgress(0);
 
+    // Scroll smoothly to start (MediaIn1)
+    if (canvasScrollRef.current) {
+      canvasScrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
+
     let step = 0;
     const interval = setInterval(() => {
       step += 1;
-      setSimProgress(step * 10);
+      const progress = Math.min(100, step * 10);
+      setSimProgress(progress);
+
       if (step < FUSION_NODES.length) {
-        setActiveNode(FUSION_NODES[step]);
+        const targetNode = FUSION_NODES[step];
+        setActiveNode(targetNode);
+
+        // AUTONOMOUS CAMERA TRACKING: Smoothly scroll canvas horizontally to center active node!
+        if (canvasScrollRef.current) {
+          const container = canvasScrollRef.current;
+          const targetScrollX = Math.max(0, targetNode.x - (container.clientWidth / 2) + 70);
+          container.scrollTo({ left: targetScrollX, behavior: "smooth" });
+        }
       }
+
       if (step >= 10) {
         clearInterval(interval);
-        setTimeout(() => setIsSimulating(false), 600);
+        // Autonomously glide all the way to reveal the final MediaOut node!
+        if (canvasScrollRef.current) {
+          canvasScrollRef.current.scrollTo({
+            left: canvasScrollRef.current.scrollWidth,
+            behavior: "smooth"
+          });
+        }
+        setTimeout(() => setIsSimulating(false), 700);
       }
-    }, 400);
+    }, 450);
+  };
+
+  const handleSelectNode = (node: NodeData) => {
+    setActiveNode(node);
+    // Smooth scroll to selected node
+    if (canvasScrollRef.current) {
+      const container = canvasScrollRef.current;
+      const targetScrollX = Math.max(0, node.x - (container.clientWidth / 2) + 70);
+      container.scrollTo({ left: targetScrollX, behavior: "smooth" });
+    }
   };
 
   return (
@@ -515,7 +805,7 @@ export function StudioClient() {
           transition={{ duration: 0.7, delay: 0.3 }}
           className="text-white/60 text-base md:text-xl max-w-3xl mx-auto leading-relaxed mb-10 font-sans"
         >
-          We do not deliver plastic AI slop. We fuse state-of-the-art diffusion generative passes with DaVinci Resolve 19 Fusion color science, anamorphic halation, 35mm photochemical grain, and sub-pixel planar tracking—delivering commercials that arrest thumb-scrolling and command high-ticket enterprise trust.
+          We do not deliver plastic AI slop. We fuse state-of-the-art generative passes with DaVinci Resolve 19 Fusion color science, anamorphic halation, 35mm photochemical grain, and sub-pixel planar tracking—delivering commercials that arrest thumb-scrolling and command high-ticket enterprise trust.
         </motion.p>
 
         {/* Interactive Tab Navigation */}
@@ -718,7 +1008,7 @@ export function StudioClient() {
               The Optical Node Canvas
             </h2>
             <p className="text-white/60 text-sm md:text-base">
-              Click any node or run the live optical simulation to inspect how we eliminate AI plastic sheen and fuse real photon physics directly into video pixels.
+              Click any node or trigger the autonomous signal simulation. The camera viewport autonomously tracks photon flow all the way to ProRes Master output.
             </p>
 
             {/* Simulation Trigger Button */}
@@ -726,15 +1016,15 @@ export function StudioClient() {
               <button
                 onClick={runSimulation}
                 disabled={isSimulating}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#00C2D4] to-[#FF6600] text-black font-mono font-bold text-xs uppercase tracking-wider shadow-[0_0_30px_rgba(0,194,212,0.5)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-[#00C2D4] to-[#FF6600] text-black font-mono font-bold text-xs uppercase tracking-wider shadow-[0_0_35px_rgba(0,194,212,0.55)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
               >
                 {isSimulating ? (
                   <>
-                    <RotateCw size={14} className="animate-spin" /> Simulating Wave: {simProgress}%
+                    <RotateCw size={14} className="animate-spin" /> Autonomous Signal Tracking: {simProgress}%
                   </>
                 ) : (
                   <>
-                    <Zap size={14} /> Run Optical Signal Simulation
+                    <Zap size={14} /> Run Optical Signal Simulation (Autonomous Camera)
                   </>
                 )}
               </button>
@@ -756,9 +1046,9 @@ export function StudioClient() {
                 </span>
               </div>
 
-              {/* Interactive SVG Wiring Diagram */}
-              <div className="relative w-full overflow-x-auto pb-4">
-                <div className="min-w-[700px] h-[240px] relative bg-[#050505]/90 rounded-2xl border border-white/10 p-4">
+              {/* Interactive SVG Wiring Diagram with Horizontal Auto-Scroll */}
+              <div ref={canvasScrollRef} className="relative w-full overflow-x-auto pb-4 scroll-smooth">
+                <div className="min-w-[1380px] h-[260px] relative bg-[#050505]/95 rounded-2xl border border-white/10 p-4">
                   
                   {/* SVG Bezier Cables with Animated Signal Pulse */}
                   <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
@@ -772,7 +1062,7 @@ export function StudioClient() {
                     {NODE_EDGES.map((edge, idx) => {
                       const fromNode = FUSION_NODES.find(n => n.id === edge.from)!;
                       const toNode = FUSION_NODES.find(n => n.id === edge.to)!;
-                      const x1 = fromNode.x + 80;
+                      const x1 = fromNode.x + 85;
                       const y1 = fromNode.y + 25;
                       const x2 = toNode.x;
                       const y2 = toNode.y + 25;
@@ -810,15 +1100,15 @@ export function StudioClient() {
                     return (
                       <button
                         key={node.id}
-                        onClick={() => setActiveNode(node)}
+                        onClick={() => handleSelectNode(node)}
                         style={{
                           left: `${node.x}px`,
                           top: `${node.y}px`,
                         }}
-                        className={`absolute w-[140px] p-2.5 rounded-xl border text-left transition-all z-10 ${
+                        className={`absolute w-[150px] p-2.5 rounded-xl border text-left transition-all z-10 ${
                           isSelected
-                            ? "bg-[#00C2D4]/20 border-[#00C2D4] shadow-[0_0_20px_rgba(0,194,212,0.6)] scale-105"
-                            : "bg-[#111]/90 border-white/15 hover:border-white/40 hover:bg-[#161616]"
+                            ? "bg-[#00C2D4]/25 border-[#00C2D4] shadow-[0_0_25px_rgba(0,194,212,0.7)] scale-105 ring-2 ring-[#00C2D4]/50"
+                            : "bg-[#111]/95 border-white/15 hover:border-white/40 hover:bg-[#161616]"
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
@@ -845,7 +1135,7 @@ export function StudioClient() {
               {/* Node Graph Blocks Grid (Full List For Quick Selection) */}
               <div className="mt-6 pt-6 border-t border-white/10">
                 <span className="text-[11px] font-mono uppercase tracking-widest text-white/50 block mb-3">
-                  Quick Node Selector
+                  Quick Node Selector (Click to Jump Camera)
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {FUSION_NODES.map((node) => {
@@ -853,10 +1143,10 @@ export function StudioClient() {
                     return (
                       <button
                         key={node.id}
-                        onClick={() => setActiveNode(node)}
+                        onClick={() => handleSelectNode(node)}
                         className={`p-2 rounded-lg border text-left text-[11px] font-mono truncate transition-all ${
                           isSelected
-                            ? "bg-[#00C2D4] text-black font-bold border-[#00C2D4]"
+                            ? "bg-[#00C2D4] text-black font-bold border-[#00C2D4] shadow-[0_0_15px_rgba(0,194,212,0.4)]"
                             : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
                         }`}
                       >
@@ -874,7 +1164,7 @@ export function StudioClient() {
               </div>
             </div>
 
-            {/* Right: Active Node Live Telemetry Inspector & Vectorscope */}
+            {/* Right: Active Node Live Telemetry Inspector & Reactive Scope */}
             <div className="lg:col-span-4 space-y-6">
               
               {/* Active Node Details Panel */}
@@ -927,8 +1217,8 @@ export function StudioClient() {
                 </div>
               </div>
 
-              {/* Vectorscope Chroma Widget */}
-              <VectorscopeWidget />
+              {/* Reactive Optical Scope Widget */}
+              <OpticalScopeInspector node={activeNode} />
 
             </div>
 
@@ -937,18 +1227,18 @@ export function StudioClient() {
         </section>
       )}
 
-      {/* ================= TAB 3: PRODUCTION ECONOMICS MATRIX ================= */}
+      {/* ================= TAB 3: COMPETITIVE PRODUCTION ECONOMICS MATRIX ================= */}
       {activeTab === "matrix" && (
         <section className="max-w-6xl mx-auto px-6 py-10 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <span className="px-3 py-1 bg-[#FF6600]/10 border border-[#FF6600]/30 text-[#FF6600] font-mono text-xs uppercase tracking-widest font-bold rounded">
-              Cost & Velocity Economics
+              Competitive Market Economics
             </span>
             <h2 className="text-3xl md:text-5xl font-heading font-bold uppercase tracking-tight mt-4 mb-4">
-              Traditional Studio vs. Good Brains
+              Real-World Commercial ROI
             </h2>
             <p className="text-white/60 text-sm md:text-base">
-              Why high-growth brands and enterprise agencies switch to our AI-native DaVinci Fusion pipeline.
+              Why high-converting brands choose Good Brains Studio over $35k traditional agencies and $50 amateur AI prompt slop.
             </p>
           </div>
 
@@ -956,42 +1246,50 @@ export function StudioClient() {
             <table className="w-full text-left border-collapse text-xs md:text-sm">
               <thead>
                 <tr className="border-b border-white/15 bg-white/5 font-mono text-white/70 uppercase">
-                  <th className="p-4 md:p-6">Metric / Parameter</th>
+                  <th className="p-4 md:p-6">Deliverable / Parameter</th>
                   <th className="p-4 md:p-6 text-white/40">Traditional Agency</th>
-                  <th className="p-4 md:p-6 text-white/40">Amateur AI Prompters</th>
+                  <th className="p-4 md:p-6 text-white/40">Amateur AI Prompters ($50)</th>
                   <th className="p-4 md:p-6 text-[#00C2D4] bg-[#00C2D4]/5">Good Brains Studio</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10 font-sans">
                 <tr>
-                  <td className="p-4 md:p-6 font-bold text-white">Cost per 30s Spot</td>
+                  <td className="p-4 md:p-6 font-bold text-white">Investment per Commercial</td>
                   <td className="p-4 md:p-6 text-white/50">$35,000 – $80,000+</td>
-                  <td className="p-4 md:p-6 text-white/50">$300 – $800</td>
-                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">$4,500 – $8,500</td>
+                  <td className="p-4 md:p-6 text-white/50">&lt;$50 – $200 (Unusable for ads)</td>
+                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">
+                    $650 – $1,850 <span className="text-[10px] text-white/50 font-normal">(Sprints from $450)</span>
+                  </td>
                 </tr>
                 <tr>
-                  <td className="p-4 md:p-6 font-bold text-white">Production Turnaround</td>
+                  <td className="p-4 md:p-6 font-bold text-white">Production Velocity</td>
                   <td className="p-4 md:p-6 text-white/50">6 to 10 Weeks</td>
-                  <td className="p-4 md:p-6 text-white/50">24 Hours (Unusable quality)</td>
-                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">72 to 96 Hours</td>
+                  <td className="p-4 md:p-6 text-white/50">24 Hours (Random hallucinations)</td>
+                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">48 to 72 Hours (Broadcast Master)</td>
                 </tr>
                 <tr>
                   <td className="p-4 md:p-6 font-bold text-white">Visual Texture & Glass</td>
-                  <td className="p-4 md:p-6 text-white/50">ARRI Alexa / Cooke Lenses</td>
-                  <td className="p-4 md:p-6 text-red-400">Plastic AI Sheen / Deformed Hands</td>
+                  <td className="p-4 md:p-6 text-white/50">ARRI Alexa / Cooke Lenses ($45k)</td>
+                  <td className="p-4 md:p-6 text-red-400">Plastic AI Sheen, Flickering Hands</td>
                   <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">Photochemical 35mm Halation</td>
                 </tr>
                 <tr>
-                  <td className="p-4 md:p-6 font-bold text-white">Color Science Mastery</td>
-                  <td className="p-4 md:p-6 text-white/50">Manual DaVinci Grade</td>
-                  <td className="p-4 md:p-6 text-red-400">None (Baked-in oversaturation)</td>
-                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">Multi-Plane DaVinci 19 Fusion</td>
+                  <td className="p-4 md:p-6 font-bold text-white">Color Science & Fidelity</td>
+                  <td className="p-4 md:p-6 text-white/50">Manual DaVinci Grade ($350/hr)</td>
+                  <td className="p-4 md:p-6 text-red-400">None (8-bit banding, clipped neon)</td>
+                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">DaVinci 19 Fusion Multi-Plane Curve</td>
                 </tr>
                 <tr>
-                  <td className="p-4 md:p-6 font-bold text-white">Commercial Deliverable</td>
-                  <td className="p-4 md:p-6 text-white/50">ProRes Master</td>
-                  <td className="p-4 md:p-6 text-red-400">Low-bitrate MP4</td>
-                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">ProRes 4444 XQ 12-Bit Master</td>
+                  <td className="p-4 md:p-6 font-bold text-white">Character & Seed Consistency</td>
+                  <td className="p-4 md:p-6 text-white/50">Practical Live Cast</td>
+                  <td className="p-4 md:p-6 text-red-400">Zero (Faces morph every cut)</td>
+                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">Strict Seed Locks & Planar Tracking</td>
+                </tr>
+                <tr>
+                  <td className="p-4 md:p-6 font-bold text-white">Delivery Codec & Export</td>
+                  <td className="p-4 md:p-6 text-white/50">Apple ProRes 4444 XQ</td>
+                  <td className="p-4 md:p-6 text-red-400">Compressed 1080p MP4</td>
+                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">12-Bit ProRes 4444 + Social 9:16 Cuts</td>
                 </tr>
               </tbody>
             </table>
