@@ -633,7 +633,7 @@ export function StudioClient() {
     if (!title || !word) return;
 
     const fit = () => {
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 640) {
         title.style.fontSize = "";
         return;
       }
@@ -642,12 +642,22 @@ export function StudioClient() {
       const wordWidth = word.offsetWidth;
       const available = title.clientWidth;
       if (!wordWidth || !available) return;
-      title.style.fontSize = `${Math.min((available / wordWidth) * REFERENCE_PX * 0.96, 42)}px`;
+      title.style.fontSize = `${Math.min((available / wordWidth) * REFERENCE_PX * 0.97, 44)}px`;
     };
 
     fit();
+    const fonts = (document as any).fonts;
+    fonts?.ready?.then(fit);
+    fonts?.addEventListener?.("loadingdone", fit);
+    window.addEventListener("load", fit);
     window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
+    const timers = [300, 1000, 2500].map((ms) => window.setTimeout(fit, ms));
+    return () => {
+      fonts?.removeEventListener?.("loadingdone", fit);
+      window.removeEventListener("load", fit);
+      window.removeEventListener("resize", fit);
+      timers.forEach(window.clearTimeout);
+    };
   }, []);
 
   // Autonomous Optical simulation trigger with auto-scrolling
@@ -714,31 +724,33 @@ export function StudioClient() {
       <div className="fixed bottom-0 right-1/4 w-[650px] h-[650px] bg-[#FF6600]/5 rounded-full blur-[190px] pointer-events-none -z-10" />
 
       {/* Navigation Header */}
-      <nav className="border-b border-white/10 bg-[#050505]/85 backdrop-blur-2xl sticky top-0 z-50 px-6 py-4">
+      <nav className="border-b border-white/10 bg-[#050505]/85 backdrop-blur-2xl sticky top-0 z-50 px-4 sm:px-6 py-3 sm:py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#00C2D4] to-[#FF6600] flex items-center justify-center font-bold text-black font-mono text-xs shadow-[0_0_25px_rgba(0,194,212,0.6)]">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-[#00C2D4] to-[#FF6600] flex items-center justify-center font-bold text-black font-mono text-xs shadow-[0_0_25px_rgba(0,194,212,0.6)] shrink-0">
               GB
             </div>
             <div>
-              <span className="font-mono text-sm tracking-widest uppercase font-bold text-white block">
+              <span className="font-mono text-xs sm:text-sm tracking-widest uppercase font-bold text-white block">
                 GOOD BRAINS <span className="text-[#00C2D4]">STUDIO</span>
               </span>
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest block">
+              <span className="text-[9px] sm:text-[10px] font-mono text-white/40 uppercase tracking-widest hidden xs:block">
                 CINEMATIC AI & DAVINCI OPTICAL PIPELINE
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-5">
-            <FrequencyVisualizer />
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="hidden lg:flex">
+              <FrequencyVisualizer />
+            </div>
 
             {/* Visit GoodBrains.pro Header Button */}
             <a 
               href="https://goodbrains.pro"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 hover:text-white transition-all"
+              className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 hover:text-white transition-all"
             >
               GoodBrains.pro <ExternalLink size={12} />
             </a>
@@ -746,28 +758,28 @@ export function StudioClient() {
             <Link 
               href="https://www.upwork.com/freelancers/~01c65e863ec5fb99c7"
               target="_blank"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-[#00C2D4] text-black hover:bg-white transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)]"
+              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider bg-[#00C2D4] text-black hover:bg-white transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)] whitespace-nowrap"
             >
-              Hire on Upwork <ArrowRight size={14} />
+              Hire on Upwork <ArrowRight size={13} />
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Kinetic Typography Hero Section */}
-      <section className="max-w-6xl mx-auto px-6 pt-16 md:pt-24 pb-16 text-center relative z-10">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 md:pt-24 pb-12 sm:pb-16 text-center relative z-10">
         
         {/* Kinetic Badge */}
         <motion.div 
           initial={{ opacity: 0, y: -20, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-[#00C2D4]/30 text-[#00C2D4] font-mono text-xs tracking-widest uppercase mb-6 shadow-[0_0_25px_rgba(0,194,212,0.2)]"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-[#00C2D4]/30 text-[#00C2D4] font-mono text-[10px] sm:text-xs tracking-widest uppercase mb-6 shadow-[0_0_25px_rgba(0,194,212,0.2)]"
         >
-          <Sparkles size={14} /> BEYOND GENERATIVE PROMPTS // TRUE OPTICAL COMPOSITION
+          <Sparkles size={13} /> BEYOND GENERATIVE PROMPTS // TRUE OPTICAL COMPOSITION
         </motion.div>
 
-        {/* 3D Kinetic Typography Headline */}
+        {/* 3D Kinetic Typography Headline (Locked to Auto-Bath Spec) */}
         <motion.div 
           variants={staggerContainer}
           initial="hidden"
@@ -776,25 +788,15 @@ export function StudioClient() {
         >
           <h1 
             ref={titleRef}
-            className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-heading font-bold tracking-tight uppercase leading-[1.05]"
+            className="text-[7.5vw] sm:text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-white uppercase tracking-tighter leading-[1.08] mb-6"
+            style={{ perspective: "1000px" }}
           >
-            <motion.span variants={kineticText} className="inline-block">
-              TRANSFORMING
-            </motion.span>{" "}
-            <motion.span variants={kineticText} className="inline-block text-[#00C2D4]">
-              RAW AI
-            </motion.span>{" "}
-            <br className="hidden sm:block" />
-            <motion.span variants={kineticText} className="inline-block">
-              INTO
-            </motion.span>{" "}
-            <motion.span 
-              ref={wordRef}
-              variants={kineticText} 
-              className="inline-block bg-gradient-to-r from-white via-[#00C2D4] to-[#FF6600] bg-clip-text text-transparent"
-            >
-              HOLLYWOOD CINEMA
-            </motion.span>
+            <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }}>
+              TRANSFORMING <span className="text-[#00C2D4]">RAW AI</span>
+            </motion.div>
+            <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }}>
+              INTO <span ref={wordRef} className="inline-block whitespace-nowrap pr-[0.04em] bg-gradient-to-r from-white via-[#00C2D4] to-[#FF6600] bg-clip-text text-transparent">HOLLYWOOD CINEMA</span>
+            </motion.div>
           </h1>
         </motion.div>
 
@@ -803,16 +805,16 @@ export function StudioClient() {
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-white/60 text-base md:text-xl max-w-3xl mx-auto leading-relaxed mb-10 font-sans"
+          className="text-white/60 text-sm sm:text-base md:text-xl max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10 font-sans"
         >
           We do not deliver plastic AI slop. We fuse state-of-the-art generative passes with DaVinci Resolve 19 Fusion color science, anamorphic halation, 35mm photochemical grain, and sub-pixel planar tracking—delivering commercials that arrest thumb-scrolling and command high-ticket enterprise trust.
         </motion.p>
 
         {/* Interactive Tab Navigation */}
-        <div className="flex flex-wrap justify-center gap-2 p-1.5 bg-[#111]/90 border border-white/10 rounded-2xl max-w-md mx-auto backdrop-blur-xl shadow-2xl">
+        <div className="grid grid-cols-3 gap-1 sm:gap-2 p-1 sm:p-1.5 bg-[#111]/90 border border-white/10 rounded-xl sm:rounded-2xl max-w-md mx-auto backdrop-blur-xl shadow-2xl">
           <button 
             onClick={() => setActiveTab("reel")}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+            className={`py-2 sm:py-2.5 px-1 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all ${
               activeTab === "reel" 
                 ? "bg-[#00C2D4] text-black shadow-[0_0_25px_rgba(0,194,212,0.5)]" 
                 : "text-white/60 hover:text-white"
@@ -822,17 +824,17 @@ export function StudioClient() {
           </button>
           <button 
             onClick={() => setActiveTab("fusion")}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+            className={`py-2 sm:py-2.5 px-1 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all ${
               activeTab === "fusion" 
                 ? "bg-[#00C2D4] text-black shadow-[0_0_25px_rgba(0,194,212,0.5)]" 
                 : "text-white/60 hover:text-white"
             }`}
           >
-            Fusion Node Graph
+            Fusion Graph
           </button>
           <button 
             onClick={() => setActiveTab("matrix")}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+            className={`py-2 sm:py-2.5 px-1 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all ${
               activeTab === "matrix" 
                 ? "bg-[#00C2D4] text-black shadow-[0_0_25px_rgba(0,194,212,0.5)]" 
                 : "text-white/60 hover:text-white"
@@ -845,7 +847,7 @@ export function StudioClient() {
 
       {/* ================= TAB 1: COMMERCIAL REEL ================= */}
       {activeTab === "reel" && (
-        <section className="max-w-7xl mx-auto px-6 py-10 space-y-24 relative z-10">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-16 sm:space-y-24 relative z-10">
           
           {/* COMMERCIAL 1: REAL ESTATE */}
           <motion.div 
@@ -853,13 +855,13 @@ export function StudioClient() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden"
+            className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl relative overflow-hidden"
           >
-            <div className="flex flex-col lg:flex-row gap-10 items-center">
+            <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 items-center">
               
               {/* Cinema Player Container */}
               <div className="w-full lg:w-7/12">
-                <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-black shadow-[0_0_40px_rgba(0,194,212,0.2)]">
+                <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/15 bg-black shadow-[0_0_40px_rgba(0,194,212,0.2)]">
                   <div className="relative aspect-video w-full">
                     <iframe 
                       src="https://www.youtube-nocookie.com/embed/f4dQBbeSF2I?rel=0&modestbranding=1" 
@@ -870,9 +872,9 @@ export function StudioClient() {
                     />
                   </div>
                   
-                  <div className="px-4 py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-xs font-mono text-white/50">
-                    <span className="flex items-center gap-2 text-[#00C2D4]">
-                      <MonitorPlay size={14} /> 4K 60FPS MASTER
+                  <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-[10px] sm:text-xs font-mono text-white/50">
+                    <span className="flex items-center gap-1.5 sm:gap-2 text-[#00C2D4]">
+                      <MonitorPlay size={13} /> 4K 60FPS MASTER
                     </span>
                     <span>2.39:1 ANAMORPHIC DCI-P3</span>
                   </div>
@@ -880,18 +882,18 @@ export function StudioClient() {
               </div>
 
               {/* Client Business Breakdown */}
-              <div className="w-full lg:w-5/12 space-y-6">
+              <div className="w-full lg:w-5/12 space-y-4 sm:space-y-6">
                 <div>
-                  <span className="text-xs font-mono uppercase tracking-widest text-[#00C2D4] font-bold block mb-1">
+                  <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-[#00C2D4] font-bold block mb-1">
                     Commercial Spot 01 // Luxury Real Estate
                   </span>
-                  <h3 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-white">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase tracking-tight text-white">
                     "Stop Selling Barren Land — Sell The Dream"
                   </h3>
                 </div>
 
-                <div className="space-y-4 text-xs md:text-sm text-white/70">
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-white/70">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
                     <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
                       <ShieldCheck size={14} className="text-[#00C2D4]" /> The Business Hook (Why It Converts)
                     </h4>
@@ -900,7 +902,7 @@ export function StudioClient() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
                     <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
                       <Sliders size={14} className="text-[#FF6600]" /> Optical Science (How It Was Engineered)
                     </h4>
@@ -910,10 +912,10 @@ export function StudioClient() {
                   </div>
                 </div>
 
-                <div className="pt-2 flex flex-wrap gap-2 text-xs font-mono text-white/50">
-                  <span className="px-3 py-1 bg-[#111] rounded border border-white/10">Architecture Pre-Viz</span>
-                  <span className="px-3 py-1 bg-[#111] rounded border border-white/10">Kodak 2383 LUT</span>
-                  <span className="px-3 py-1 bg-[#111] rounded border border-white/10">35mm Halation</span>
+                <div className="pt-1 sm:pt-2 flex flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono text-white/50">
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Architecture Pre-Viz</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Kodak 2383 LUT</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">35mm Halation</span>
                 </div>
               </div>
 
@@ -926,13 +928,13 @@ export function StudioClient() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden"
+            className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl relative overflow-hidden"
           >
-            <div className="flex flex-col lg:flex-row-reverse gap-10 items-center">
+            <div className="flex flex-col lg:flex-row-reverse gap-6 sm:gap-10 items-center">
               
               {/* Cinema Player Container */}
               <div className="w-full lg:w-7/12">
-                <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-black shadow-[0_0_40px_rgba(255,102,0,0.2)]">
+                <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/15 bg-black shadow-[0_0_40px_rgba(255,102,0,0.2)]">
                   <div className="relative aspect-video w-full">
                     <iframe 
                       src="https://www.youtube-nocookie.com/embed/34LMdZ_wU6A?rel=0&modestbranding=1" 
@@ -943,9 +945,9 @@ export function StudioClient() {
                     />
                   </div>
                   
-                  <div className="px-4 py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-xs font-mono text-white/50">
-                    <span className="flex items-center gap-2 text-[#FF6600]">
-                      <MonitorPlay size={14} /> 4K 60FPS CINEMATIC MASTER
+                  <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-[10px] sm:text-xs font-mono text-white/50">
+                    <span className="flex items-center gap-1.5 sm:gap-2 text-[#FF6600]">
+                      <MonitorPlay size={13} /> 4K 60FPS CINEMATIC MASTER
                     </span>
                     <span>2.39:1 ARRI RAW REC.709</span>
                   </div>
@@ -953,18 +955,18 @@ export function StudioClient() {
               </div>
 
               {/* Client Business Breakdown */}
-              <div className="w-full lg:w-5/12 space-y-6">
+              <div className="w-full lg:w-5/12 space-y-4 sm:space-y-6">
                 <div>
-                  <span className="text-xs font-mono uppercase tracking-widest text-[#FF6600] font-bold block mb-1">
+                  <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-[#FF6600] font-bold block mb-1">
                     Commercial Spot 02 // Tech & Consumer Drama
                   </span>
-                  <h3 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-white">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase tracking-tight text-white">
                     "Stop Lagging, Start Living"
                   </h3>
                 </div>
 
-                <div className="space-y-4 text-xs md:text-sm text-white/70">
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-white/70">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
                     <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
                       <ShieldCheck size={14} className="text-[#FF6600]" /> The Business Hook (Why It Converts)
                     </h4>
@@ -973,7 +975,7 @@ export function StudioClient() {
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
                     <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
                       <Sliders size={14} className="text-[#00C2D4]" /> Optical Science (How It Was Engineered)
                     </h4>
@@ -983,10 +985,10 @@ export function StudioClient() {
                   </div>
                 </div>
 
-                <div className="pt-2 flex flex-wrap gap-2 text-xs font-mono text-white/50">
-                  <span className="px-3 py-1 bg-[#111] rounded border border-white/10">Character Lock</span>
-                  <span className="px-3 py-1 bg-[#111] rounded border border-white/10">Planar Motion</span>
-                  <span className="px-3 py-1 bg-[#111] rounded border border-white/10">DCI-P3 Color</span>
+                <div className="pt-1 sm:pt-2 flex flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono text-white/50">
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Character Lock</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Planar Motion</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">DCI-P3 Color</span>
                 </div>
               </div>
 
@@ -998,16 +1000,16 @@ export function StudioClient() {
 
       {/* ================= TAB 2: ADVANCED INTERACTIVE FUSION NODE GRAPH ================= */}
       {activeTab === "fusion" && (
-        <section className="max-w-7xl mx-auto px-6 py-10 relative z-10">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 relative z-10">
           
-          <div className="text-center max-w-3xl mx-auto mb-10">
-            <span className="px-3 py-1 bg-[#00C2D4]/10 border border-[#00C2D4]/30 text-[#00C2D4] font-mono text-xs uppercase tracking-widest font-bold rounded">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
+            <span className="px-3 py-1 bg-[#00C2D4]/10 border border-[#00C2D4]/30 text-[#00C2D4] font-mono text-[10px] sm:text-xs uppercase tracking-widest font-bold rounded">
               DaVinci Resolve 19 // Fusion Engine Architecture
             </span>
-            <h2 className="text-3xl md:text-5xl font-heading font-bold uppercase tracking-tight mt-4 mb-4">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-heading font-bold uppercase tracking-tight mt-3 sm:mt-4 mb-3 sm:mb-4">
               The Optical Node Canvas
             </h2>
-            <p className="text-white/60 text-sm md:text-base">
+            <p className="text-white/60 text-xs sm:text-sm md:text-base max-w-2xl mx-auto">
               Click any node or trigger the autonomous signal simulation. The camera viewport autonomously tracks photon flow all the way to ProRes Master output.
             </p>
 
@@ -1229,67 +1231,67 @@ export function StudioClient() {
 
       {/* ================= TAB 3: COMPETITIVE PRODUCTION ECONOMICS MATRIX ================= */}
       {activeTab === "matrix" && (
-        <section className="max-w-6xl mx-auto px-6 py-10 relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="px-3 py-1 bg-[#FF6600]/10 border border-[#FF6600]/30 text-[#FF6600] font-mono text-xs uppercase tracking-widest font-bold rounded">
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
+            <span className="px-3 py-1 bg-[#FF6600]/10 border border-[#FF6600]/30 text-[#FF6600] font-mono text-[10px] sm:text-xs uppercase tracking-widest font-bold rounded">
               Competitive Market Economics
             </span>
-            <h2 className="text-3xl md:text-5xl font-heading font-bold uppercase tracking-tight mt-4 mb-4">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-heading font-bold uppercase tracking-tight mt-3 sm:mt-4 mb-3 sm:mb-4">
               Real-World Commercial ROI
             </h2>
-            <p className="text-white/60 text-sm md:text-base">
+            <p className="text-white/60 text-xs sm:text-sm md:text-base max-w-2xl mx-auto">
               Why high-converting brands choose Good Brains Studio over $35k traditional agencies and $50 amateur AI prompt slop.
             </p>
           </div>
 
-          <div className="bg-[#0A0A0A] border border-white/15 rounded-3xl overflow-hidden shadow-2xl">
-            <table className="w-full text-left border-collapse text-xs md:text-sm">
+          <div className="bg-[#0A0A0A] border border-white/15 rounded-2xl sm:rounded-3xl overflow-x-auto shadow-2xl -mx-2 sm:mx-0">
+            <table className="w-full min-w-[620px] text-left border-collapse text-xs sm:text-sm">
               <thead>
                 <tr className="border-b border-white/15 bg-white/5 font-mono text-white/70 uppercase">
-                  <th className="p-4 md:p-6">Deliverable / Parameter</th>
-                  <th className="p-4 md:p-6 text-white/40">Traditional Agency</th>
-                  <th className="p-4 md:p-6 text-white/40">Amateur AI Prompters ($50)</th>
-                  <th className="p-4 md:p-6 text-[#00C2D4] bg-[#00C2D4]/5">Good Brains Studio</th>
+                  <th className="p-3.5 sm:p-4 md:p-6">Deliverable / Parameter</th>
+                  <th className="p-3.5 sm:p-4 md:p-6 text-white/40">Traditional Agency</th>
+                  <th className="p-3.5 sm:p-4 md:p-6 text-white/40">Amateur AI Prompters ($50)</th>
+                  <th className="p-3.5 sm:p-4 md:p-6 text-[#00C2D4] bg-[#00C2D4]/5">Good Brains Studio</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10 font-sans">
                 <tr>
-                  <td className="p-4 md:p-6 font-bold text-white">Investment per Commercial</td>
-                  <td className="p-4 md:p-6 text-white/50">$35,000 – $80,000+</td>
-                  <td className="p-4 md:p-6 text-white/50">&lt;$50 – $200 (Unusable for ads)</td>
-                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">
-                    $650 – $1,850 <span className="text-[10px] text-white/50 font-normal">(Sprints from $450)</span>
+                  <td className="p-3.5 sm:p-4 md:p-6 font-bold text-white">Investment per Commercial</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-white/50">$35,000 – $80,000+</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-white/50">&lt;$50 – $200 (Unusable for ads)</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-[#00C2D4] font-bold font-mono">
+                    $650 – $1,850 <span className="text-[10px] text-white/50 font-normal block sm:inline">(Sprints from $450)</span>
                   </td>
                 </tr>
                 <tr>
-                  <td className="p-4 md:p-6 font-bold text-white">Production Velocity</td>
-                  <td className="p-4 md:p-6 text-white/50">6 to 10 Weeks</td>
-                  <td className="p-4 md:p-6 text-white/50">24 Hours (Random hallucinations)</td>
-                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">48 to 72 Hours (Broadcast Master)</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 font-bold text-white">Production Velocity</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-white/50">6 to 10 Weeks</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-white/50">24 Hours (Random hallucinations)</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-[#00C2D4] font-bold font-mono">48 to 72 Hours (Broadcast Master)</td>
                 </tr>
                 <tr>
-                  <td className="p-4 md:p-6 font-bold text-white">Visual Texture & Glass</td>
-                  <td className="p-4 md:p-6 text-white/50">ARRI Alexa / Cooke Lenses ($45k)</td>
-                  <td className="p-4 md:p-6 text-red-400">Plastic AI Sheen, Flickering Hands</td>
-                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">Photochemical 35mm Halation</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 font-bold text-white">Visual Texture & Glass</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-white/50">ARRI Alexa / Cooke Lenses ($45k)</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-red-400">Plastic AI Sheen, Flickering Hands</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-[#00C2D4] font-bold font-mono">Photochemical 35mm Halation</td>
                 </tr>
                 <tr>
-                  <td className="p-4 md:p-6 font-bold text-white">Color Science & Fidelity</td>
-                  <td className="p-4 md:p-6 text-white/50">Manual DaVinci Grade ($350/hr)</td>
-                  <td className="p-4 md:p-6 text-red-400">None (8-bit banding, clipped neon)</td>
-                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">DaVinci 19 Fusion Multi-Plane Curve</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 font-bold text-white">Color Science & Fidelity</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-white/50">Manual DaVinci Grade ($350/hr)</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-red-400">None (8-bit banding, clipped neon)</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-[#00C2D4] font-bold font-mono">DaVinci 19 Fusion Multi-Plane Curve</td>
                 </tr>
                 <tr>
-                  <td className="p-4 md:p-6 font-bold text-white">Character & Seed Consistency</td>
-                  <td className="p-4 md:p-6 text-white/50">Practical Live Cast</td>
-                  <td className="p-4 md:p-6 text-red-400">Zero (Faces morph every cut)</td>
-                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">Strict Seed Locks & Planar Tracking</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 font-bold text-white">Character & Seed Consistency</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-white/50">Practical Live Cast</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-red-400">Zero (Faces morph every cut)</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-[#00C2D4] font-bold font-mono">Strict Seed Locks & Planar Tracking</td>
                 </tr>
                 <tr>
-                  <td className="p-4 md:p-6 font-bold text-white">Delivery Codec & Export</td>
-                  <td className="p-4 md:p-6 text-white/50">Apple ProRes 4444 XQ</td>
-                  <td className="p-4 md:p-6 text-red-400">Compressed 1080p MP4</td>
-                  <td className="p-4 md:p-6 text-[#00C2D4] font-bold font-mono">12-Bit ProRes 4444 + Social 9:16 Cuts</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 font-bold text-white">Delivery Codec & Export</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-white/50">Apple ProRes 4444 XQ</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-red-400">Compressed 1080p MP4</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-[#00C2D4] font-bold font-mono">12-Bit ProRes 4444 + Social 9:16 Cuts</td>
                 </tr>
               </tbody>
             </table>
@@ -1303,36 +1305,36 @@ export function StudioClient() {
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="text-center py-28 px-6 border-t border-white/10 relative overflow-hidden bg-[#070707]"
+        className="text-center py-20 sm:py-28 px-4 sm:px-6 border-t border-white/10 relative overflow-hidden bg-[#070707]"
       >
         {/* Glow ambient circle */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#00C2D4]/10 rounded-full blur-[140px] pointer-events-none" />
 
-        <div className="max-w-4xl mx-auto space-y-6 relative z-10">
+        <div className="max-w-4xl mx-auto space-y-5 sm:space-y-6 relative z-10">
           
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/15 text-[#00C2D4] font-mono text-xs uppercase tracking-widest">
-            <Sparkles size={14} /> Global Studio Retainers & Sprints
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-[#00C2D4] font-mono text-[10px] sm:text-xs uppercase tracking-widest">
+            <Sparkles size={13} /> Global Studio Retainers & Sprints
           </span>
 
-          <h2 className="text-3xl sm:text-5xl md:text-6xl font-heading font-bold uppercase tracking-tight text-white leading-tight">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-heading font-bold uppercase tracking-tight text-white leading-tight">
             Ready to experience the studio?
           </h2>
 
-          <p className="text-white/60 text-base md:text-lg max-w-2xl mx-auto font-sans leading-relaxed">
+          <p className="text-white/60 text-xs sm:text-base md:text-lg max-w-2xl mx-auto font-sans leading-relaxed">
             Directly contract Sherif on Upwork for high-impact brand films, or explore the flagship Good Brains studio ecosystem.
           </p>
 
           {/* THE SIGNATURE BUTTONS */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4">
             
             {/* PRIMARY BUTTON TO HTTPS://GOODBRAINS.PRO */}
             <a
               href="https://goodbrains.pro"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-white text-[#050505] px-10 py-4.5 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-[#00C2D4] hover:shadow-[0_0_50px_rgba(0,194,212,0.6)] active:scale-95 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.25)]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 sm:gap-3 bg-white text-[#050505] px-8 sm:px-10 py-3.5 sm:py-4.5 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm hover:bg-[#00C2D4] hover:shadow-[0_0_50px_rgba(0,194,212,0.6)] active:scale-95 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.25)] min-h-[48px]"
             >
-              Visit GoodBrains.pro <ExternalLink size={16} />
+              Visit GoodBrains.pro <ExternalLink size={15} />
             </a>
 
             {/* HIRE ON UPWORK BUTTON */}
@@ -1340,15 +1342,15 @@ export function StudioClient() {
               href="https://www.upwork.com/freelancers/~01c65e863ec5fb99c7"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-white/5 border border-white/20 text-white px-9 py-4.5 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-white/10 hover:border-white/40 active:scale-95 transition-all duration-300"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 sm:gap-3 bg-white/5 border border-white/20 text-white px-8 sm:px-9 py-3.5 sm:py-4.5 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm hover:bg-white/10 hover:border-white/40 active:scale-95 transition-all duration-300 min-h-[48px]"
             >
-              Hire Sherif on Upwork <ArrowRight size={16} />
+              Hire Sherif on Upwork <ArrowRight size={15} />
             </a>
 
             {/* VIEW SAAS ARCHITECTURE */}
             <Link
               href="/showcase"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-white/50 hover:text-white px-6 py-4.5 font-mono text-xs uppercase tracking-wider transition-all"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-white/50 hover:text-white px-5 sm:px-6 py-3 sm:py-4.5 font-mono text-xs uppercase tracking-wider transition-all min-h-[48px]"
             >
               View SaaS Architecture
             </Link>
