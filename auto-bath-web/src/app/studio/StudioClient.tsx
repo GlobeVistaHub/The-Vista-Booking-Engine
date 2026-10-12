@@ -25,7 +25,8 @@ import {
   Gauge,
   BarChart3,
   AlertTriangle,
-  Radio
+  Radio,
+  ArrowUp
 } from "lucide-react";
 
 interface NodeData {
@@ -962,6 +963,11 @@ function FairlightAudioConsole() {
   const [currentStage, setCurrentStage] = useState<number>(1);
   const [selectedBand, setSelectedBand] = useState<EQBand>(FAIRLIGHT_EQ_BANDS[1]); // Band 2 (420Hz Notch)
   const [isSimulatingAudio, setIsSimulatingAudio] = useState<boolean>(false);
+  const [autoCameraActive, setAutoCameraActive] = useState<boolean>(false);
+
+  // Autonomous vertical camera glide references
+  const stageAreaRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   const stages = [
     { num: 1, label: "Parametric EQ", desc: "6-Band Surgical Sculpting" },
@@ -971,28 +977,74 @@ function FairlightAudioConsole() {
     { num: 5, label: "Master Approved", desc: "Sound Engineer Sign-off 👍" }
   ];
 
+  // Autonomous Camera Glide: Smoothly glides mobile / desktop viewport to active audio stage
+  const glideCameraToStage = (stageNum?: number) => {
+    if (typeof window === "undefined" || !stageAreaRef.current) return;
+    const rect = stageAreaRef.current.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    // 85px offset accounts for fixed navbar and top breathing room
+    const targetY = rect.top + scrollTop - 85;
+    window.scrollTo({
+      top: Math.max(0, targetY),
+      behavior: "smooth"
+    });
+  };
+
+  const scrollToHeader = () => {
+    if (typeof window === "undefined" || !headerRef.current) return;
+    const rect = headerRef.current.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    window.scrollTo({
+      top: Math.max(0, rect.top + scrollTop - 85),
+      behavior: "smooth"
+    });
+  };
+
+  const handleSelectStage = (num: number) => {
+    setCurrentStage(num);
+    // On mobile screens, smoothly glide camera to show stage grid
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setTimeout(() => {
+        glideCameraToStage(num);
+      }, 60);
+    }
+  };
+
   const runAudioSimulation = () => {
     if (isSimulatingAudio) return;
     setIsSimulatingAudio(true);
+    setAutoCameraActive(true);
     let stage = 1;
     setCurrentStage(1);
+
+    // AUTONOMOUS CAMERA TRACKING: Glide down immediately so mobile viewers see Stage 1 live!
+    setTimeout(() => {
+      glideCameraToStage(1);
+    }, 120);
 
     const interval = setInterval(() => {
       stage += 1;
       if (stage <= 5) {
         setCurrentStage(stage);
+        // Autonomously keep the active grid centered in view
+        setTimeout(() => {
+          glideCameraToStage(stage);
+        }, 80);
       } else {
         clearInterval(interval);
-        setTimeout(() => setIsSimulatingAudio(false), 500);
+        setTimeout(() => {
+          setIsSimulatingAudio(false);
+          setAutoCameraActive(false);
+        }, 800);
       }
-    }, 1300);
+    }, 1900); // 1.9s per stage gives optimal tempo for camera tracking and telemetry absorption
   };
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-8 sm:space-y-10 relative z-10">
       
       {/* Fairlight Header */}
-      <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl relative overflow-hidden">
+      <div ref={headerRef} className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 border-b border-white/10 pb-6 mb-6">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -1025,6 +1077,14 @@ function FairlightAudioConsole() {
               <RotateCw size={14} className={isSimulatingAudio ? "animate-spin" : ""} />
               {isSimulatingAudio ? `Processing Stage 0${currentStage}/05...` : "Run Fairlight Mastering Chain"}
             </button>
+
+            {/* Live Camera Glide Mobile Hint */}
+            {isSimulatingAudio && (
+              <div className="mt-2 flex items-center justify-center lg:justify-end gap-1.5 text-amber-400 font-mono text-[11px] animate-pulse">
+                <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                <span>Autonomous camera tracking Stage 0{currentStage}/05...</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -1036,8 +1096,10 @@ function FairlightAudioConsole() {
             return (
               <button
                 key={stg.num}
-                onClick={() => setCurrentStage(stg.num)}
+                onClick={() => handleSelectStage(stg.num)}
                 className={`p-3 rounded-xl border text-left transition-all ${
+                  stg.num === 5 ? "col-span-2 sm:col-span-1" : ""
+                } ${
                   isActive
                     ? "bg-[#00C2D4]/15 border-[#00C2D4] text-white shadow-[0_0_20px_rgba(0,194,212,0.3)]"
                     : isCompleted
@@ -1059,7 +1121,64 @@ function FairlightAudioConsole() {
         </div>
       </div>
 
-      {/* ================= STAGE 1: 6-BAND PARAMETRIC EQUALIZER ================= */}
+      {/* ================= DYNAMIC STAGE CONTAINER WITH AUTONOMOUS CAMERA TRACKING ================= */}
+      <div ref={stageAreaRef} className="scroll-mt-24 space-y-5">
+
+        {/* LIVE AUTONOMOUS FAIRLIGHT TELEMETRY HUD */}
+        <div className="bg-[#050505] border border-white/10 rounded-2xl p-3 sm:p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            {/* Live 10-Band Animated VU Equalizer */}
+            <div className="flex items-end gap-1 h-6 px-2 py-1 bg-black/60 rounded-lg border border-white/10 shrink-0">
+              {[60, 85, 45, 95, 70, 50, 90, 65, 40, 80].map((h, i) => (
+                <motion.div
+                  key={i}
+                  animate={{
+                    height: isSimulatingAudio 
+                      ? [`${Math.max(15, (h * 0.3))}%`, `${h}%`, `${Math.max(20, (h * 0.5))}%`]
+                      : `${h * 0.55}%`
+                  }}
+                  transition={{
+                    duration: 0.5 + (i % 3) * 0.2,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                    ease: "easeInOut"
+                  }}
+                  className={`w-1 rounded-sm ${
+                    i < 6 ? "bg-[#00C2D4]" : i < 8 ? "bg-[#00FF66]" : "bg-[#FF6600]"
+                  }`}
+                />
+              ))}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${autoCameraActive ? "bg-amber-400 animate-ping" : "bg-[#00C2D4]"}`} />
+                <span className="text-[10px] font-mono text-[#00C2D4] uppercase font-bold tracking-wider truncate">
+                  {autoCameraActive ? "AUTONOMOUS CAMERA TRACKING" : "FAIRLIGHT MASTER BUS"}
+                </span>
+              </div>
+              <div className="text-xs sm:text-sm font-bold text-white uppercase tracking-tight truncate">
+                STAGE 0{currentStage}/05: {stages[currentStage - 1].label}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Controls */}
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end text-xs font-mono">
+            <span className="text-[10px] text-white/50 hidden md:inline truncate max-w-[220px]">
+              {stages[currentStage - 1].desc}
+            </span>
+            
+            <button
+              onClick={scrollToHeader}
+              className="px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/5 text-white/70 hover:text-white hover:bg-white/10 text-[10px] flex items-center gap-1 transition-all"
+            >
+              <ArrowUp size={11} /> Top Controls
+            </button>
+          </div>
+        </div>
+
+        {/* ================= STAGE 1: 6-BAND PARAMETRIC EQUALIZER ================= */}
       {currentStage === 1 && (
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -1462,10 +1581,12 @@ function FairlightAudioConsole() {
         </motion.div>
       )}
 
+      </div>
+
       {/* Navigation Controls: Previous / Next Stage */}
       <div className="flex items-center justify-between pt-2">
         <button
-          onClick={() => setCurrentStage((prev) => Math.max(1, prev - 1))}
+          onClick={() => handleSelectStage(Math.max(1, currentStage - 1))}
           disabled={currentStage === 1}
           className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-xs font-mono font-bold uppercase tracking-wider text-white/60 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-all"
         >
@@ -1477,7 +1598,7 @@ function FairlightAudioConsole() {
         </span>
 
         <button
-          onClick={() => setCurrentStage((prev) => Math.min(5, prev + 1))}
+          onClick={() => handleSelectStage(Math.min(5, currentStage + 1))}
           disabled={currentStage === 5}
           className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-xs font-mono font-bold uppercase tracking-wider text-[#00C2D4] hover:bg-[#00C2D4]/10 disabled:opacity-30 disabled:pointer-events-none transition-all"
         >
