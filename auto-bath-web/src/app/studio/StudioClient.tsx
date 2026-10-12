@@ -630,7 +630,47 @@ interface EQBand {
   whyAILacksThis: string;
   clientROI: string;
   fairlightModule: string;
+  curvePath: string;
+  fillPath: string;
+  telemetryNote: string;
 }
+
+const FLAT_BYPASS_PATH = "M 0 110 C 60 110 70 110 85 110 C 130 110 160 110 195 110 C 230 110 270 110 310 110 C 350 110 380 110 415 110 C 450 110 470 110 495 110 C 515 110 530 110 550 110 C 570 110 590 110 600 110";
+const FLAT_BYPASS_FILL = "M 0 110 C 60 110 70 110 85 110 C 130 110 160 110 195 110 C 230 110 270 110 310 110 C 350 110 380 110 415 110 C 450 110 470 110 495 110 C 515 110 530 110 550 110 C 570 110 590 110 600 110 L 600 110 L 0 110 Z";
+
+const EQ_RTA_BARS = [
+  { x: 28, width: 9, baseY: 178, height: 16 },
+  { x: 46, width: 9, baseY: 172, height: 24 },
+  { x: 64, width: 9, baseY: 164, height: 36 },
+  { x: 82, width: 9, baseY: 156, height: 48 },
+  { x: 100, width: 9, baseY: 150, height: 58 },
+  { x: 118, width: 9, baseY: 145, height: 68 },
+  { x: 136, width: 9, baseY: 140, height: 76 },
+  { x: 154, width: 9, baseY: 136, height: 84 },
+  { x: 172, width: 9, baseY: 132, height: 92 },
+  { x: 190, width: 9, baseY: 128, height: 96 }, // 420Hz mud region
+  { x: 208, width: 9, baseY: 134, height: 86 },
+  { x: 226, width: 9, baseY: 138, height: 80 },
+  { x: 244, width: 9, baseY: 142, height: 72 },
+  { x: 262, width: 9, baseY: 146, height: 66 },
+  { x: 280, width: 9, baseY: 142, height: 74 },
+  { x: 298, width: 9, baseY: 137, height: 82 },
+  { x: 316, width: 9, baseY: 132, height: 89 },
+  { x: 334, width: 9, baseY: 127, height: 94 },
+  { x: 352, width: 9, baseY: 124, height: 90 },
+  { x: 370, width: 9, baseY: 120, height: 86 },
+  { x: 388, width: 9, baseY: 116, height: 92 },
+  { x: 406, width: 9, baseY: 110, height: 102 }, // 3.4kHz dialogue presence region
+  { x: 424, width: 9, baseY: 118, height: 90 },
+  { x: 442, width: 9, baseY: 126, height: 78 },
+  { x: 460, width: 9, baseY: 134, height: 70 },
+  { x: 478, width: 9, baseY: 140, height: 64 },
+  { x: 496, width: 9, baseY: 146, height: 56 }, // 7.2kHz sibilance region
+  { x: 514, width: 9, baseY: 150, height: 48 },
+  { x: 532, width: 9, baseY: 156, height: 40 },
+  { x: 550, width: 9, baseY: 160, height: 34 },
+  { x: 568, width: 9, baseY: 166, height: 26 }
+];
 
 const FAIRLIGHT_EQ_BANDS: EQBand[] = [
   {
@@ -645,7 +685,10 @@ const FAIRLIGHT_EQ_BANDS: EQBand[] = [
     role: "Sub-bass roll-off eliminating non-musical infrasonic mud, microphone wind rumble, and AI generator low-frequency artifacts.",
     whyAILacksThis: "Generative voice and ambient sound engines produce unnatural sub-40Hz DC rumble that distorts smartphone speakers and car subwoofers.",
     clientROI: "Prevents blown speaker distortion; maximizes acoustic headroom so master sounds louder and punchier at equal volume.",
-    fairlightModule: "Fairlight Channel HPF Filter"
+    fairlightModule: "Fairlight Channel HPF Filter",
+    curvePath: "M 0 215 C 30 215 55 200 80 165 C 115 130 160 120 195 148 C 230 148 270 110 310 125 C 350 120 380 90 415 82 C 450 78 470 110 495 138 C 515 125 530 90 550 86 C 570 84 590 85 600 85",
+    fillPath: "M 0 215 C 30 215 55 200 80 165 C 115 130 160 120 195 148 C 230 148 270 110 310 125 C 350 120 380 90 415 82 C 450 78 470 110 495 138 C 515 125 530 90 550 86 C 570 84 590 85 600 85 L 600 110 L 0 110 Z",
+    telemetryNote: "SUB-BASS HPF ACTIVE: Infrasonic DC mud rolled off (-18dB/oct at 80Hz)"
   },
   {
     id: 2,
@@ -659,7 +702,10 @@ const FAIRLIGHT_EQ_BANDS: EQBand[] = [
     role: "Deep surgical attenuation of the synthetic 'cardboard box' resonance inherent in generative neural speech models.",
     whyAILacksThis: "AI voice clones and diffusion ambiances exhibit severe 350-500Hz algorithmic boxiness that instantly flags the commercial as amateur or fake.",
     clientROI: "Transforms hollow, robotic AI voiceovers into intimate, warm, physical studio-recorded vocal tracks.",
-    fairlightModule: "Fairlight 6-Band Parametric EQ"
+    fairlightModule: "Fairlight 6-Band Parametric EQ",
+    curvePath: "M 0 200 C 60 195 70 170 85 140 C 130 115 155 110 195 168 C 235 168 270 110 310 125 C 350 120 380 90 415 82 C 450 78 470 110 495 138 C 515 125 530 90 550 86 C 570 84 590 85 600 85",
+    fillPath: "M 0 200 C 60 195 70 170 85 140 C 130 115 155 110 195 168 C 235 168 270 110 310 125 C 350 120 380 90 415 82 C 450 78 470 110 495 138 C 515 125 530 90 550 86 C 570 84 590 85 600 85 L 600 110 L 0 110 Z",
+    telemetryNote: "420Hz NOTCH ACTIVE: Synthetic AI cardboard boxiness scooped (-4.8dB, Q=3.4)"
   },
   {
     id: 3,
@@ -673,7 +719,10 @@ const FAIRLIGHT_EQ_BANDS: EQBand[] = [
     role: "Gentle dip in the nasal acoustic register to tame harsh phase whistling and digital comb filtering.",
     whyAILacksThis: "Diffusion vocoders introduce metallic phase cancellations and telephone-like nasal spikes between 1kHz and 2kHz.",
     clientROI: "Ensures the voiceover sits naturally in the mix, giving the commercial believable human warmth.",
-    fairlightModule: "Fairlight 6-Band Parametric EQ"
+    fairlightModule: "Fairlight 6-Band Parametric EQ",
+    curvePath: "M 0 200 C 60 195 70 170 85 140 C 130 115 160 115 195 148 C 230 148 265 110 310 142 C 355 142 380 90 415 82 C 450 78 470 110 495 138 C 515 125 530 90 550 86 C 570 84 590 85 600 85",
+    fillPath: "M 0 200 C 60 195 70 170 85 140 C 130 115 160 115 195 148 C 230 148 265 110 310 142 C 355 142 380 90 415 82 C 450 78 470 110 495 138 C 515 125 530 90 550 86 C 570 84 590 85 600 85 L 600 110 L 0 110 Z",
+    telemetryNote: "1.4kHz FORMANT ATTENUATED: Nasal digital vocoder whistling smoothed"
   },
   {
     id: 4,
@@ -687,7 +736,10 @@ const FAIRLIGHT_EQ_BANDS: EQBand[] = [
     role: "Hollywood dialogue punch and clarity boost that cuts through complex cinematic orchestral scores and sound effects.",
     whyAILacksThis: "AI tracks sound muffled and submerged behind background music because synthetic stems lack transient bite.",
     clientROI: "100% dialogue intelligibility on Instagram, TikTok, YouTube, and noisy mobile environments without raising volume.",
-    fairlightModule: "Fairlight 6-Band Parametric EQ"
+    fairlightModule: "Fairlight 6-Band Parametric EQ",
+    curvePath: "M 0 200 C 60 195 70 170 85 140 C 130 115 160 115 195 148 C 230 148 270 110 310 125 C 350 115 375 70 415 62 C 455 62 470 110 495 138 C 515 125 530 90 550 86 C 570 84 590 85 600 85",
+    fillPath: "M 0 200 C 60 195 70 170 85 140 C 130 115 160 115 195 148 C 230 148 270 110 310 125 C 350 115 375 70 415 62 C 455 62 470 110 495 138 C 515 125 530 90 550 86 C 570 84 590 85 600 85 L 600 110 L 0 110 Z",
+    telemetryNote: "3.4kHz PRESENCE LIFTED: Hollywood dialogue punch boosted (+3.2dB, Q=1.8)"
   },
   {
     id: 5,
@@ -701,7 +753,10 @@ const FAIRLIGHT_EQ_BANDS: EQBand[] = [
     role: "Frequency-targeted dynamic de-essing that eliminates ear-piercing sibilance ('S', 'T', 'SH') without dulling overall brilliance.",
     whyAILacksThis: "Neural text-to-speech generates piercing sibilant hiss that physically hurts listener ears on AirPods and high-end headphones.",
     clientROI: "Eliminates listener acoustic fatigue, driving 40% higher commercial video completion rates.",
-    fairlightModule: "Fairlight Dynamic Spectral De-Esser"
+    fairlightModule: "Fairlight Dynamic Spectral De-Esser",
+    curvePath: "M 0 200 C 60 195 70 170 85 140 C 130 115 160 115 195 148 C 230 148 270 110 310 125 C 350 120 380 90 415 82 C 450 78 465 115 495 156 C 525 156 530 90 550 86 C 570 84 590 85 600 85",
+    fillPath: "M 0 200 C 60 195 70 170 85 140 C 130 115 160 115 195 148 C 230 148 270 110 310 125 C 350 120 380 90 415 82 C 450 78 465 115 495 156 C 525 156 530 90 550 86 C 570 84 590 85 600 85 L 600 110 L 0 110 Z",
+    telemetryNote: "7.2kHz SIBILANCE DAMPENED: Ear-piercing vocal sibilants clamped (-5.5dB dynamic)"
   },
   {
     id: 6,
@@ -715,7 +770,10 @@ const FAIRLIGHT_EQ_BANDS: EQBand[] = [
     role: "Ultra-high-frequency shelf adding air, acoustic space, and high-fidelity sheen reminiscent of million-dollar cinema dubbing stages.",
     whyAILacksThis: "AI audio models are typically trained on 22kHz or 32kHz sample rates with steep 10kHz low-pass cutoffs that sound flat and dead.",
     clientROI: "Bestows an immediate luxury acoustic polish that commands enterprise brand prestige.",
-    fairlightModule: "Fairlight High-Frequency Silk Shelf"
+    fairlightModule: "Fairlight High-Frequency Silk Shelf",
+    curvePath: "M 0 200 C 60 195 70 170 85 140 C 130 115 160 115 195 148 C 230 148 270 110 310 125 C 350 120 380 90 415 82 C 450 78 470 110 495 138 C 515 110 530 75 550 68 C 570 65 590 65 600 65",
+    fillPath: "M 0 200 C 60 195 70 170 85 140 C 130 115 160 115 195 148 C 230 148 270 110 310 125 C 350 120 380 90 415 82 C 450 78 470 110 495 138 C 515 110 530 75 550 68 C 570 65 590 65 600 65 L 600 110 L 0 110 Z",
+    telemetryNote: "12.5kHz SILK SHELF ACTIVE: Luxury 20kHz acoustic air & sheen engaged (+2.8dB)"
   }
 ];
 
@@ -964,6 +1022,7 @@ function FairlightAudioConsole() {
   const [selectedBand, setSelectedBand] = useState<EQBand>(FAIRLIGHT_EQ_BANDS[1]); // Band 2 (420Hz Notch)
   const [isSimulatingAudio, setIsSimulatingAudio] = useState<boolean>(false);
   const [autoCameraActive, setAutoCameraActive] = useState<boolean>(false);
+  const [isEqBypassed, setIsEqBypassed] = useState<boolean>(false);
 
   // Autonomous vertical camera glide references
   const stageAreaRef = useRef<HTMLDivElement>(null);
@@ -1208,16 +1267,31 @@ function FairlightAudioConsole() {
         >
           {/* Left: Interactive 6-Band EQ Screen (7 Cols) */}
           <div className="lg:col-span-7 bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl relative">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4 gap-2 flex-wrap">
               <div className="flex items-center gap-2">
                 <Sliders size={16} className="text-[#00C2D4]" />
                 <h3 className="text-sm sm:text-base font-mono uppercase font-bold text-white tracking-wider">
                   Fairlight 6-Band Parametric Equalizer
                 </h3>
               </div>
-              <span className="text-[10px] font-mono text-[#00C2D4] uppercase font-bold">
-                STAGE 01 // FREQUENCY SCULPTING
-              </span>
+              <div className="flex items-center gap-2">
+                {/* A/B Bypass Toggle: Mastered vs Raw AI Audio */}
+                <button
+                  onClick={() => setIsEqBypassed(!isEqBypassed)}
+                  title="Toggle between Fairlight master sculpting and unmastered Raw AI Audio"
+                  className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase border transition-all flex items-center gap-1.5 ${
+                    isEqBypassed
+                      ? "bg-red-500/20 border-red-500/60 text-red-400 shadow-[0_0_12px_rgba(239,68,68,0.3)] animate-pulse"
+                      : "bg-[#00C2D4]/15 border-[#00C2D4]/50 text-[#00C2D4] hover:bg-[#00C2D4]/25 shadow-[0_0_12px_rgba(0,194,212,0.25)]"
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${isEqBypassed ? "bg-red-400" : "bg-[#00C2D4] animate-ping"}`} />
+                  {isEqBypassed ? "BYPASS: Raw AI (Flat)" : "ENGAGED: Fairlight Master"}
+                </button>
+                <span className="hidden sm:inline-block text-[10px] font-mono text-white/40 uppercase">
+                  STAGE 01
+                </span>
+              </div>
             </div>
 
             <div className="relative bg-[#050505] rounded-xl border border-white/10 p-3 overflow-hidden shadow-inner">
@@ -1242,40 +1316,142 @@ function FairlightAudioConsole() {
               </div>
 
               {/* SVG Frequency Curve */}
-              <div className="pt-6 pb-2 px-6">
+              <div className="pt-6 pb-2 px-4 sm:px-6">
                 <svg viewBox="0 0 600 220" className="w-full h-[220px] overflow-visible">
-                  {/* Grid Lines */}
-                  <line x1="0" y1="55" x2="600" y2="55" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
-                  <line x1="0" y1="82" x2="600" y2="82" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
-                  <line x1="0" y1="110" x2="600" y2="110" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                  <line x1="0" y1="138" x2="600" y2="138" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
-                  <line x1="0" y1="165" x2="600" y2="165" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
-
-                  {/* Shaded Fill Under Curve */}
-                  <path
-                    d="M 0 200 C 60 195 70 170 85 140 C 130 115 160 115 195 148 C 230 148 270 110 310 125 C 350 120 380 90 415 82 C 450 78 470 110 495 138 C 515 125 530 90 550 86 C 570 84 590 85 600 85 L 600 110 L 0 110 Z"
-                    fill="url(#eqFillMaster)"
-                    fillOpacity="0.35"
-                  />
                   <defs>
+                    {/* Fairlight Master Gradient Fill */}
                     <linearGradient id="eqFillMaster" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#00C2D4" stopOpacity="0.6" />
+                      <stop offset="0%" stopColor="#00C2D4" stopOpacity="0.45" />
+                      <stop offset="60%" stopColor="#00C2D4" stopOpacity="0.12" />
                       <stop offset="100%" stopColor="#00C2D4" stopOpacity="0.0" />
+                    </linearGradient>
+
+                    {/* Bypassed Flat Audio Gradient Fill */}
+                    <linearGradient id="eqFillBypass" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#EF4444" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#EF4444" stopOpacity="0.0" />
+                    </linearGradient>
+
+                    {/* Live RTA Spectrum Analyzer Bar Gradient */}
+                    <linearGradient id="rtaBarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#00C2D4" stopOpacity="0.35" />
+                      <stop offset="100%" stopColor="#005B66" stopOpacity="0.05" />
                     </linearGradient>
                   </defs>
 
-                  {/* Curve Line */}
+                  {/* Grid Lines */}
+                  <line x1="0" y1="55" x2="600" y2="55" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+                  <line x1="0" y1="82" x2="600" y2="82" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+                  <line x1="0" y1="110" x2="600" y2="110" stroke={isEqBypassed ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.2)"} strokeWidth={isEqBypassed ? "1.5" : "1"} />
+                  <line x1="0" y1="138" x2="600" y2="138" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+                  <line x1="0" y1="165" x2="600" y2="165" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+
+                  {/* LIVE REAL-TIME AUDIO SPECTRUM ANALYZER (RTA) BARS */}
+                  <g className="pointer-events-none">
+                    {EQ_RTA_BARS.map((bar, idx) => {
+                      // Modulate bar height if bypassed vs engaged
+                      const animHeight = isEqBypassed ? [bar.height * 0.4, bar.height * 0.7, bar.height * 0.4] : [bar.height * 0.7, bar.height * 1.25, bar.height * 0.6];
+                      const animY = isEqBypassed ? [200 - bar.height * 0.4, 200 - bar.height * 0.7, 200 - bar.height * 0.4] : [200 - bar.height * 0.7, 200 - bar.height * 1.25, 200 - bar.height * 0.6];
+                      return (
+                        <motion.rect
+                          key={`rta-${idx}`}
+                          x={bar.x}
+                          width={bar.width}
+                          rx={1.5}
+                          fill={isEqBypassed ? "rgba(239,68,68,0.15)" : "url(#rtaBarGrad)"}
+                          animate={{
+                            height: animHeight,
+                            y: animY
+                          }}
+                          transition={{
+                            duration: 0.8 + ((idx % 5) * 0.15),
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            delay: (idx * 0.03) % 0.4
+                          }}
+                        />
+                      );
+                    })}
+                  </g>
+
+                  {/* Vertical Frequency Laser Guide at Selected Band */}
+                  <g className="pointer-events-none">
+                    <line
+                      x1={selectedBand.cx}
+                      y1={25}
+                      x2={selectedBand.cx}
+                      y2={205}
+                      stroke={isEqBypassed ? "rgba(239,68,68,0.35)" : "rgba(0,194,212,0.4)"}
+                      strokeWidth="1"
+                      strokeDasharray="2 3"
+                    />
+                    {/* Acoustic Ripple Pulse radiating from selected band node */}
+                    {!isEqBypassed && (
+                      <motion.circle
+                        cx={selectedBand.cx}
+                        cy={selectedBand.cy}
+                        animate={{ r: [10, 26], opacity: [0.75, 0] }}
+                        transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
+                        fill="none"
+                        stroke="#FF6600"
+                        strokeWidth="1.2"
+                      />
+                    )}
+                  </g>
+
+                  {/* Shaded Fill Under Curve (Morphs dynamically between bands & bypass) */}
                   <motion.path
-                    d="M 0 200 C 60 195 70 170 85 140 C 130 115 160 115 195 148 C 230 148 270 110 310 125 C 350 120 380 90 415 82 C 450 78 470 110 495 138 C 515 125 530 90 550 86 C 570 84 590 85 600 85"
-                    fill="none"
-                    stroke="#00C2D4"
-                    strokeWidth="2.5"
-                    className="filter drop-shadow-[0_0_10px_rgba(0,194,212,0.8)]"
+                    animate={{
+                      d: isEqBypassed ? FLAT_BYPASS_FILL : selectedBand.fillPath
+                    }}
+                    transition={{
+                      duration: 0.55,
+                      ease: [0.25, 1, 0.5, 1]
+                    }}
+                    fill={isEqBypassed ? "url(#eqFillBypass)" : "url(#eqFillMaster)"}
+                    className="pointer-events-none"
                   />
+
+                  {/* Dynamic Morphing Curve Line */}
+                  <motion.path
+                    animate={{
+                      d: isEqBypassed ? FLAT_BYPASS_PATH : selectedBand.curvePath
+                    }}
+                    transition={{
+                      duration: 0.55,
+                      ease: [0.25, 1, 0.5, 1]
+                    }}
+                    fill="none"
+                    stroke={isEqBypassed ? "#EF4444" : "#00C2D4"}
+                    strokeWidth="2.5"
+                    className={isEqBypassed ? "filter drop-shadow-[0_0_8px_rgba(239,68,68,0.7)]" : "filter drop-shadow-[0_0_10px_rgba(0,194,212,0.85)]"}
+                  />
+
+                  {/* Traveling Electric Audio Signal Pulse (Flows continuously along the curve) */}
+                  {!isEqBypassed && (
+                    <motion.path
+                      animate={{
+                        d: selectedBand.curvePath,
+                        strokeDashoffset: [0, -480]
+                      }}
+                      transition={{
+                        d: { duration: 0.55, ease: [0.25, 1, 0.5, 1] },
+                        strokeDashoffset: { duration: 2.2, repeat: Infinity, ease: "linear" }
+                      }}
+                      fill="none"
+                      stroke="#FFFFFF"
+                      strokeWidth="3.2"
+                      strokeDasharray="18 200"
+                      strokeLinecap="round"
+                      className="pointer-events-none filter drop-shadow-[0_0_8px_#FFFFFF]"
+                    />
+                  )}
 
                   {/* Clickable Band Handles (Flicker-Free with 22px Hit Targets) */}
                   {FAIRLIGHT_EQ_BANDS.map((band) => {
                     const isSelected = selectedBand.id === band.id;
+                    const nodeY = isEqBypassed ? 110 : band.cy;
+
                     return (
                       <g 
                         key={band.id} 
@@ -1285,18 +1461,18 @@ function FairlightAudioConsole() {
                         {/* 1. Large 22px Stable Hit Target: Mouse never loses hover boundary */}
                         <circle
                           cx={band.cx}
-                          cy={band.cy}
+                          cy={nodeY}
                           r={22}
                           fill="transparent"
                           className="cursor-pointer"
                         />
 
-                        {/* 2. Ambient Hover Halo (Pure CSS opacity transition, ZERO coordinate displacement) */}
+                        {/* 2. Ambient Hover Halo (Zero coordinate displacement) */}
                         <circle
                           cx={band.cx}
-                          cy={band.cy}
+                          cy={nodeY}
                           r={isSelected ? 16 : 13}
-                          fill={isSelected ? "rgba(255,102,0,0.25)" : "rgba(0,194,212,0.2)"}
+                          fill={isEqBypassed ? "rgba(239,68,68,0.2)" : (isSelected ? "rgba(255,102,0,0.25)" : "rgba(0,194,212,0.2)")}
                           className={`transition-opacity duration-200 pointer-events-none ${
                             isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                           }`}
@@ -1306,23 +1482,23 @@ function FairlightAudioConsole() {
                         {isSelected && (
                           <circle
                             cx={band.cx}
-                            cy={band.cy}
+                            cy={nodeY}
                             r={14}
                             fill="none"
-                            stroke="#FF6600"
+                            stroke={isEqBypassed ? "#EF4444" : "#FF6600"}
                             strokeWidth="1.5"
                             strokeDasharray="3 3"
                             className="pointer-events-none animate-spin"
-                            style={{ transformOrigin: `${band.cx}px ${band.cy}px`, animationDuration: "8s" }}
+                            style={{ transformOrigin: `${band.cx}px ${nodeY}px`, animationDuration: "8s" }}
                           />
                         )}
 
-                        {/* 4. Core Node Circle (No CSS transform scale to prevent 60Hz hover jerking!) */}
+                        {/* 4. Core Node Circle */}
                         <circle
                           cx={band.cx}
-                          cy={band.cy}
+                          cy={nodeY}
                           r={isSelected ? 9.5 : 7.5}
-                          fill={isSelected ? "#FF6600" : "#00C2D4"}
+                          fill={isEqBypassed ? "#EF4444" : (isSelected ? "#FF6600" : "#00C2D4")}
                           stroke="#050505"
                           strokeWidth="2.5"
                           className="transition-colors duration-200 filter drop-shadow-[0_0_8px_currentColor] pointer-events-none"
@@ -1331,9 +1507,9 @@ function FairlightAudioConsole() {
                         {/* 5. Frequency Band Text Label */}
                         <text
                           x={band.cx}
-                          y={band.cy - 14}
+                          y={nodeY - 14}
                           textAnchor="middle"
-                          fill={isSelected ? "#FF6600" : "#FFFFFF"}
+                          fill={isEqBypassed ? "#EF4444" : (isSelected ? "#FF6600" : "#FFFFFF")}
                           fontSize="10"
                           fontFamily="monospace"
                           fontWeight="bold"
@@ -1345,6 +1521,24 @@ function FairlightAudioConsole() {
                     );
                   })}
                 </svg>
+              </div>
+
+              {/* Live Relatable Acoustic Telemetry Readout Banner */}
+              <div className="mb-3 px-3 py-2 rounded-lg bg-black/40 border border-white/10 flex items-center justify-between text-[10px] font-mono gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${isEqBypassed ? "bg-red-500" : "bg-[#00C2D4] animate-pulse"}`} />
+                  <span className={isEqBypassed ? "text-red-400 font-bold" : "text-[#00C2D4] font-bold"}>
+                    {isEqBypassed ? "AI RAW BYPASS (FLAT 0dB)" : `ACTIVE TELEMETRY [B${selectedBand.id}]`}
+                  </span>
+                  <span className="text-white/70 hidden sm:inline">
+                    {isEqBypassed 
+                      ? "Unmastered 48kHz feed: 420Hz boxiness & 7.2kHz sibilance uncorrected" 
+                      : selectedBand.telemetryNote}
+                  </span>
+                </div>
+                <div className="text-white/40 text-[9px]">
+                  {selectedBand.freq} // {selectedBand.gain} // Q:{selectedBand.q.split(" ")[0]}
+                </div>
               </div>
 
               {/* Band Quick Switcher */}
