@@ -463,10 +463,12 @@ function AnamorphicOpticalHorizon() {
         <span className="text-[#FF6600] font-bold">650nm HALATION</span>
       </motion.div>
 
-      {/* 5. Subtle Interactive Scrubber Telemetry / Indicator */}
-      <div className="mt-1.5 text-[8.5px] sm:text-[9px] font-mono tracking-widest text-[#00C2D4]/70 uppercase flex items-center gap-1.5 pointer-events-none transition-all">
-        <span className={`w-1.5 h-1.5 rounded-full ${isInteracting ? "bg-[#FF6600] animate-ping" : "bg-[#00C2D4] animate-pulse"}`} />
-        <span>{isInteracting ? "OPTICAL ANAMORPHIC DEFLECTION ACTIVE" : "SCRUB WITH CURSOR OR TOUCH TO DEFLECT FLARE"}</span>
+      {/* 5. Interactive Scrubber Indicator Badge (High contrast & crystal-clear readability on mobile) */}
+      <div className="mt-2.5 px-3.5 py-1 rounded-full bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center gap-2 text-[10px] sm:text-xs font-mono tracking-wider uppercase text-white/90 shadow-[0_0_15px_rgba(0,194,212,0.15)] pointer-events-none transition-all">
+        <span className={`w-2 h-2 rounded-full shrink-0 ${isInteracting ? "bg-[#FF6600] animate-ping" : "bg-[#00C2D4] animate-pulse"}`} />
+        <span className={isInteracting ? "text-[#FF6600] font-bold" : "text-[#00C2D4] font-bold"}>
+          {isInteracting ? "OPTICAL FLARE DEFLECTING" : "SCRUB WITH CURSOR OR TOUCH TO DEFLECT FLARE"}
+        </span>
       </div>
 
       {/* 6. Cinematic Floating Bokeh Motes / Dust Light Particles (With Parallax Cursor/Finger Deflection) */}
