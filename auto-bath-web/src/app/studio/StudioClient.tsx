@@ -330,68 +330,69 @@ const staggerContainer: any = {
 // Cinematic Anamorphic Optical Flare & Bokeh Horizon
 function AnamorphicOpticalHorizon() {
   return (
-    <div className="relative my-6 sm:my-8 max-w-2xl mx-auto flex flex-col items-center justify-center select-none group pointer-events-auto">
-      {/* 1. Ambient Volumetric Lens Bloom (Behind Streak) */}
-      <div className="absolute w-3/4 h-10 bg-gradient-to-r from-transparent via-[#00C2D4]/20 to-transparent blur-xl pointer-events-none -top-5" />
-      <div className="absolute w-1/2 h-6 bg-gradient-to-r from-transparent via-[#FF6600]/15 to-transparent blur-md pointer-events-none -top-3" />
+    <div className="relative my-7 sm:my-9 max-w-2xl mx-auto flex flex-col items-center justify-center select-none group pointer-events-auto">
+      {/* 1. Ambient Volumetric Lens Bloom (Behind Streak - Broad, Silky, Natural) */}
+      <div className="absolute w-3/4 h-12 bg-gradient-to-r from-transparent via-[#00C2D4]/15 to-transparent blur-2xl pointer-events-none -top-6" />
+      <div className="absolute w-1/2 h-8 bg-gradient-to-r from-transparent via-[#FF6600]/10 to-transparent blur-lg pointer-events-none -top-4" />
 
       {/* 2. Horizontal Anamorphic Flare Streak Beam */}
       <div className="relative w-full flex items-center justify-center">
         {/* Outer Tapering Flare Horizon */}
         <motion.div 
-          animate={{ opacity: [0.55, 0.9, 0.55], scaleX: [0.97, 1.03, 0.97] }}
+          animate={{ opacity: [0.45, 0.75, 0.45], scaleX: [0.97, 1.03, 0.97] }}
           transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-          className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#00C2D4]/70 via-white/80 to-transparent" 
+          className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#00C2D4]/50 via-white/60 to-transparent" 
         />
 
-        {/* High-Intensity Core Laser Beam */}
+        {/* High-Intensity Core Laser Beam (Softened falloff, silky optical glow) */}
         <motion.div
-          animate={{ opacity: [0.75, 1, 0.75], width: ["45%", "60%", "45%"] }}
+          animate={{ opacity: [0.6, 0.85, 0.6], width: ["45%", "60%", "45%"] }}
           transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute h-[1.5px] bg-gradient-to-r from-transparent via-[#00C2D4] via-white to-transparent filter drop-shadow-[0_0_10px_rgba(0,194,212,0.95)]"
+          className="absolute h-[1.5px] bg-gradient-to-r from-transparent via-[#00C2D4]/80 via-white/90 to-transparent filter drop-shadow-[0_0_8px_rgba(0,194,212,0.6)]"
         />
 
-        {/* 3. Central Optical Aperture Star & Diamond Glint */}
+        {/* 3. Central Optical Aperture Star & Diamond Glint (Softened glow, no harsh edges) */}
         <div className="absolute flex items-center justify-center">
-          {/* Subtle Precision Lens Crosshair */}
-          <div className="absolute w-8 h-[1px] bg-white/60 pointer-events-none" />
-          <div className="absolute h-8 w-[1px] bg-white/60 pointer-events-none" />
+          {/* Subtle Precision Lens Reticle (Contained neatly within beam to prevent overlap below) */}
+          <div className="absolute w-6 h-[1px] bg-white/40 pointer-events-none" />
+          <div className="absolute h-3 w-[1px] bg-white/40 pointer-events-none" />
 
-          {/* 4-Point Cinema Diamond Star Flare */}
+          {/* 4-Point Cinema Diamond Star Flare (Softened opacity & diffused drop shadow) */}
           <motion.svg
             viewBox="0 0 24 24"
-            className="w-5 h-5 text-white filter drop-shadow-[0_0_12px_#00C2D4] pointer-events-none"
-            animate={{ scale: [0.85, 1.25, 0.85], rotate: [0, 90, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="w-4 h-4 sm:w-5 sm:h-5 text-white/90 filter drop-shadow-[0_0_6px_rgba(0,194,212,0.7)] pointer-events-none"
+            animate={{ scale: [0.85, 1.15, 0.85], rotate: [0, 90, 0] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
           >
             <path
               d="M 12 0 Q 12 12 24 12 Q 12 12 12 24 Q 12 12 0 12 Q 12 12 12 0 Z"
               fill="#FFFFFF"
+              fillOpacity="0.85"
             />
           </motion.svg>
 
-          {/* Core White Photon Point */}
-          <div className="w-1.5 h-1.5 rounded-full bg-white filter drop-shadow-[0_0_6px_#FFFFFF]" />
+          {/* Core White Photon Point (Gentle blur so it's not razor-sharp) */}
+          <div className="w-1.5 h-1.5 rounded-full bg-white/90 blur-[0.4px] filter drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
 
-          {/* Chromatic Red/Amber Halation Edge */}
+          {/* Chromatic Red/Amber Halation Edge (Soft optical dispersion) */}
           <motion.div
-            animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.7, 0.3] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute w-7 h-7 rounded-full bg-gradient-to-tr from-[#00C2D4]/30 via-white/20 to-[#FF6600]/30 blur-[2px] pointer-events-none"
+            animate={{ scale: [1, 1.4, 1], opacity: [0.25, 0.55, 0.25] }}
+            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute w-8 h-8 rounded-full bg-gradient-to-tr from-[#00C2D4]/25 via-white/15 to-[#FF6600]/25 blur-[3px] pointer-events-none"
           />
         </div>
       </div>
 
-      {/* 4. Film Optics Demarcation (Explaining clearly what this is!) */}
+      {/* 4. Film Optics Demarcation (Lowered with mt-5, boosted size for crisp desktop & mobile legibility) */}
       <motion.div 
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.65 }}
-        className="mt-2.5 flex items-center gap-2 sm:gap-3 text-[8px] sm:text-[9px] font-mono tracking-[0.2em] uppercase text-white/50"
+        animate={{ opacity: 1 }}
+        className="mt-4 sm:mt-5 flex items-center justify-center flex-wrap gap-2 sm:gap-3 text-[10px] sm:text-[11.5px] font-mono font-medium tracking-[0.18em] sm:tracking-[0.24em] uppercase text-white/80"
       >
         <span className="text-[#00C2D4] font-bold">2.39:1</span>
-        <span className="w-1 h-1 rounded-full bg-white/30" />
-        <span>1.33x ANAMORPHIC OPTICAL FLARE</span>
-        <span className="w-1 h-1 rounded-full bg-white/30" />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#00C2D4]/40" />
+        <span className="text-white/90 font-semibold tracking-wider">1.33x ANAMORPHIC OPTICAL FLARE</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-[#FF6600]/40" />
         <span className="text-[#FF6600] font-bold">650nm HALATION</span>
       </motion.div>
 
@@ -419,7 +420,7 @@ function AnamorphicOpticalHorizon() {
             animate={{
               y: [0, -12, 0],
               x: [0, (i % 2 === 0 ? 4 : -4), 0],
-              opacity: [0.2, 0.9, 0.2]
+              opacity: [0.15, 0.75, 0.15]
             }}
             transition={{
               duration: 3.2 + (i * 0.4),
