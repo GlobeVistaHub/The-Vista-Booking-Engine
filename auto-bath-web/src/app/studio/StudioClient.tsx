@@ -1603,18 +1603,11 @@ export function StudioClient() {
       <nav className="border-b border-white/10 bg-[#050505]/85 backdrop-blur-2xl sticky top-0 z-50 px-4 sm:px-6 py-3 sm:py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5 sm:gap-3">
-            {!logoError ? (
-              <img 
-                src="/goodbrains-logo.png" 
-                alt="Good Brains Studio"
-                onError={() => setLogoError(true)}
-                className="h-8 sm:h-9 w-auto max-w-[130px] sm:max-w-[160px] object-contain shrink-0 filter drop-shadow-[0_0_12px_rgba(0,194,212,0.4)]"
-              />
-            ) : (
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-[#00C2D4] to-[#FF6600] flex items-center justify-center font-bold text-black font-mono text-xs shadow-[0_0_25px_rgba(0,194,212,0.6)] shrink-0">
-                GB
-              </div>
-            )}
+            <img 
+              src="/goodbrains-logo.png" 
+              alt="Good Brains Studio"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-contain shrink-0 filter drop-shadow-[0_0_12px_rgba(255,180,0,0.5)] border border-amber-500/30"
+            />
             <div>
               <span className="font-mono text-xs sm:text-sm tracking-widest uppercase font-bold text-white block">
                 GOOD BRAINS <span className="text-[#00C2D4]">STUDIO</span>
@@ -1652,7 +1645,7 @@ export function StudioClient() {
       </nav>
 
       {/* Kinetic Typography Hero Section */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 md:pt-24 pb-12 sm:pb-16 text-center relative z-10">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 md:pt-24 pb-12 sm:pb-16 text-center relative z-10">
         
         {/* Kinetic Badge */}
         <motion.div 
@@ -1664,7 +1657,7 @@ export function StudioClient() {
           <Sparkles size={13} /> BEYOND GENERATIVE PROMPTS // TRUE OPTICAL & FAIRLIGHT COMPOSITION
         </motion.div>
 
-        {/* 3D Kinetic Typography Headline (Locked to Auto-Bath Spec) */}
+        {/* 3D Kinetic Typography Headline (Locked to Exactly 2 Lines) */}
         <motion.div 
           variants={staggerContainer}
           initial="hidden"
@@ -1673,15 +1666,29 @@ export function StudioClient() {
         >
           <h1 
             ref={titleRef}
-            className="text-[7.5vw] sm:text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-white uppercase tracking-tighter leading-[1.08] mb-6"
+            className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-heading font-bold text-white tracking-tight uppercase leading-[1.1] mb-6 max-w-5xl mx-auto"
             style={{ perspective: "1000px" }}
           >
-            <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }}>
-              TRANSFORMING <span className="text-[#00C2D4]">RAW AI</span>
-            </motion.div>
-            <motion.div variants={kineticText} style={{ transformOrigin: "bottom" }}>
-              INTO <span ref={wordRef} className="inline-block whitespace-nowrap pr-[0.04em] bg-gradient-to-r from-white via-[#00C2D4] to-[#FF6600] bg-clip-text text-transparent">HOLLYWOOD CINEMA</span>
-            </motion.div>
+            <div className="whitespace-nowrap">
+              <motion.span variants={kineticText} className="inline-block">
+                TRANSFORMING
+              </motion.span>{" "}
+              <motion.span variants={kineticText} className="inline-block text-[#00C2D4]">
+                RAW AI
+              </motion.span>
+            </div>
+            <div className="whitespace-nowrap mt-1 sm:mt-2">
+              <motion.span variants={kineticText} className="inline-block">
+                INTO
+              </motion.span>{" "}
+              <motion.span 
+                ref={wordRef}
+                variants={kineticText} 
+                className="inline-block bg-gradient-to-r from-white via-[#00C2D4] to-[#FF6600] bg-clip-text text-transparent"
+              >
+                HOLLYWOOD CINEMA
+              </motion.span>
+            </div>
           </h1>
         </motion.div>
 
