@@ -141,9 +141,10 @@ export default function PricingGrid({ dynamicServices = [], dynamicContent = {} 
           {mappedServices.map((service, i) => (
             <div 
               key={service.id} 
+              id={`service-${service.id}`}
               tabIndex={0}
               onClick={() => {}} // Tricks iOS Safari into allowing :hover states on touch
-              className={`w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)] max-w-sm flex flex-col justify-between relative group bg-[#050505]/60 backdrop-blur-md md:backdrop-blur-2xl border ${service.popular ? 'border-cyber-orange/80' : service.badge ? 'border-electric-cyan/60' : 'border-white/10'} rounded-2xl p-8 hover:bg-[#050505]/80 active:bg-[#050505]/90 transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,194,212,0.15)] active:shadow-[0_0_40px_rgba(0,194,212,0.3)] hover:-translate-y-2 active:scale-[0.98] active:border-electric-cyan/50 cursor-pointer md:cursor-default`}
+              className={`w-full md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.5rem)] max-w-sm flex flex-col justify-between relative group bg-[#050505]/60 backdrop-blur-md md:backdrop-blur-2xl border ${service.popular ? 'border-cyber-orange/80' : service.badge ? 'border-electric-cyan/60' : 'border-white/10'} rounded-2xl p-8 hover:bg-[#050505]/80 active:bg-[#050505]/90 transition-all duration-500 hover:shadow-[0_0_40px_rgba(0,194,212,0.15)] active:shadow-[0_0_40px_rgba(0,194,212,0.3)] hover:-translate-y-2 active:scale-[0.98] active:border-electric-cyan/50 cursor-pointer md:cursor-default scroll-mt-28 md:scroll-mt-36 target:border-electric-cyan target:ring-2 target:ring-electric-cyan/60 target:shadow-[0_0_50px_rgba(0,194,212,0.4)] target:scale-[1.02]`}
             >
               <div>
                 {/* Badge (Most Requested or Flagship Edition) */}
