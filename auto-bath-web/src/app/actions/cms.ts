@@ -6,8 +6,8 @@ import { requireAdmin } from "@/utils/admin-auth";
 import { revalidatePath } from "next/cache";
 
 export async function getSiteContentAction() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("site_content").select("key, value");
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("site_content").select("key, value");
   
   if (error) {
     console.error("Failed to fetch site content:", error);
@@ -81,6 +81,29 @@ export async function updateServicePriceAction(id: string, newPriceCents: number
   if (error) {
     console.error("Failed to update service price:", error);
     return { success: false, error: "Failed to update price." };
+  }
+
+  revalidatePath("/", "layout");
+  return { success: true };
+}
+
+export async function updateServiceNameAction(id: string, newName: string) {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, error: "Not authorized" };
+  }
+
+  const admin = createAdminClient();
+  
+  const { error } = await admin
+    .from("services")
+    .update({ name: newName })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Failed to update service name:", error);
+    return { success: false, error: "Failed to update service name." };
   }
 
   revalidatePath("/", "layout");

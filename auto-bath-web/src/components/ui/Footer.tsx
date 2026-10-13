@@ -81,10 +81,13 @@ export default function Footer({ dynamicContent = {} }: { dynamicContent?: Recor
             <div className="col-span-1 lg:col-span-1 lg:pt-4">
               <h4 className="text-white font-heading font-bold uppercase tracking-widest mb-6 text-sm">Specialties</h4>
               <ul className="space-y-4">
-                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Premium Hand Wash</Link></li>
-                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Paint Correction</Link></li>
-                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Ceramic Coating</Link></li>
-                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">Interior Detailing</Link></li>
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_wash'] || "Premium Hand Wash"}</Link></li>
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_paint'] || "Paint Correction"}</Link></li>
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_ceramic'] || "Ceramic Coating"}</Link></li>
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_interior'] || "Interior Detailing"}</Link></li>
+                {dynamicContent['service_title_concourse'] && (
+                  <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_concourse']}</Link></li>
+                )}
               </ul>
             </div>
 

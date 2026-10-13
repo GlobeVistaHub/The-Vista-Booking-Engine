@@ -32,7 +32,7 @@ export default async function Home() {
         <HeroCar />
         
         {/* Navigation Bar overlay */}
-        <Navbar />
+        <Navbar dynamicContent={content} />
 
         {/* Hero Text */}
         <div className="relative z-40 text-center -mt-24 md:mt-20 pointer-events-none flex flex-col items-center gap-4 md:gap-6">

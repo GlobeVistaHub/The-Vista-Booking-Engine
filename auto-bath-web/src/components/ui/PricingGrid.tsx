@@ -57,14 +57,22 @@ const defaultServices = [
 export default function PricingGrid({ dynamicServices = [], dynamicContent = {} }: PricingGridProps) {
   const { openBooking } = useBooking();
 
+  const packageIdMap: Record<string, string> = {
+    wash: "c2a502e8-e825-4876-b459-9334e801e363",
+    interior: "a92d99bf-11be-4afb-9860-5844233d2899",
+    paint: "4b293e74-9b13-4af4-8901-49ac014ad043",
+    concourse: "49d0b87f-744d-4bf8-9821-2df1f9c67a60",
+    ceramic: "f90656aa-808f-41f4-a789-7dcf6a934df8",
+  };
+
   // Map dynamic prices, titles, descriptions, and features from CMS / DB
   const mappedServices = defaultServices.map(service => {
     const customTitle = dynamicContent[`service_title_${service.id}`];
     const customDesc = dynamicContent[`service_desc_${service.id}`];
     const customPrice = dynamicContent[`service_price_${service.id}`];
     
-    // Check if dynamic price exists in DB
-    const dbService = dynamicServices.find(s => s.name === (customTitle || service.title) || s.name === service.title);
+    // Check if dynamic price exists in DB by ID or fallback by name
+    const dbService = dynamicServices.find(s => s.id === packageIdMap[service.id] || s.name === (customTitle || service.title) || s.name === service.title);
     
     // Check if customized features exist in CMS (one per line)
     const customFeaturesRaw = dynamicContent[`service_features_${service.id}`];
@@ -74,7 +82,7 @@ export default function PricingGrid({ dynamicServices = [], dynamicContent = {} 
 
     return {
       ...service,
-      title: customTitle || service.title,
+      title: customTitle || (dbService ? dbService.name : service.title),
       price: dbService 
         ? `FROM $${dbService.base_price / 100}` 
         : (customPrice ? (customPrice.startsWith("FROM") ? customPrice : `FROM $${customPrice}`) : service.price),
@@ -134,7 +142,7 @@ export default function PricingGrid({ dynamicServices = [], dynamicContent = {} 
               <button 
                 onClick={(e) => { 
                   e.stopPropagation(); 
-                  openBooking(service.id === "concourse" ? "concourse" : service.title.includes("Ceramic") ? "ceramic" : service.title.includes("Paint") ? "paint" : service.title.includes("Interior") ? "interior" : "wash"); 
+                  openBooking(service.id); 
                 }}
                 onTouchStart={() => {}} // Forces iOS to register :active CSS pseudo-classes instantly
                 className={`w-full py-4 rounded-lg font-heading font-bold uppercase tracking-widest transition-all duration-300 active:scale-[0.98] ${service.popular ? 'bg-cyber-orange text-[#050505] hover:bg-white active:bg-white hover:shadow-[0_0_20px_rgba(255,255,255,0.5)] active:shadow-[0_0_20px_rgba(255,255,255,0.8)]' : 'bg-white/5 text-white border border-white/10 hover:bg-electric-cyan active:bg-electric-cyan hover:border-electric-cyan active:border-electric-cyan hover:text-[#050505] active:text-[#050505] hover:shadow-[0_0_20px_rgba(0,194,212,0.5)] active:shadow-[0_0_20px_rgba(0,194,212,0.8)]'}`}

@@ -14,17 +14,36 @@ const STATIC_PACKAGES = [
   { id: "concourse", name: "Concourse Full Detail", price: 650, time: "2 Days", type: "premium" },
 ];
 
-export default function BookingWidget({ dynamicServices = [] }: { dynamicServices?: any[] }) {
+export default function BookingWidget({ 
+  dynamicServices = [],
+  dynamicContent = {}
+}: { 
+  dynamicServices?: any[];
+  dynamicContent?: Record<string, string>;
+}) {
   const { isBookingOpen, closeBooking, selectedPackage, setSelectedPackage } = useBooking();
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Map static packages with dynamic prices from the DB
+  // Map static packages with dynamic names, descriptions, and prices from CMS / DB
   const PACKAGES = STATIC_PACKAGES.map(pkg => {
-    const dbService = dynamicServices.find(s => s.name === pkg.name);
+    const customTitle = dynamicContent[`service_title_${pkg.id}`];
+    const customDesc = dynamicContent[`service_desc_${pkg.id}`];
+    const packageIdMap: Record<string, string> = {
+      wash: "c2a502e8-e825-4876-b459-9334e801e363",
+      interior: "a92d99bf-11be-4afb-9860-5844233d2899",
+      paint: "4b293e74-9b13-4af4-8901-49ac014ad043",
+      concourse: "49d0b87f-744d-4bf8-9821-2df1f9c67a60",
+      ceramic: "f90656aa-808f-41f4-a789-7dcf6a934df8",
+    };
+    const targetId = packageIdMap[pkg.id];
+    const dbService = dynamicServices.find(s => s.id === targetId || s.name === pkg.name || (customTitle && s.name === customTitle));
+
     return {
       ...pkg,
-      price: dbService ? (dbService.base_price / 100) : pkg.price
+      name: customTitle || (dbService ? dbService.name : pkg.name),
+      price: dbService ? (dbService.base_price / 100) : pkg.price,
+      description: customDesc || pkg.time
     };
   });
   

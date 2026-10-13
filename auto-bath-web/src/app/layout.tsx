@@ -106,7 +106,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col font-sans bg-vantablack text-white">
         <BookingProvider>
           {children}
-          <BookingWidget dynamicServices={services || []} />
+          <BookingWidget dynamicServices={services || []} dynamicContent={content || {}} />
           <AIConcierge />
         </BookingProvider>
       </body>

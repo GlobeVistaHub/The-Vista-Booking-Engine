@@ -49,7 +49,15 @@ export async function createBookingAction(formData: {
     }
 
     // 3. Fetch the selected service to get the exact price (Never trust client prices)
-    // We map frontend package IDs to the database service names, or just query by name
+    // Map frontend package IDs to primary service IDs (fallback to names)
+    const packageIdMap: Record<string, string> = {
+      wash: "c2a502e8-e825-4876-b459-9334e801e363",
+      interior: "a92d99bf-11be-4afb-9860-5844233d2899",
+      paint: "4b293e74-9b13-4af4-8901-49ac014ad043",
+      concourse: "49d0b87f-744d-4bf8-9821-2df1f9c67a60",
+      ceramic: "f90656aa-808f-41f4-a789-7dcf6a934df8",
+    };
+
     const packageMap: Record<string, string> = {
       wash: "Premium Hand Wash",
       interior: "Interior Detailing",
@@ -58,12 +66,15 @@ export async function createBookingAction(formData: {
       concourse: "Concourse Full Detail",
     };
     
-    const serviceName = packageMap[formData.packageId];
-    const { data: service, error: serviceError } = await supabaseAdmin
-      .from("services")
-      .select("id, base_price, name")
-      .eq("name", serviceName)
-      .single();
+    const targetId = packageIdMap[formData.packageId];
+    let serviceQuery = supabaseAdmin.from("services").select("id, base_price, name");
+    if (targetId) {
+      serviceQuery = serviceQuery.eq("id", targetId);
+    } else {
+      serviceQuery = serviceQuery.eq("name", packageMap[formData.packageId]);
+    }
+
+    const { data: service, error: serviceError } = await serviceQuery.single();
       
     if (serviceError || !service) throw new Error("Invalid service selected");
 
@@ -82,6 +93,14 @@ export async function createBookingAction(formData: {
     
     const scheduledTime = `${year}-${month}-${day}T${hours}:${minutes}:00.000Z`;
 
+    // Query site_content for custom package title fallback
+    const { data: customTitleRow } = await supabaseAdmin
+      .from("site_content")
+      .select("value")
+      .eq("key", `service_title_${formData.packageId}`)
+      .maybeSingle();
+    const checkoutServiceName = customTitleRow?.value || service.name;
+
     // 5. Create a Stripe Checkout Session
     const baseUrl = formData.origin || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const session = await stripe.checkout.sessions.create({
@@ -94,7 +113,7 @@ export async function createBookingAction(formData: {
           price_data: {
             currency: 'aud',
             product_data: {
-              name: service.name,
+              name: checkoutServiceName,
               description: `${formData.vehicle} - ${formData.date} at ${formData.time}`,
             },
             unit_amount: service.base_price, // base_price should be in cents

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { updateSiteContentAction, updateServicePriceAction } from "@/app/actions/cms";
+import { updateSiteContentAction, updateServicePriceAction, updateServiceNameAction } from "@/app/actions/cms";
 import { formatPrice } from "@/lib/schedule";
 import { createClient } from "@/utils/supabase/client";
 
@@ -9,6 +9,22 @@ interface CMSFormProps {
   initialContent: Record<string, string>;
   initialServices: any[];
 }
+
+const PACKAGE_SERVICE_IDS: Record<string, string> = {
+  wash: "c2a502e8-e825-4876-b459-9334e801e363",
+  interior: "a92d99bf-11be-4afb-9860-5844233d2899",
+  paint: "4b293e74-9b13-4af4-8901-49ac014ad043",
+  ceramic: "f90656aa-808f-41f4-a789-7dcf6a934df8",
+  concourse: "49d0b87f-744d-4bf8-9821-2df1f9c67a60"
+};
+
+const SERVICE_ID_TO_PACKAGE: Record<string, string> = {
+  "c2a502e8-e825-4876-b459-9334e801e363": "wash",
+  "a92d99bf-11be-4afb-9860-5844233d2899": "interior",
+  "4b293e74-9b13-4af4-8901-49ac014ad043": "paint",
+  "f90656aa-808f-41f4-a789-7dcf6a934df8": "ceramic",
+  "49d0b87f-744d-4bf8-9821-2df1f9c67a60": "concourse"
+};
 
 export default function CMSForm({ initialContent, initialServices }: CMSFormProps) {
   const [activeTab, setActiveTab] = useState<"content" | "pricing" | "media" | "seo">("content");
@@ -30,6 +46,44 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
     setIsSavingContent(true);
     setContentStatus("");
     
+    // Automatically sync package names & prices to the services table (Stripe & Booking Engine)
+    let updatedServices = [...services];
+
+    for (const [pkgKey, serviceId] of Object.entries(PACKAGE_SERVICE_IDS)) {
+      const customTitle = content[`service_title_${pkgKey}`];
+      const customPriceStr = content[`service_price_${pkgKey}`];
+
+      // 1. Sync custom title if set
+      if (customTitle && customTitle.trim()) {
+        const trimmedTitle = customTitle.trim();
+        const currentSvc = updatedServices.find((s: any) => s.id === serviceId);
+        if (currentSvc && currentSvc.name !== trimmedTitle) {
+          await updateServiceNameAction(serviceId, trimmedTitle);
+          updatedServices = updatedServices.map((s: any) => 
+            s.id === serviceId ? { ...s, name: trimmedTitle } : s
+          );
+        }
+      }
+
+      // 2. Sync display price to base_price (in cents)
+      if (customPriceStr) {
+        const match = customPriceStr.replace(/,/g, '').match(/\d+(\.\d+)?/);
+        if (match) {
+          const dollars = parseFloat(match[0]);
+          const cents = Math.round(dollars * 100);
+          const currentSvc = updatedServices.find((s: any) => s.id === serviceId);
+          if (currentSvc && currentSvc.base_price !== cents) {
+            await updateServicePriceAction(serviceId, cents);
+            updatedServices = updatedServices.map((s: any) => 
+              s.id === serviceId ? { ...s, base_price: cents } : s
+            );
+          }
+        }
+      }
+    }
+
+    setServices(updatedServices);
+
     const res = await updateSiteContentAction(content);
     
     if (res.success) {
@@ -89,6 +143,15 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
     if (res.success) {
       // update local state
       setServices(prev => prev.map(s => s.id === id ? { ...s, base_price: newPriceCents } : s));
+
+      // Also sync to content state & site_content so Tab 1 display price stays synchronized!
+      const pkgKey = SERVICE_ID_TO_PACKAGE[id];
+      if (pkgKey) {
+        const priceStr = `FROM $${newPriceCents / 100}`;
+        const updatedContent = { ...content, [`service_price_${pkgKey}`]: priceStr };
+        setContent(updatedContent);
+        await updateSiteContentAction(updatedContent);
+      }
     } else {
       alert("Failed to update price.");
     }
@@ -484,38 +547,46 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
           <div className="space-y-6 animate-in fade-in duration-300">
             <p className="text-white/50 text-sm mb-4">Update the base prices for your services. These changes will reflect immediately on the booking widget and Stripe checkout.</p>
             
-            {services.map((service) => (
-              <div key={service.id} className="flex flex-col md:flex-row md:items-center justify-between bg-[#111] border border-white/10 p-4 rounded gap-4">
-                <div>
-                  <h4 className="text-white font-bold text-lg">{service.name}</h4>
-                  <p className="text-white/40 text-sm">Current Price: {formatPrice(service.base_price)}</p>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">$</span>
-                    <input 
-                      type="number" 
-                      defaultValue={service.base_price / 100}
-                      id={`price-${service.id}`}
-                      className="w-32 bg-[#050505] border border-white/10 rounded pl-8 pr-4 py-2 text-white focus:outline-none focus:border-[#FF6600] transition-colors"
-                    />
+            {services.map((service) => {
+              const pkgKey = SERVICE_ID_TO_PACKAGE[service.id];
+              const displayName = (pkgKey ? content[`service_title_${pkgKey}`] : null) || service.name;
+
+              return (
+                <div key={service.id} className="flex flex-col md:flex-row md:items-center justify-between bg-[#111] border border-white/10 p-4 rounded gap-4">
+                  <div>
+                    <h4 className="text-white font-bold text-lg">{displayName}</h4>
+                    {pkgKey && content[`service_title_${pkgKey}`] && content[`service_title_${pkgKey}`] !== service.name && (
+                      <span className="text-xs text-white/30 font-mono">Original: {service.name}</span>
+                    )}
+                    <p className="text-white/40 text-sm">Current Price: {formatPrice(service.base_price)}</p>
                   </div>
-                  <button 
-                    onClick={() => {
-                      const input = document.getElementById(`price-${service.id}`) as HTMLInputElement;
-                      if (input && input.value) {
-                        handleSavePrice(service.id, Math.round(parseFloat(input.value) * 100));
-                      }
-                    }}
-                    disabled={savingServiceId === service.id}
-                    className="bg-white/10 hover:bg-white/20 text-white text-sm font-bold px-4 py-2 rounded transition-colors disabled:opacity-50"
-                  >
-                    {savingServiceId === service.id ? 'UPDATING' : 'UPDATE'}
-                  </button>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">$</span>
+                      <input 
+                        type="number" 
+                        defaultValue={service.base_price / 100}
+                        id={`price-${service.id}`}
+                        className="w-32 bg-[#050505] border border-white/10 rounded pl-8 pr-4 py-2 text-white focus:outline-none focus:border-[#FF6600] transition-colors"
+                      />
+                    </div>
+                    <button 
+                      onClick={() => {
+                        const input = document.getElementById(`price-${service.id}`) as HTMLInputElement;
+                        if (input && input.value) {
+                          handleSavePrice(service.id, Math.round(parseFloat(input.value) * 100));
+                        }
+                      }}
+                      disabled={savingServiceId === service.id}
+                      className="bg-white/10 hover:bg-white/20 text-white text-sm font-bold px-4 py-2 rounded transition-colors disabled:opacity-50"
+                    >
+                      {savingServiceId === service.id ? 'UPDATING' : 'UPDATE'}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
