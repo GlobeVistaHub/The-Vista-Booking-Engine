@@ -6,8 +6,9 @@ import BookingConfirmation from '@/emails/BookingConfirmation';
 export async function GET() {
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
+    const senderEmail = process.env.RESEND_FROM_EMAIL || 'Auto-Bath Booking <booking@autobathmelbourne.com>';
     const { data, error } = await resend.emails.send({
-      from: 'Auto-Bath Booking <onboarding@resend.dev>',
+      from: senderEmail,
       to: 'seifeldinsherif73@gmail.com',
       subject: 'Vercel Diagnostic Email with Template',
       react: <BookingConfirmation 

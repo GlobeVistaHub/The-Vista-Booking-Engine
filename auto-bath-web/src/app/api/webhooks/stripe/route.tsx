@@ -65,8 +65,9 @@ export async function POST(req: Request) {
         const dateObj = new Date(booking.scheduled_time);
         const formattedDate = `${dateObj.toLocaleDateString('en-AU', { timeZone: 'UTC', weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} at ${dateObj.toLocaleTimeString('en-AU', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })}`;
         
+        const senderEmail = process.env.RESEND_FROM_EMAIL || 'Auto-Bath Booking <booking@autobathmelbourne.com>';
         const { data, error: resendError } = await resend.emails.send({
-          from: 'Auto-Bath Booking <onboarding@resend.dev>',
+          from: senderEmail,
           to: customerEmail,
           subject: 'Your Auto-Bath Booking is Confirmed',
           react: <BookingConfirmation 

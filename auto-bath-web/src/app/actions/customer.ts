@@ -97,8 +97,9 @@ export async function customerCancelBookingAction(bookingId: string): Promise<Ca
       const dateObj = new Date(booking.scheduled_time);
       const formattedDate = `${dateObj.toLocaleDateString('en-AU', { timeZone: 'UTC', weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} at ${dateObj.toLocaleTimeString('en-AU', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })}`;
 
+      const senderEmail = process.env.RESEND_FROM_EMAIL || 'Auto-Bath Booking <booking@autobathmelbourne.com>';
       await resend.emails.send({
-        from: 'Auto-Bath Booking <onboarding@resend.dev>',
+        from: senderEmail,
         to: user.email,
         subject: 'Booking Cancelled - Auto-Bath',
         react: BookingCancellation({
@@ -119,7 +120,7 @@ export async function customerCancelBookingAction(bookingId: string): Promise<Ca
 
 export async function sendMagicLinkAction(email: string) {
   const supabase = await createClient();
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'production' ? 'https://www.autobathmelbourne.com' : 'http://localhost:3000');
   
   const { error } = await supabase.auth.signInWithOtp({
     email,
