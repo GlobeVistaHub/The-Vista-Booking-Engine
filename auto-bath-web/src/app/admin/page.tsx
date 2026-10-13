@@ -1,7 +1,6 @@
 import { createAdminClient } from "@/utils/supabase/admin";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 import { CancelButton } from "@/components/ui/CancelButton";
-import { PurgeButton } from "@/components/ui/PurgeButton";
 import { DateFilter } from "@/components/ui/DateFilter";
 
 export const dynamic = "force-dynamic";
@@ -78,7 +77,6 @@ export default async function AdminDashboardPage(props: { searchParams: Promise<
         </div>
         <div className="flex items-center gap-4">
           <DateFilter />
-          <PurgeButton />
         </div>
       </header>
 
