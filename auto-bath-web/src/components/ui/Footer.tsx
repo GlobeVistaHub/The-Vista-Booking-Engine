@@ -82,19 +82,13 @@ export default function Footer({ dynamicContent = {} }: { dynamicContent?: Recor
               <h4 className="text-white font-heading font-bold uppercase tracking-widest mb-6 text-sm">Specialties</h4>
               <ul className="space-y-4">
                 <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_wash'] || "Premium Hand Wash"}</Link></li>
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_interior'] || "Interior Detailing"}</Link></li>
                 <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_paint'] || "Paint Correction"}</Link></li>
                 <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_ceramic'] || "Ceramic Coating"}</Link></li>
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_concourse'] || "Concourse Full Detail"}</Link></li>
                 <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_ppf'] || "Paint Protection Film (PPF)"}</Link></li>
-                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_interior'] || "Interior Detailing"}</Link></li>
-                {dynamicContent['service_title_leather'] && (
-                  <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_leather']}</Link></li>
-                )}
-                {dynamicContent['service_title_engine'] && (
-                  <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_engine']}</Link></li>
-                )}
-                {dynamicContent['service_title_concourse'] && (
-                  <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_concourse']}</Link></li>
-                )}
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_leather'] || "Leather Hide Rejuvenation"}</Link></li>
+                <li><Link href="/#services" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_engine'] || "Engine Bay Precision Detail"}</Link></li>
               </ul>
             </div>
 
