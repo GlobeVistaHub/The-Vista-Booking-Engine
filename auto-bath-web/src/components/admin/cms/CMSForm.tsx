@@ -15,7 +15,10 @@ const PACKAGE_SERVICE_IDS: Record<string, string> = {
   interior: "a92d99bf-11be-4afb-9860-5844233d2899",
   paint: "4b293e74-9b13-4af4-8901-49ac014ad043",
   ceramic: "f90656aa-808f-41f4-a789-7dcf6a934df8",
-  concourse: "49d0b87f-744d-4bf8-9821-2df1f9c67a60"
+  concourse: "49d0b87f-744d-4bf8-9821-2df1f9c67a60",
+  ppf: "7d2e4a81-9b51-4e1a-8f12-9c3f6e8a0112",
+  leather: "5c3d1e92-8a40-4d2b-9e23-8b2e5f7a0223",
+  engine: "3b1c9d83-7f39-4c3a-8d34-7a1e4d6a0334",
 };
 
 const SERVICE_ID_TO_PACKAGE: Record<string, string> = {
@@ -23,7 +26,10 @@ const SERVICE_ID_TO_PACKAGE: Record<string, string> = {
   "a92d99bf-11be-4afb-9860-5844233d2899": "interior",
   "4b293e74-9b13-4af4-8901-49ac014ad043": "paint",
   "f90656aa-808f-41f4-a789-7dcf6a934df8": "ceramic",
-  "49d0b87f-744d-4bf8-9821-2df1f9c67a60": "concourse"
+  "49d0b87f-744d-4bf8-9821-2df1f9c67a60": "concourse",
+  "7d2e4a81-9b51-4e1a-8f12-9c3f6e8a0112": "ppf",
+  "5c3d1e92-8a40-4d2b-9e23-8b2e5f7a0223": "leather",
+  "3b1c9d83-7f39-4c3a-8d34-7a1e4d6a0334": "engine",
 };
 
 export default function CMSForm({ initialContent, initialServices }: CMSFormProps) {
@@ -522,6 +528,144 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
                     placeholder={"Comprehensive Interior Steam & Feed\nMulti-Stage Machine Correction\nEngine Bay Deep Rejuvenation\nCeramic Sealant Finish\nConcourse Certificate"}
                     value={content['service_features_concourse'] || ''} 
                     onChange={e => handleContentChange('service_features_concourse', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+              </div>
+
+              {/* Package 6: Paint Protection Film (PPF) */}
+              <div className="bg-[#111] border border-white/10 p-5 rounded-lg space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <label className="block text-white/60 text-xs mb-1">Service 6 Title (Armor Protection)</label>
+                    <input 
+                      type="text" 
+                      placeholder="Paint Protection Film (PPF)"
+                      value={content['service_title_ppf'] || ''} 
+                      onChange={e => handleContentChange('service_title_ppf', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-bold text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                  <div className="w-full sm:w-40">
+                    <label className="block text-white/60 text-xs mb-1">Display Price</label>
+                    <input 
+                      type="text" 
+                      placeholder="FROM $1,800"
+                      value={content['service_price_ppf'] || ''} 
+                      onChange={e => handleContentChange('service_price_ppf', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Package Description</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="Full front or whole vehicle ultra-durable self-healing TPU film providing impenetrable defense against stone chips, scratches, and UV damage."
+                    value={content['service_desc_ppf'] || ''} 
+                    onChange={e => handleContentChange('service_desc_ppf', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Features / Inclusions (One bullet per line)</label>
+                  <textarea 
+                    rows={3}
+                    placeholder={"Self-Healing Polymer\nRock Chip Protection\nOptical Clarity Finish\n10-Year Warranty"}
+                    value={content['service_features_ppf'] || ''} 
+                    onChange={e => handleContentChange('service_features_ppf', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+              </div>
+
+              {/* Package 7: Leather Hide Rejuvenation */}
+              <div className="bg-[#111] border border-white/10 p-5 rounded-lg space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <label className="block text-white/60 text-xs mb-1">Service 7 Title (Artisan Care)</label>
+                    <input 
+                      type="text" 
+                      placeholder="Leather Hide Rejuvenation"
+                      value={content['service_title_leather'] || ''} 
+                      onChange={e => handleContentChange('service_title_leather', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-bold text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                  <div className="w-full sm:w-40">
+                    <label className="block text-white/60 text-xs mb-1">Display Price</label>
+                    <input 
+                      type="text" 
+                      placeholder="FROM $450"
+                      value={content['service_price_leather'] || ''} 
+                      onChange={e => handleContentChange('service_price_leather', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Package Description</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="Artisanal pH-balanced deep pore extraction, hydration oil replenishment, and matte barrier finish to restore factory suppleness without artificial shine."
+                    value={content['service_desc_leather'] || ''} 
+                    onChange={e => handleContentChange('service_desc_leather', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Features / Inclusions (One bullet per line)</label>
+                  <textarea 
+                    rows={3}
+                    placeholder={"Pore-Deep Extraction\nNatural Oil Replenishment\nZero-Grease Factory Matte\nUV Anti-Cracking Barrier"}
+                    value={content['service_features_leather'] || ''} 
+                    onChange={e => handleContentChange('service_features_leather', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+              </div>
+
+              {/* Package 8: Engine Bay Precision Detail */}
+              <div className="bg-[#111] border border-white/10 p-5 rounded-lg space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <label className="block text-white/60 text-xs mb-1">Service 8 Title (Surgical Clean)</label>
+                    <input 
+                      type="text" 
+                      placeholder="Engine Bay Precision Detail"
+                      value={content['service_title_engine'] || ''} 
+                      onChange={e => handleContentChange('service_title_engine', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-bold text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                  <div className="w-full sm:w-40">
+                    <label className="block text-white/60 text-xs mb-1">Display Price</label>
+                    <input 
+                      type="text" 
+                      placeholder="FROM $250"
+                      value={content['service_price_engine'] || ''} 
+                      onChange={e => handleContentChange('service_price_engine', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Package Description</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="Surgical dry-ice and vapor degreasing of all engine bay plastics, metals, and firewall, sealed with an anti-static heat-resistant dressed finish."
+                    value={content['service_desc_engine'] || ''} 
+                    onChange={e => handleContentChange('service_desc_engine', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Features / Inclusions (One bullet per line)</label>
+                  <textarea 
+                    rows={3}
+                    placeholder={"Sensitive Component Masking\nPrecision Vapor Degreasing\nHeat-Resistant Dressing\nAnti-Static Dust Repellent"}
+                    value={content['service_features_engine'] || ''} 
+                    onChange={e => handleContentChange('service_features_engine', e.target.value)}
                     className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
                   />
                 </div>

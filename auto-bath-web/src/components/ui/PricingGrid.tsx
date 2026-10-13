@@ -51,6 +51,33 @@ const defaultServices = [
     features: ["Comprehensive Interior Steam & Feed", "Multi-Stage Machine Correction", "Engine Bay Deep Rejuvenation", "Ceramic Sealant Finish", "Concourse Certificate"],
     popular: false,
     badge: "Flagship Edition",
+  },
+  {
+    id: "ppf",
+    title: "Paint Protection Film (PPF)",
+    price: "FROM $1,800",
+    description: "Full front or whole vehicle ultra-durable self-healing TPU film providing impenetrable defense against stone chips, scratches, and UV damage.",
+    features: ["Self-Healing Polymer", "Rock Chip Protection", "Optical Clarity Finish", "10-Year Warranty"],
+    popular: false,
+    badge: "Armor Defense",
+  },
+  {
+    id: "leather",
+    title: "Leather Hide Rejuvenation",
+    price: "FROM $450",
+    description: "Artisanal pH-balanced deep pore extraction, hydration oil replenishment, and matte barrier finish to restore factory suppleness without artificial shine.",
+    features: ["Pore-Deep Extraction", "Natural Oil Replenishment", "Zero-Grease Factory Matte", "UV Anti-Cracking Barrier"],
+    popular: false,
+    badge: "Artisan Care",
+  },
+  {
+    id: "engine",
+    title: "Engine Bay Precision Detail",
+    price: "FROM $250",
+    description: "Surgical dry-ice and vapor degreasing of all engine bay plastics, metals, and firewall, sealed with an anti-static heat-resistant dressed finish.",
+    features: ["Sensitive Component Masking", "Precision Vapor Degreasing", "Heat-Resistant Dressing", "Anti-Static Dust Repellent"],
+    popular: false,
+    badge: "Surgical Clean",
   }
 ];
 
@@ -63,6 +90,9 @@ export default function PricingGrid({ dynamicServices = [], dynamicContent = {} 
     paint: "4b293e74-9b13-4af4-8901-49ac014ad043",
     concourse: "49d0b87f-744d-4bf8-9821-2df1f9c67a60",
     ceramic: "f90656aa-808f-41f4-a789-7dcf6a934df8",
+    ppf: "7d2e4a81-9b51-4e1a-8f12-9c3f6e8a0112",
+    leather: "5c3d1e92-8a40-4d2b-9e23-8b2e5f7a0223",
+    engine: "3b1c9d83-7f39-4c3a-8d34-7a1e4d6a0334",
   };
 
   // Map dynamic prices, titles, descriptions, and features from CMS / DB

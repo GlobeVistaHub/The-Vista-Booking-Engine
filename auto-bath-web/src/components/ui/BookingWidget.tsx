@@ -12,6 +12,9 @@ const STATIC_PACKAGES = [
   { id: "paint", name: "Paint Correction", price: 800, time: "1 Day", type: "standard" },
   { id: "ceramic", name: "Ceramic Coating", price: 1200, time: "1.5 Days", type: "premium" },
   { id: "concourse", name: "Concourse Full Detail", price: 650, time: "2 Days", type: "premium" },
+  { id: "ppf", name: "Paint Protection Film (PPF)", price: 1800, time: "2 Days", type: "premium" },
+  { id: "leather", name: "Leather Hide Rejuvenation", price: 450, time: "4.0 Hours", type: "standard" },
+  { id: "engine", name: "Engine Bay Precision Detail", price: 250, time: "2.0 Hours", type: "standard" },
 ];
 
 export default function BookingWidget({ 
@@ -35,6 +38,9 @@ export default function BookingWidget({
       paint: "4b293e74-9b13-4af4-8901-49ac014ad043",
       concourse: "49d0b87f-744d-4bf8-9821-2df1f9c67a60",
       ceramic: "f90656aa-808f-41f4-a789-7dcf6a934df8",
+      ppf: "7d2e4a81-9b51-4e1a-8f12-9c3f6e8a0112",
+      leather: "5c3d1e92-8a40-4d2b-9e23-8b2e5f7a0223",
+      engine: "3b1c9d83-7f39-4c3a-8d34-7a1e4d6a0334",
     };
     const targetId = packageIdMap[pkg.id];
     const dbService = dynamicServices.find(s => s.id === targetId || s.name === pkg.name || (customTitle && s.name === customTitle));
@@ -202,8 +208,6 @@ export default function BookingWidget({
                     onMouseMove={(e) => handleInteraction(e, pkg.id)}
                     onTouchMove={(e) => handleInteraction(e, pkg.id)}
                     className={`relative group text-left p-6 rounded-2xl border transition-all duration-300 overflow-hidden ${
-                      pkg.id === "concourse" ? "md:col-span-2" : ""
-                    } ${
                       selectedPackage === pkg.id 
                         ? "border-electric-cyan bg-electric-cyan/10" 
                         : "border-white/10 bg-white/5 hover:border-white/30"
@@ -212,7 +216,6 @@ export default function BookingWidget({
                     {/* 1. Premium Hand Wash: Squeegee Glass Water Sheen (Tracks Cursor X) */}
                     {pkg.id === "wash" && (
                       <div className={`absolute inset-0 transition-opacity duration-500 pointer-events-none overflow-hidden rounded-2xl ${selectedPackage === pkg.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                        {/* A sharp glass reflection that is physically dragged by the cursor's X position, acting like a squeegee */}
                         <div 
                           className="absolute top-0 w-[30%] h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[45deg]"
                           style={{
@@ -226,7 +229,6 @@ export default function BookingWidget({
                     {/* 2. Interior Detailing: Ambient Footwell Lighting (Tracks Cursor/Finger) */}
                     {pkg.id === "interior" && (
                       <div className={`absolute inset-0 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-2xl mix-blend-screen ${selectedPackage === pkg.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                        {/* Soft, warm glow that follows the cursor or finger */}
                         <div 
                           className="absolute inset-0 transition-opacity duration-300"
                           style={{
@@ -237,24 +239,83 @@ export default function BookingWidget({
                       </div>
                     )}
 
-                    {/* 3. Paint Correction: Flawless Gloss Reflection */}
+                    {/* 3. Paint Correction: Flawless Gloss Reflection (Conic Swirl-Finder) */}
                     {pkg.id === "paint" && (
                       <div className={`absolute inset-0 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-2xl mix-blend-screen ${selectedPackage === pkg.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                        {/* A spinning conic gradient that simulates a swirl-finder light reflecting off a flawless clear coat */}
                         <div className="w-[300%] h-[300%] absolute -top-full -left-full bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0%,rgba(0,194,212,0.1)_25%,rgba(255,255,255,0.3)_50%,rgba(0,194,212,0.1)_75%,transparent_100%)] animate-[spin_5s_linear_infinite]" />
                       </div>
                     )}
 
                     {/* 4. Ceramic Coating: Slow, Premium Hydrophobic Ripple */}
-                    {pkg.type === "premium" && (
+                    {pkg.id === "ceramic" && (
                       <div className={`absolute inset-0 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-2xl ${selectedPackage === pkg.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                        {/* Scaled up (-inset-4 scale-110) to prevent the SVG displacement map from clipping the edges! */}
                         <div 
                           className="absolute -inset-4 scale-110 [filter:url(#hydro-ripple)] mix-blend-screen transition-opacity duration-300"
                           style={{
                             background: `radial-gradient(300px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0,194,212,0.8) 0%, rgba(0,50,255,0.2) 60%, transparent 100%)`
                           }}
                         />
+                      </div>
+                    )}
+
+                    {/* 5. Concourse Full Detail: Flagship Dual-Aura Crown */}
+                    {pkg.id === "concourse" && (
+                      <div className={`absolute inset-0 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-2xl mix-blend-screen ${selectedPackage === pkg.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <div 
+                          className="absolute inset-0"
+                          style={{
+                            background: `radial-gradient(350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,215,0,0.2) 0%, rgba(0,194,212,0.15) 50%, transparent 80%)`
+                          }}
+                        />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-luxury-gold/15 blur-2xl rounded-full" />
+                      </div>
+                    )}
+
+                    {/* 6. Paint Protection Film (PPF): Thermal Self-Healing Scorch & Optical TPU Glaze */}
+                    {pkg.id === "ppf" && (
+                      <div className={`absolute inset-0 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-2xl mix-blend-screen ${selectedPackage === pkg.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <div 
+                          className="absolute inset-0 transition-opacity duration-200"
+                          style={{
+                            background: `radial-gradient(220px 80px ellipse at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,180,0,0.35) 0%, rgba(255,80,0,0.12) 45%, transparent 75%)`
+                          }}
+                        />
+                        <div 
+                          className="absolute top-0 h-full w-[40px] bg-gradient-to-r from-transparent via-amber-200/40 to-transparent skew-x-[30deg] blur-[1px]"
+                          style={{
+                            left: 'calc(var(--mouse-x, 50%) - 20px)',
+                            transition: 'left 0.08s ease-out'
+                          }}
+                        />
+                        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-amber-400 to-cyber-orange shadow-[0_0_12px_rgba(255,180,0,0.6)]" />
+                      </div>
+                    )}
+
+                    {/* 7. Leather Hide Rejuvenation: Artisanal Deep Hide Cognac Glow & Satin Micro-Grain */}
+                    {pkg.id === "leather" && (
+                      <div className={`absolute inset-0 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-2xl mix-blend-screen ${selectedPackage === pkg.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <div 
+                          className="absolute inset-0 transition-opacity duration-300"
+                          style={{
+                            background: `radial-gradient(260px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(212,130,50,0.28) 0%, rgba(139,69,19,0.12) 55%, transparent 80%)`
+                          }}
+                        />
+                        <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,200,150,0.5)_1px,transparent_1px)] [background-size:10px_10px]" />
+                        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-amber-500/70 shadow-[0_0_12px_rgba(212,130,50,0.6)]" />
+                      </div>
+                    )}
+
+                    {/* 8. Engine Bay Precision Detail: Cryogenic CO2 Dry-Ice Vapor Mist & Alloy Shimmer */}
+                    {pkg.id === "engine" && (
+                      <div className={`absolute inset-0 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-2xl mix-blend-screen ${selectedPackage === pkg.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <div 
+                          className="absolute inset-0 transition-opacity duration-200"
+                          style={{
+                            background: `radial-gradient(260px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0,240,255,0.3) 0%, rgba(180,240,255,0.12) 40%, transparent 70%)`
+                          }}
+                        />
+                        <div className="absolute inset-0 opacity-15 [background:repeating-linear-gradient(45deg,transparent,transparent_6px,rgba(0,194,212,0.3)_6px,rgba(0,194,212,0.3)_8px)]" />
+                        <div className="absolute top-0 left-0 w-full h-[2px] bg-electric-cyan shadow-[0_0_15px_rgba(0,194,212,0.7)]" />
                       </div>
                     )}
 

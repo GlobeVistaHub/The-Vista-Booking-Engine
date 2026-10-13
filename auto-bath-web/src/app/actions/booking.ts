@@ -56,6 +56,9 @@ export async function createBookingAction(formData: {
       paint: "4b293e74-9b13-4af4-8901-49ac014ad043",
       concourse: "49d0b87f-744d-4bf8-9821-2df1f9c67a60",
       ceramic: "f90656aa-808f-41f4-a789-7dcf6a934df8",
+      ppf: "7d2e4a81-9b51-4e1a-8f12-9c3f6e8a0112",
+      leather: "5c3d1e92-8a40-4d2b-9e23-8b2e5f7a0223",
+      engine: "3b1c9d83-7f39-4c3a-8d34-7a1e4d6a0334",
     };
 
     const packageMap: Record<string, string> = {
@@ -64,6 +67,9 @@ export async function createBookingAction(formData: {
       paint: "Paint Correction",
       ceramic: "Ceramic Coating",
       concourse: "Concourse Full Detail",
+      ppf: "Paint Protection Film (PPF)",
+      leather: "Leather Hide Rejuvenation",
+      engine: "Engine Bay Precision Detail",
     };
     
     const targetId = packageIdMap[formData.packageId];
