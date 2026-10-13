@@ -565,6 +565,7 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">$</span>
                       <input 
+                        key={`${service.id}-${service.base_price}`}
                         type="number" 
                         defaultValue={service.base_price / 100}
                         id={`price-${service.id}`}

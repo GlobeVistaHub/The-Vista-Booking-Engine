@@ -123,7 +123,7 @@ export async function createBookingAction(formData: {
       ],
       metadata: {
         customer_email: formData.email,
-        service_name: service.name,
+        service_name: checkoutServiceName,
         vehicle: formData.vehicle,
         date: formData.date,
         time: formData.time,
