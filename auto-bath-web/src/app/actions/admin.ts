@@ -109,18 +109,21 @@ export async function cancelBookingAction(id: string): Promise<CancelResult> {
       const { data: userAuth } = await admin.auth.admin.getUserById(booking.user_id);
       const email = userAuth?.user?.email;
 
-      if (email) {
-        const dateObj = new Date(booking.scheduled_time);
-        const formattedDate = `${dateObj.toLocaleDateString('en-AU', { timeZone: 'UTC', weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} at ${dateObj.toLocaleTimeString('en-AU', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })}`;
+      const dateObj = new Date(booking.scheduled_time);
+      const formattedDate = `${dateObj.toLocaleDateString('en-AU', { timeZone: 'UTC', weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} at ${dateObj.toLocaleTimeString('en-AU', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })}`;
+      const senderEmail = process.env.RESEND_FROM_EMAIL || 'Auto-Bath Booking <booking@autobathmelbourne.com>';
+      const customerName = (booking.profiles as any)?.full_name || 'Valued Customer';
+      const serviceName = (booking.services as any)?.name || 'Auto Detailing';
 
-        const senderEmail = process.env.RESEND_FROM_EMAIL || 'Auto-Bath Booking <booking@autobathmelbourne.com>';
+      // 1. Send cancellation notice to the customer
+      if (email) {
         const { data, error } = await resend.emails.send({
           from: senderEmail,
           to: email,
           subject: 'Booking Cancelled - Auto-Bath',
           react: BookingCancellation({
-            customerName: (booking.profiles as any)?.full_name || 'Valued Customer',
-            serviceName: (booking.services as any)?.name || 'Auto Detailing',
+            customerName,
+            serviceName,
             date: formattedDate,
           }) as React.ReactElement
         });
@@ -130,6 +133,31 @@ export async function cancelBookingAction(id: string): Promise<CancelResult> {
         } else {
           console.log(`Cancellation email sent successfully to ${email}! Resend ID: ${data?.id}`);
         }
+      }
+
+      // 2. Send cancellation receipt/alert to Sam's Gmail
+      const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'majsegroup@gmail.com';
+      try {
+        await resend.emails.send({
+          from: senderEmail,
+          to: adminEmail,
+          subject: `🛑 Admin Cancelled Booking: ${customerName} (${serviceName})`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b0f17; color: #ffffff; padding: 24px; border-radius: 12px; max-width: 600px; margin: 0 auto; border: 1px solid rgba(255,100,100,0.35);">
+              <h2 style="color: #FF5555; margin: 0 0 8px 0; font-size: 20px;">🛑 Booking Cancelled by Admin</h2>
+              <p style="color: #aaaaaa; margin: 0 0 16px 0; font-size: 14px;">You cancelled the following appointment from the Admin Dashboard:</p>
+              <div style="background-color: #161218; border-left: 4px solid #FF5555; padding: 16px; border-radius: 6px; font-size: 15px; line-height: 1.6;">
+                <p style="margin: 0 0 6px 0;"><strong>Customer:</strong> ${customerName} (${email ? `<a href="mailto:${email}" style="color: #00E5CC;">${email}</a>` : 'No email'})</p>
+                <p style="margin: 0 0 6px 0;"><strong>Service:</strong> ${serviceName}</p>
+                <p style="margin: 0 0 6px 0;"><strong>Slot:</strong> ${formattedDate}</p>
+                <p style="margin: 0;"><strong>Stripe Refund:</strong> ${refund === 'issued' ? '✅ Refunded automatically' : refund === 'not_eligible' ? '⚠️ Within 48h (No automatic refund)' : 'None / Uncaptured'}</p>
+              </div>
+            </div>
+          `
+        });
+        console.log(`Admin cancellation receipt sent to ${adminEmail}`);
+      } catch (adminErr) {
+        console.error("Failed to send admin cancellation receipt:", adminErr);
       }
     } catch (e) {
       console.error("Failed to send cancellation email:", e);

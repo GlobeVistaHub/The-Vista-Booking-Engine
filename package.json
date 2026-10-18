@@ -38,7 +38,18 @@
     "video:build-episode4-outro": "remotion render src/remotion/index.tsx Episode4OutroTail out/Episode4OutroTail_Final.mp4 --codec=h264 --timeout=60000 --concurrency=1 --gl=angle",
     "video:preview-gb-commercial": "remotion studio src/remotion/index.tsx --composition=GoodBrainsCommercial",
     "video:build-gb-commercial": "remotion render src/remotion/index.tsx GoodBrainsCommercial out/GoodBrainsCommercial_Final.mp4 --codec=h264 --timeout=120000 --concurrency=2 --gl=angle",
-    "video:build-gb-commercial-prores": "remotion render src/remotion/index.tsx GoodBrainsCommercial out/GoodBrainsCommercial_Final.mov --codec=prores --prores-profile=4444 --timeout=120000 --concurrency=2"
+    "video:build-gb-commercial-prores": "remotion render src/remotion/index.tsx GoodBrainsCommercial out/GoodBrainsCommercial_Final.mov --codec=prores --prores-profile=4444 --timeout=120000 --concurrency=2",
+    "video:preview-episode5-teaser2": "remotion studio src_old/remotion/index.tsx --composition=Episode5Teaser2Horizontal",
+    "video:build-episode5-teaser2": "remotion render src_old/remotion/index.tsx Episode5Teaser2Horizontal out/Episode5Teaser2Horizontal_Final.mp4 --codec=h264 --gl=angle",
+    "video:build-episode5-teaser2-lossless": "remotion render src_old/remotion/index.tsx Episode5Teaser2Horizontal out/Episode5Teaser2Horizontal_Final_Lossless.mp4 --codec=h264 --crf=1 --pixel-format=yuv420p --concurrency=1 --gl=angle --timeout=120000",
+    "video:build-episode5-teaser2-prores": "remotion render src_old/remotion/index.tsx Episode5Teaser2Horizontal out/Episode5Teaser2Horizontal_Final_ProRes.mov --codec=prores --prores-profile=4444 --concurrency=1 --gl=angle --timeout=120000",
+    "video:preview-episode5-scene1": "remotion studio src_old/remotion/index.tsx --composition=Episode5Scene1",
+    "video:build-episode5-scene1": "remotion render src_old/remotion/index.tsx Episode5Scene1 out/Episode5Scene1_Final.mp4 --codec=h264 --gl=angle",
+    "video:build-episode5-lossless": "remotion render src_old/remotion/index.tsx Episode5Scene1 out/Episode5Scene1_Final_Lossless.mp4 --codec=h264 --crf=0 --pixel-format=yuv420p --concurrency=1 --gl=angle --timeout=120000",
+    "video:build-episode5-prores": "remotion render src_old/remotion/index.tsx Episode5Scene1 out/Episode5Scene1_Final_ProRes.mov --codec=prores --prores-profile=4444 --concurrency=1 --gl=angle --timeout=120000",
+    "video:preview-episode5-vertical": "remotion studio src_old/remotion/index.tsx --composition=Episode5Scene1Vertical",
+    "video:build-episode5-vertical": "remotion render src_old/remotion/index.tsx Episode5Scene1Vertical out/Episode5Scene1_Vertical_Final.mp4 --codec=h264 --gl=angle",
+    "video:build-episode5-vertical-lossless": "remotion render src_old/remotion/index.tsx Episode5Scene1Vertical out/Episode5Scene1_Vertical_Lossless.mp4 --codec=h264 --crf=0 --pixel-format=yuv420p --concurrency=1 --gl=angle --timeout=120000"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.64",

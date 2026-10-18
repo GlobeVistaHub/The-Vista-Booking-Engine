@@ -98,16 +98,44 @@ export async function customerCancelBookingAction(bookingId: string): Promise<Ca
       const formattedDate = `${dateObj.toLocaleDateString('en-AU', { timeZone: 'UTC', weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} at ${dateObj.toLocaleTimeString('en-AU', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })}`;
 
       const senderEmail = process.env.RESEND_FROM_EMAIL || 'Auto-Bath Booking <booking@autobathmelbourne.com>';
+      const customerName = (booking.profiles as any)?.full_name || 'Valued Customer';
+      const serviceName = (booking.services as any)?.name || 'Auto Detailing';
+
+      // 1. Send Cancellation Email to Customer
       await resend.emails.send({
         from: senderEmail,
         to: user.email,
         subject: 'Booking Cancelled - Auto-Bath',
         react: BookingCancellation({
-          customerName: (booking.profiles as any)?.full_name || 'Valued Customer',
-          serviceName: (booking.services as any)?.name || 'Auto Detailing',
+          customerName: customerName,
+          serviceName: serviceName,
           date: formattedDate,
         }) as React.ReactElement
       });
+
+      // 2. Alert Sam that a customer cancelled their slot
+      const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'majsegroup@gmail.com';
+      try {
+        await resend.emails.send({
+          from: senderEmail,
+          to: adminEmail,
+          subject: `⚠️ Booking Cancelled by Customer: ${customerName} (${serviceName})`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b0f17; color: #ffffff; padding: 24px; border-radius: 12px; max-width: 600px; margin: 0 auto; border: 1px solid rgba(255,51,51,0.35);">
+              <h2 style="color: #FF3333; margin: 0 0 8px 0; font-size: 20px;">⚠️ Booking Cancelled by Customer</h2>
+              <p style="color: #aaaaaa; margin: 0 0 16px 0; font-size: 14px;">The customer cancelled their appointment. The slot has been freed up on the calendar:</p>
+              <div style="background-color: #161218; border-left: 4px solid #FF3333; padding: 16px; border-radius: 6px; font-size: 15px; line-height: 1.6;">
+                <p style="margin: 0 0 6px 0;"><strong>Customer:</strong> ${customerName} (<a href="mailto:${user.email}" style="color: #00E5CC;">${user.email}</a>)</p>
+                <p style="margin: 0 0 6px 0;"><strong>Service:</strong> ${serviceName}</p>
+                <p style="margin: 0 0 6px 0;"><strong>Slot:</strong> ${formattedDate}</p>
+                <p style="margin: 0;"><strong>Stripe Refund:</strong> ${refund === 'issued' ? '✅ Refunded automatically' : '⚠️ No refund issued (<48h window)'}</p>
+              </div>
+            </div>
+          `
+        });
+      } catch (adminErr) {
+        console.error("Failed to send admin cancellation alert:", adminErr);
+      }
     } catch (e) {
       console.error("Failed to send cancellation email:", e);
     }
