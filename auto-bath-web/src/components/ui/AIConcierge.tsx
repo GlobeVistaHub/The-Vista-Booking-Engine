@@ -11,7 +11,7 @@ const FALLBACK_REPLY = "Apologies, I'm having trouble connecting right now. Plea
 
 export default function AIConcierge() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/studio") || pathname?.includes("/studio")) return null;
+  if (pathname?.startsWith("/studio") || pathname?.includes("/studio") || pathname?.startsWith("/experience") || pathname?.includes("/experience")) return null;
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);

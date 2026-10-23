@@ -426,12 +426,14 @@ export default function ExperiencePage() {
               <h1 className="text-5xl font-black tracking-[8px] text-white">THE VISTA</h1>
               <p className="text-sm tracking-[6px] font-light text-amber-400 mt-2">BY GlobeVistaHub</p>
             </div>
-            <Link
-              href="/"
+            <a
+              href="https://the-vista-booking-engine-vb2y.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-2 bg-gradient-to-r from-amber-500 to-amber-600 border border-amber-400 hover:border-white px-10 py-4 rounded-full text-sm font-black tracking-[4px] uppercase text-black hover:text-white transition-all shadow-[0_0_40px_rgba(255,200,50,0.3)]"
             >
               LAUNCH PLATFORM
-            </Link>
+            </a>
             <span className="text-[11px] text-white/25 tracking-widest uppercase">www.globevistahub.com</span>
           </div>
         </SpatialCard>
