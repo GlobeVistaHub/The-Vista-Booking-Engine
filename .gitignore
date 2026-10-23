@@ -52,3 +52,16 @@ next-env.d.ts
 public/video-assets/*.mp4
 
 !public/video-assets/compressed-finale-video.mp4
+
+*.mp4
+*.mov
+out/
+EPISODE_*_ASSETS/
+Episode_*/
+public/Claymation-3d-style-Structure/
+scratch/
+scratch_*.png
+*.log
+e/
+.cursor/
+src_old/
