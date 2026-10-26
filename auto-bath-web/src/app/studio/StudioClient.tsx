@@ -26,7 +26,8 @@ import {
   BarChart3,
   AlertTriangle,
   Radio,
-  ArrowUp
+  ArrowUp,
+  Smartphone
 } from "lucide-react";
 
 interface NodeData {
@@ -2390,6 +2391,169 @@ export function StudioClient() {
                   <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Character Lock</span>
                   <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Planar Motion</span>
                   <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">DCI-P3 Color</span>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+
+          {/* SECTION HEADER: VERTICAL VIRAL REELS & SOCIAL ARCHITECTURE */}
+          <div className="pt-8 sm:pt-14 border-t border-white/10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-[#00C2D4] font-bold block mb-1">
+                OMNICHANNEL PIPELINE // 9:16 MOBILE ARCHITECTURE
+              </span>
+              <h3 className="text-xl sm:text-3xl font-bold uppercase tracking-tight text-white">
+                Vertical Social Campaigns & Generative Systems
+              </h3>
+            </div>
+            <p className="text-xs sm:text-sm text-white/60 max-w-md">
+              High-velocity viral reels engineered for sub-2-second thumb arrest, 60 FPS mobile kinetic typography, and deterministic character consistency across TikTok, Reels, and YouTube Shorts.
+            </p>
+          </div>
+
+          {/* VERTICAL SPOT 01: AUTONOMOUS AI WORKFLOWS */}
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl relative overflow-hidden"
+          >
+            <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 items-center">
+              
+              {/* Vertical Mobile Player Container */}
+              <div className="w-full lg:w-5/12 flex justify-center">
+                <div className="relative w-full max-w-[320px] sm:max-w-[340px] rounded-2xl sm:rounded-3xl overflow-hidden border border-white/20 bg-black shadow-[0_0_50px_rgba(0,194,212,0.25)]">
+                  <div className="relative aspect-[9/16] w-full bg-[#050505]">
+                    <iframe 
+                      src="https://www.youtube-nocookie.com/embed/FYcQeFGnW3o?rel=0&modestbranding=1" 
+                      title="Autonomous AI Workflows — The Assistant Era is Dead" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                      className="absolute inset-0 w-full h-full border-0"
+                    />
+                  </div>
+                  
+                  <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-[10px] sm:text-xs font-mono text-white/50">
+                    <span className="flex items-center gap-1.5 sm:gap-2 text-[#00C2D4]">
+                      <Smartphone size={13} /> 9:16 MOBILE MASTER
+                    </span>
+                    <span>1080x1920 60FPS</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Client Business Breakdown */}
+              <div className="w-full lg:w-7/12 space-y-4 sm:space-y-6">
+                <div>
+                  <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-[#00C2D4] font-bold block mb-1">
+                    Vertical Spot 01 // Agentic Automation & Viral Hook
+                  </span>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase tracking-tight text-white">
+                    "The Assistant Era is Dead — Autonomous AI Workflows Are Here"
+                  </h3>
+                </div>
+
+                <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-white/70">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <ShieldCheck size={14} className="text-[#00C2D4]" /> The Business Hook (Why It Converts)
+                    </h4>
+                    <p className="leading-relaxed">
+                      Traditional AI tech demos suffer an 80% drop-off in the first 3 seconds. This vertical commercial deploys rapid dynamic camera reframing, high-contrast kinetic titles, and tension-building pacing to command 85%+ completion rates on TikTok, Instagram Reels, and YouTube Shorts.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <Sliders size={14} className="text-[#FF6600]" /> Optical & Acoustic Science (How It Was Engineered)
+                    </h4>
+                    <p className="leading-relaxed">
+                      Reframed from anamorphic source footage with intelligent optical re-centering. Dialogue track mastered through Fairlight spectral de-essing and dynamic multiband compression to eliminate mobile phone speaker distortion and harsh sibilance.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-1 sm:pt-2 flex flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono text-white/50">
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">9:16 Social Reframe</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Autonomous Agents</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Mobile Fairlight EQ</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Sub-2s Hook</span>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+
+          {/* VERTICAL SPOT 02: GENERATIVE CHARACTER CONSISTENCY */}
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl relative overflow-hidden"
+          >
+            <div className="flex flex-col lg:flex-row-reverse gap-6 sm:gap-10 items-center">
+              
+              {/* Vertical Mobile Player Container */}
+              <div className="w-full lg:w-5/12 flex justify-center">
+                <div className="relative w-full max-w-[320px] sm:max-w-[340px] rounded-2xl sm:rounded-3xl overflow-hidden border border-white/20 bg-black shadow-[0_0_50px_rgba(255,184,0,0.25)]">
+                  <div className="relative aspect-[9/16] w-full bg-[#050505]">
+                    <iframe 
+                      src="https://www.youtube-nocookie.com/embed/Qu8r5Dmapmo?rel=0&modestbranding=1" 
+                      title="Character Consistency in AI Video — 4-Pillar Modular Architecture" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                      className="absolute inset-0 w-full h-full border-0"
+                    />
+                  </div>
+                  
+                  <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-[10px] sm:text-xs font-mono text-white/50">
+                    <span className="flex items-center gap-1.5 sm:gap-2 text-[#FFB800]">
+                      <Smartphone size={13} /> 9:16 CODE-RENDERED MASTER
+                    </span>
+                    <span>REMOTION TS // 1080x1920</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Client Business Breakdown */}
+              <div className="w-full lg:w-7/12 space-y-4 sm:space-y-6">
+                <div>
+                  <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-[#FFB800] font-bold block mb-1">
+                    Vertical Spot 02 // Generative Character Consistency & Systems
+                  </span>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase tracking-tight text-white">
+                    "100% Character Consistency Architecture (No Chained Prompts)"
+                  </h3>
+                </div>
+
+                <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-white/70">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <ShieldCheck size={14} className="text-[#FFB800]" /> The Business Hook (Why It Converts)
+                    </h4>
+                    <p className="leading-relaxed">
+                      Solves the #1 enterprise blocker in AI commercial filmmaking: character face drift across shots. Eliminates amateur 10-prompt daisy-chaining by proving deterministic identity anchoring across 5 completely different aesthetic styles (Pixar 3D, 35mm film, Anime, Unreal Engine 5).
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <Sliders size={14} className="text-[#00C2D4]" /> Optical & Programmatic Engine (How It Was Engineered)
+                    </h4>
+                    <p className="leading-relaxed">
+                      Programmatically compiled via Remotion (React/TypeScript). Features 120 BPM beat-synced audio visualizer transients, CRT scanline raster simulation, dynamic Ken Burns camera push-in, and snapping HUD facial topology reticles.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-1 sm:pt-2 flex flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono text-white/50">
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Remotion Engine</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">3D Facial Topology</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">120 BPM Audio Sync</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Multi-Style Latent Lock</span>
                 </div>
               </div>
 

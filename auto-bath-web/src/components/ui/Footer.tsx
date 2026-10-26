@@ -71,6 +71,7 @@ export default function Footer({ dynamicContent = {} }: { dynamicContent?: Recor
               <ul className="space-y-4">
                 <li><Link href="/#services" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">Our Services</Link></li>
                 <li><Link href="/insights" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">Detailing Insights</Link></li>
+                <li><Link href="/studio" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">Cinema Studio Reel</Link></li>
                 <li><Link href="/#vault" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">The Vault</Link></li>
                 <li><Link href="/#location" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">Find Us</Link></li>
                 <li><Link href="/#services" className="text-white/50 hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300 text-sm font-sans">Book an Appointment</Link></li>
@@ -151,7 +152,9 @@ export default function Footer({ dynamicContent = {} }: { dynamicContent?: Recor
               <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
             </div>
             <p className="text-white/30 text-xs font-mono flex items-center gap-2 uppercase">
-              Architected by <span className="text-cyber-orange font-bold tracking-widest hover:text-white transition-colors cursor-pointer">GoodBrains.Pro</span>
+              Architected by <Link href="/showcase" className="text-cyber-orange font-bold tracking-widest hover:text-white transition-colors cursor-pointer">GoodBrains.Pro</Link>
+              <span className="text-white/20">•</span>
+              <Link href="/studio" className="text-white/50 hover:text-electric-cyan transition-colors">Studio Reel</Link>
             </p>
           </div>
         </div>

@@ -34,6 +34,8 @@ import { GoodBrainsHook } from "./commercial/GoodBrainsHook";
 import { GoodBrainsCommercialEN, GB_COMMERCIAL_EN_DURATION } from "./commercial/GoodBrainsCommercial_EN";
 import { GoodBrainsHookEN } from "./commercial/GoodBrainsHook_EN";
 import { GoodBrainsCommercialVerticalEN, GB_VERTICAL_EN_DURATION } from "./commercial/GoodBrainsCommercial_Vertical_EN";
+import { CharacterConsistencyReel, CHARACTER_CONSISTENCY_REEL_DURATION } from "./youtube/CharacterConsistencyReel";
+import { CharacterConsistencyReelEn, CHARACTER_CONSISTENCY_REEL_EN_DURATION } from "./youtube/CharacterConsistencyReelEn";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -333,6 +335,26 @@ export const RemotionRoot: React.FC = () => {
         id="Episode5Scene1Vertical"
         component={Episode5Scene1Vertical}
         durationInFrames={1290} // 43.0s total: 9:16 vertical reframing for YouTube Shorts & TikTok
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{}}
+      />
+      {/* --- CHARACTER CONSISTENCY KINETIC REEL (VERTICAL 9:16) - ARABIC REFERENCE --- */}
+      <Composition
+        id="CharacterConsistencyReel"
+        component={CharacterConsistencyReel}
+        durationInFrames={CHARACTER_CONSISTENCY_REEL_DURATION}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{}}
+      />
+      {/* --- CHARACTER CONSISTENCY KINETIC REEL (VERTICAL 9:16) - ENGLISH MIRRORED --- */}
+      <Composition
+        id="CharacterConsistencyReelEn"
+        component={CharacterConsistencyReelEn}
+        durationInFrames={CHARACTER_CONSISTENCY_REEL_EN_DURATION}
         fps={30}
         width={1080}
         height={1920}

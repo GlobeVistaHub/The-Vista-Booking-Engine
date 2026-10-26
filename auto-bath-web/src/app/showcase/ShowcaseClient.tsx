@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform, useMotionValue, useSpring, MotionValue } from "framer-motion";
+import Link from "next/link";
 import { CodeSnippet } from "@/components/ui/CodeSnippet";
 import { useRef, useState, useEffect } from "react";
 import Map, { Marker, MapRef, NavigationControl } from "react-map-gl/mapbox";
@@ -436,9 +437,14 @@ export function ShowcaseClient() {
           <h3 className="text-2xl font-heading font-bold text-white uppercase tracking-widest mb-6">
             Ready to experience the platform?
           </h3>
-          <a href="https://auto-bath-detailing-melbourne.vercel.app" target="_blank" className="inline-block bg-white text-[#050505] px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-electric-cyan hover:shadow-[0_0_40px_rgba(0,194,212,0.5)] active:bg-electric-cyan active:shadow-[0_0_60px_rgba(0,194,212,0.8)] active:scale-95 transition-all duration-300">
-            Visit Auto-Bath
-          </a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="https://auto-bath-detailing-melbourne.vercel.app" target="_blank" className="inline-block bg-white text-[#050505] px-10 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-electric-cyan hover:shadow-[0_0_40px_rgba(0,194,212,0.5)] active:bg-electric-cyan active:shadow-[0_0_60px_rgba(0,194,212,0.8)] active:scale-95 transition-all duration-300">
+              Visit Auto-Bath
+            </a>
+            <Link href="/studio" className="inline-flex items-center gap-2 border border-white/20 bg-white/5 text-white px-8 py-4 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-white/10 hover:border-electric-cyan hover:text-electric-cyan hover:shadow-[0_0_30px_rgba(0,194,212,0.3)] active:scale-95 transition-all duration-300">
+              🎬 Cinema & Video Reel →
+            </Link>
+          </div>
         </motion.div>
 
       </div>
