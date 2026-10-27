@@ -15,6 +15,7 @@ const STATIC_PACKAGES = [
   { id: "ppf", name: "Paint Protection Film (PPF)", price: 1800, time: "2 Days", type: "premium" },
   { id: "leather", name: "Leather Hide Rejuvenation", price: 450, time: "4.0 Hours", type: "standard" },
   { id: "engine", name: "Engine Bay Precision Detail", price: 250, time: "2.0 Hours", type: "standard" },
+  { id: "graphene", name: "Graphene Matrix 10H", price: 1500, time: "1.5 Days", type: "premium" },
 ];
 
 export default function BookingWidget({ 
@@ -41,6 +42,7 @@ export default function BookingWidget({
       ppf: "7d2e4a81-9b51-4e1a-8f12-9c3f6e8a0112",
       leather: "5c3d1e92-8a40-4d2b-9e23-8b2e5f7a0223",
       engine: "3b1c9d83-7f39-4c3a-8d34-7a1e4d6a0334",
+      graphene: "9e4f1a2b-3c5d-4e6f-8a0b-1c2d3e4f5a6b",
     };
     const targetId = packageIdMap[pkg.id];
     const dbService = dynamicServices.find(s => s.id === targetId || s.name === pkg.name || (customTitle && s.name === customTitle));
@@ -316,6 +318,37 @@ export default function BookingWidget({
                         />
                         <div className="absolute inset-0 opacity-15 [background:repeating-linear-gradient(45deg,transparent,transparent_6px,rgba(0,194,212,0.3)_6px,rgba(0,194,212,0.3)_8px)]" />
                         <div className="absolute top-0 left-0 w-full h-[2px] bg-electric-cyan shadow-[0_0_15px_rgba(0,194,212,0.7)]" />
+                      </div>
+                    )}
+
+                    {/* 9. Graphene Matrix 10H: Prismatic Nanotube Hex-Lattice & Titanium Emerald Sheen */}
+                    {pkg.id === "graphene" && (
+                      <div className={`absolute inset-0 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-2xl mix-blend-screen ${selectedPackage === pkg.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <div 
+                          className="absolute inset-0 transition-opacity duration-200"
+                          style={{
+                            background: `radial-gradient(280px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0,229,153,0.35) 0%, rgba(0,194,212,0.15) 45%, transparent 75%)`
+                          }}
+                        />
+                        {/* Hexagonal Nanotube Molecular Lattice */}
+                        <div 
+                          className="absolute inset-0 opacity-20 pointer-events-none"
+                          style={{
+                            backgroundImage: `radial-gradient(rgba(0,229,153,0.5) 1.5px, transparent 1.5px), radial-gradient(rgba(0,194,212,0.35) 1.5px, transparent 1.5px)`,
+                            backgroundSize: `16px 16px`,
+                            backgroundPosition: `0 0, 8px 8px`
+                          }}
+                        />
+                        {/* Prismatic Anti-Static Laser Streak */}
+                        <div 
+                          className="absolute top-0 h-full w-[45px] bg-gradient-to-r from-transparent via-emerald-300/35 to-transparent skew-x-[-30deg] blur-[1px]"
+                          style={{
+                            left: 'calc(var(--mouse-x, 50%) - 22px)',
+                            transition: 'left 0.08s ease-out'
+                          }}
+                        />
+                        {/* Electric Emerald Top Beam */}
+                        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-emerald-400 via-teal-300 to-electric-cyan shadow-[0_0_15px_rgba(0,229,153,0.8)]" />
                       </div>
                     )}
 

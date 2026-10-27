@@ -27,21 +27,39 @@ async function getLiveData() {
 }
 
 
+const SERVICE_ID_TO_PACKAGE: Record<string, string> = {
+  "c2a502e8-e825-4876-b459-9334e801e363": "wash",
+  "a92d99bf-11be-4afb-9860-5844233d2899": "interior",
+  "4b293e74-9b13-4af4-8901-49ac014ad043": "paint",
+  "f90656aa-808f-41f4-a789-7dcf6a934df8": "ceramic",
+  "49d0b87f-744d-4bf8-9821-2df1f9c67a60": "concourse",
+  "7d2e4a81-9b51-4e1a-8f12-9c3f6e8a0112": "ppf",
+  "5c3d1e92-8a40-4d2b-9e23-8b2e5f7a0223": "leather",
+  "3b1c9d83-7f39-4c3a-8d34-7a1e4d6a0334": "engine",
+  "9e4f1a2b-3c5d-4e6f-8a0b-1c2d3e4f5a6b": "graphene",
+};
+
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const { services, contentRows } = await getLiveData();
 
-  // Format the services into a readable string for the AI
-  const liveServices = services?.map(s => 
-    `- ${s.name} (FROM $${(s.base_price / 100).toFixed(2)}): ${s.description}`
-  ).join('\n') || 'Our premium services are currently being updated.';
-
-  // Format site content (like phone number, address)
-  const contentMap = contentRows?.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {}) || {};
+  // Format site content (like phone number, address, custom service titles & descriptions)
+  const contentMap = contentRows?.reduce((acc, row: any) => ({ ...acc, [row.key]: row.value }), {}) || {};
   const phone = contentMap['contact_phone'] || '+61 400 764 508';
   const address = contentMap['business_address'] || '64 Bulla Rd, Strathmore, VIC 3041';
   const waPhone = phone.replace(/[^0-9]/g, '').startsWith('0') ? `61${phone.replace(/[^0-9]/g, '').substring(1)}` : phone.replace(/[^0-9]/g, '');
+
+  // Format the services into a rich readable string for the AI, drawing both base_price and live CMS descriptions
+  const liveServices = services?.map((s: any) => {
+    const pkg = SERVICE_ID_TO_PACKAGE[s.id];
+    const customTitle = pkg ? contentMap[`service_title_${pkg}`] : null;
+    const title = customTitle || s.name;
+    const desc = pkg ? contentMap[`service_desc_${pkg}`] : '';
+    const rawFeatures = pkg ? contentMap[`service_features_${pkg}`] : '';
+    const features = rawFeatures ? ` [Includes: ${rawFeatures.split('\n').filter(Boolean).join(', ')}]` : '';
+    return `- ${title} (FROM $${(s.base_price / 100).toFixed(0)} AUD)${desc ? `: ${desc}` : ''}${features}`;
+  }).join('\n') || 'Our premium services are currently being updated.';
 
   // 2. The Elite System Prompt
   const systemPrompt = `

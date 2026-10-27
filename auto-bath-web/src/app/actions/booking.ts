@@ -59,6 +59,7 @@ export async function createBookingAction(formData: {
       ppf: "7d2e4a81-9b51-4e1a-8f12-9c3f6e8a0112",
       leather: "5c3d1e92-8a40-4d2b-9e23-8b2e5f7a0223",
       engine: "3b1c9d83-7f39-4c3a-8d34-7a1e4d6a0334",
+      graphene: "9e4f1a2b-3c5d-4e6f-8a0b-1c2d3e4f5a6b",
     };
 
     const packageMap: Record<string, string> = {
@@ -70,6 +71,7 @@ export async function createBookingAction(formData: {
       ppf: "Paint Protection Film (PPF)",
       leather: "Leather Hide Rejuvenation",
       engine: "Engine Bay Precision Detail",
+      graphene: "Graphene Matrix 10H Coating",
     };
     
     const targetId = packageIdMap[formData.packageId];

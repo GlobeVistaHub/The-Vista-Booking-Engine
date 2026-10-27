@@ -78,6 +78,15 @@ const defaultServices = [
     features: ["Sensitive Component Masking", "Precision Vapor Degreasing", "Heat-Resistant Dressing", "Anti-Static Dust Repellent"],
     popular: false,
     badge: "Surgical Clean",
+  },
+  {
+    id: "graphene",
+    title: "Graphene Matrix 10H",
+    price: "FROM $1,500",
+    description: "Next-generation reduced graphene oxide matrix offering extreme 10H hardness, anti-static dust repelling, and permanent mirror-sheen.",
+    features: ["10H Diamond-Grade Hardness", "Anti-Static Dust Dissipation", "Zero Water-Spot Technology", "7-Year Certified Warranty"],
+    popular: false,
+    badge: "Next-Gen Shield",
   }
 ];
 
@@ -93,6 +102,7 @@ export default function PricingGrid({ dynamicServices = [], dynamicContent = {} 
     ppf: "7d2e4a81-9b51-4e1a-8f12-9c3f6e8a0112",
     leather: "5c3d1e92-8a40-4d2b-9e23-8b2e5f7a0223",
     engine: "3b1c9d83-7f39-4c3a-8d34-7a1e4d6a0334",
+    graphene: "9e4f1a2b-3c5d-4e6f-8a0b-1c2d3e4f5a6b",
   };
 
   // Map dynamic prices, titles, descriptions, and features from CMS / DB

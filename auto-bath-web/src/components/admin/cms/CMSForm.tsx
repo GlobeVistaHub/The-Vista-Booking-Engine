@@ -19,6 +19,7 @@ const PACKAGE_SERVICE_IDS: Record<string, string> = {
   ppf: "7d2e4a81-9b51-4e1a-8f12-9c3f6e8a0112",
   leather: "5c3d1e92-8a40-4d2b-9e23-8b2e5f7a0223",
   engine: "3b1c9d83-7f39-4c3a-8d34-7a1e4d6a0334",
+  graphene: "9e4f1a2b-3c5d-4e6f-8a0b-1c2d3e4f5a6b",
 };
 
 const SERVICE_ID_TO_PACKAGE: Record<string, string> = {
@@ -30,6 +31,7 @@ const SERVICE_ID_TO_PACKAGE: Record<string, string> = {
   "7d2e4a81-9b51-4e1a-8f12-9c3f6e8a0112": "ppf",
   "5c3d1e92-8a40-4d2b-9e23-8b2e5f7a0223": "leather",
   "3b1c9d83-7f39-4c3a-8d34-7a1e4d6a0334": "engine",
+  "9e4f1a2b-3c5d-4e6f-8a0b-1c2d3e4f5a6b": "graphene",
 };
 
 export default function CMSForm({ initialContent, initialServices }: CMSFormProps) {
@@ -666,6 +668,52 @@ export default function CMSForm({ initialContent, initialServices }: CMSFormProp
                     placeholder={"Sensitive Component Masking\nPrecision Vapor Degreasing\nHeat-Resistant Dressing\nAnti-Static Dust Repellent"}
                     value={content['service_features_engine'] || ''} 
                     onChange={e => handleContentChange('service_features_engine', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+              </div>
+
+              {/* Package 9: Graphene Matrix 10H */}
+              <div className="bg-[#111] border border-white/10 p-5 rounded-lg space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <label className="block text-white/60 text-xs mb-1">Service 9 Title (Next-Gen Shield)</label>
+                    <input 
+                      type="text" 
+                      placeholder="Graphene Matrix 10H"
+                      value={content['service_title_graphene'] || ''} 
+                      onChange={e => handleContentChange('service_title_graphene', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-bold text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                  <div className="w-full sm:w-40">
+                    <label className="block text-white/60 text-xs mb-1">Display Price</label>
+                    <input 
+                      type="text" 
+                      placeholder="FROM $1,500"
+                      value={content['service_price_graphene'] || ''} 
+                      onChange={e => handleContentChange('service_price_graphene', e.target.value)}
+                      className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Package Description</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="Next-generation reduced graphene oxide matrix offering extreme 10H hardness, anti-static dust repelling, and permanent mirror-sheen."
+                    value={content['service_desc_graphene'] || ''} 
+                    onChange={e => handleContentChange('service_desc_graphene', e.target.value)}
+                    className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00C2D4]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs mb-1">Features / Inclusions (One bullet per line)</label>
+                  <textarea 
+                    rows={3}
+                    placeholder={"10H Diamond-Grade Hardness\nAnti-Static Dust Dissipation\nZero Water-Spot Technology\n7-Year Certified Warranty"}
+                    value={content['service_features_graphene'] || ''} 
+                    onChange={e => handleContentChange('service_features_graphene', e.target.value)}
                     className="w-full bg-[#050505] border border-white/10 rounded px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-[#00C2D4]"
                   />
                 </div>

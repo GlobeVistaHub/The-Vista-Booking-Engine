@@ -90,6 +90,7 @@ export default function Footer({ dynamicContent = {} }: { dynamicContent?: Recor
                 <li><Link href="/#service-ppf" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_ppf'] || "Paint Protection Film (PPF)"}</Link></li>
                 <li><Link href="/#service-leather" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_leather'] || "Leather Hide Rejuvenation"}</Link></li>
                 <li><Link href="/#service-engine" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_engine'] || "Engine Bay Precision Detail"}</Link></li>
+                <li><Link href="/#service-graphene" className="text-white/50 text-sm font-sans hover:text-electric-cyan hover:translate-x-1 inline-block transition-all duration-300">{dynamicContent['service_title_graphene'] || "Graphene Matrix 10H"}</Link></li>
               </ul>
             </div>
 
