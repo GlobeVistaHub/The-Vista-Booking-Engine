@@ -561,7 +561,7 @@ function HeaderFrequencyVisualizer({ isPlaying, isDucked, togglePlay }: AudioCon
       {/* Real-time Frequency Spectrum Bars - GPU Accelerated (Zero React Re-renders, Zero Distortion) */}
       <div 
         onClick={togglePlay}
-        className="flex items-end gap-[3px] h-7 px-2.5 py-1 bg-black/60 border border-white/15 rounded-lg cursor-pointer hover:border-[#00C2D4]/50 transition-all select-none"
+        className="hidden sm:flex items-end gap-[3px] h-7 px-2.5 py-1 bg-black/60 border border-white/15 rounded-lg cursor-pointer hover:border-[#00C2D4]/50 transition-all select-none"
         title="Click to toggle DSP Audio Engine"
       >
         {DSP_BAR_DURATIONS.map((dur, i) => (
@@ -2036,18 +2036,31 @@ export function StudioClient() {
   const [isDucked, setIsDucked] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const wasPlayingBeforeVideoRef = useRef(false);
-  const reelsSectionRef = useRef<HTMLElement | null>(null);
+
+  // Lazy resilient Audio instance getter (Guarantees client-side audio availability without failing)
+  const getAudio = () => {
+    if (typeof window === 'undefined') return null;
+    if (!audioRef.current) {
+      const audio = new Audio('/studio-audio.mp3');
+      audio.loop = true;
+      audio.preload = 'auto';
+      audioRef.current = audio;
+    }
+    return audioRef.current;
+  };
 
   // Toggle Background Audio directly via native HTML5 Audio (Zero buffer under-run, Zero distortion)
   const togglePlay = () => {
-    if (!audioRef.current) return;
+    const audio = getAudio();
+    if (!audio) return;
+
     if (isPlaying) {
-      audioRef.current.pause();
+      audio.pause();
       setIsPlaying(false);
       setIsDucked(false);
       wasPlayingBeforeVideoRef.current = false;
     } else {
-      audioRef.current.play().then(() => {
+      audio.play().then(() => {
         setIsPlaying(true);
         setIsDucked(false);
         wasPlayingBeforeVideoRef.current = true;
@@ -2058,8 +2071,9 @@ export function StudioClient() {
   };
 
   const pauseForVideo = () => {
-    if (audioRef.current && !audioRef.current.paused) {
-      audioRef.current.pause();
+    const audio = audioRef.current;
+    if (audio && !audio.paused) {
+      audio.pause();
       setIsPlaying(false);
       setIsDucked(true);
       wasPlayingBeforeVideoRef.current = true;
@@ -2067,8 +2081,9 @@ export function StudioClient() {
   };
 
   const resumeAfterVideo = () => {
-    if (wasPlayingBeforeVideoRef.current && audioRef.current && audioRef.current.paused) {
-      audioRef.current.play().then(() => {
+    const audio = audioRef.current;
+    if (wasPlayingBeforeVideoRef.current && audio && audio.paused) {
+      audio.play().then(() => {
         setIsPlaying(true);
         setIsDucked(false);
       }).catch(() => {});
@@ -2077,25 +2092,31 @@ export function StudioClient() {
 
   // Global Concurrency Relay: YouTube Iframe click (window blur), message events, and native video events
   useEffect(() => {
+    // Eagerly pre-instantiate audio on client
+    getAudio();
+
     const handleWindowBlur = () => {
       setTimeout(() => {
         if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
           pauseForVideo();
         }
-      }, 60);
+      }, 80);
     };
 
     const handleWindowMessage = (event: MessageEvent) => {
       try {
         const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        if (data && data.event === 'onStateChange') {
-          if (data.info === 1) {
-            // YT video playing
-            pauseForVideo();
-          } else if (data.info === 2 || data.info === 0) {
-            // YT video paused or ended
-            resumeAfterVideo();
-          }
+        if (!data) return;
+        let playerState: number | undefined = undefined;
+        if (typeof data.info === 'number') {
+          playerState = data.info;
+        } else if (data.info && typeof data.info.playerState === 'number') {
+          playerState = data.info.playerState;
+        }
+        if (playerState === 1) {
+          pauseForVideo();
+        } else if (playerState === 2 || playerState === 0) {
+          resumeAfterVideo();
         }
       } catch (e) {
         // Safe ignore non-JSON messages
@@ -2103,13 +2124,13 @@ export function StudioClient() {
     };
 
     const handleNativePlay = (e: Event) => {
-      if (e.target !== audioRef.current) {
+      if (audioRef.current && e.target !== audioRef.current) {
         pauseForVideo();
       }
     };
 
     const handleNativePause = (e: Event) => {
-      if (e.target !== audioRef.current) {
+      if (audioRef.current && e.target !== audioRef.current) {
         resumeAfterVideo();
       }
     };
@@ -2120,43 +2141,29 @@ export function StudioClient() {
     document.addEventListener('pause', handleNativePause, true);
 
     // Initial handshake to YouTube iframes
-    const iframes = document.querySelectorAll('iframe');
-    iframes.forEach((iframe) => {
-      try {
-        iframe.contentWindow?.postMessage('{"event":"listening"}', '*');
-      } catch (e) {}
-    });
+    const sendHandshake = () => {
+      const iframes = document.querySelectorAll('iframe');
+      iframes.forEach((iframe) => {
+        try {
+          iframe.contentWindow?.postMessage('{"event":"listening"}', '*');
+        } catch (e) {}
+      });
+    };
+    sendHandshake();
+    const timer = setTimeout(sendHandshake, 1200);
 
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('blur', handleWindowBlur);
       window.removeEventListener('message', handleWindowMessage);
       document.removeEventListener('play', handleNativePlay, true);
       document.removeEventListener('pause', handleNativePause, true);
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
     };
   }, []);
 
-  // IntersectionObserver: Auto-duck studio audio when scrolling deep into commercial reel, resume when back up
-  useEffect(() => {
-    const el = reelsSectionRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio > 0.35) {
-          if (isPlaying) {
-            pauseForVideo();
-          }
-        } else if (!entry.isIntersecting || entry.intersectionRatio < 0.1) {
-          if (isDucked && wasPlayingBeforeVideoRef.current) {
-            resumeAfterVideo();
-          }
-        }
-      });
-    }, { threshold: [0.1, 0.35, 0.7] });
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [isPlaying, isDucked]);
   const [activeTab, setActiveTab] = useState<"reel" | "fusion" | "fairlight" | "matrix">("reel");
   const [logoError, setLogoError] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -2257,6 +2264,8 @@ export function StudioClient() {
 
   return (
     <main className="min-h-screen bg-[#050505] text-white selection:bg-[#00C2D4] selection:text-black font-sans relative overflow-x-hidden">
+      {/* Persistent Native Audio Element (Direct OS Hardware Output) */}
+      <audio ref={audioRef} src="/studio-audio.mp3" loop preload="auto" />
       
 
 
@@ -2284,7 +2293,7 @@ export function StudioClient() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <div className="hidden lg:flex">
+            <div className="flex items-center">
               <HeaderFrequencyVisualizer isPlaying={isPlaying} isDucked={isDucked} togglePlay={togglePlay} />
             </div>
 
@@ -2427,7 +2436,7 @@ export function StudioClient() {
 
       {/* ================= TAB 1: COMMERCIAL REEL ================= */}
       {activeTab === "reel" && (
-        <section ref={reelsSectionRef} id="commercial-reels" className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-16 sm:space-y-24 relative z-10">
+        <section id="commercial-reels" className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-16 sm:space-y-24 relative z-10">
           
           {/* COMMERCIAL 1: REAL ESTATE */}
           <motion.div 
