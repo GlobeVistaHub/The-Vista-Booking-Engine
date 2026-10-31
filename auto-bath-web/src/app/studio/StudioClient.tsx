@@ -20,6 +20,7 @@ import {
   RotateCw,
   Zap,
   Volume2,
+  VolumeX,
   Wand2,
   Crosshair,
   Gauge,
@@ -513,25 +514,195 @@ function AnamorphicOpticalHorizon() {
 
 
 function FrequencyVisualizer() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isDucked, setIsDucked] = useState(false);
+  const [frequencies, setFrequencies] = useState<number[]>([12, 18, 10, 22, 16, 8, 14, 24, 18, 11, 16, 22, 13, 17, 25, 14, 19, 8, 20, 15]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const wasPlayingBeforeVideoRef = useRef(false);
+
+  // Toggle Background Audio & initialize Web Audio API FFT analyzer
+  const togglePlay = async () => {
+    if (!audioRef.current) return;
+
+    try {
+      if (!audioCtxRef.current) {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        const ctx = new AudioCtx();
+        audioCtxRef.current = ctx;
+
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 64; // 32 frequency bins
+        analyser.smoothingTimeConstant = 0.8;
+        analyserRef.current = analyser;
+
+        const source = ctx.createMediaElementSource(audioRef.current);
+        source.connect(analyser);
+        analyser.connect(ctx.destination);
+        sourceRef.current = source;
+      }
+
+      if (audioCtxRef.current.state === 'suspended') {
+        await audioCtxRef.current.resume();
+      }
+
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+        setIsDucked(false);
+        wasPlayingBeforeVideoRef.current = false;
+      } else {
+        await audioRef.current.play();
+        setIsPlaying(true);
+        setIsDucked(false);
+        wasPlayingBeforeVideoRef.current = true;
+      }
+    } catch (e) {
+      console.warn('Web Audio playback notice:', e);
+    }
+  };
+
+  // Real-time FFT Frequency Spectrum Loop
+  useEffect(() => {
+    if (!isPlaying || !analyserRef.current) {
+      // Idle ambient breathing animation when not playing
+      const idleInterval = setInterval(() => {
+        setFrequencies(prev => prev.map((h, i) => Math.max(6, Math.min(22, Math.sin(Date.now() / 600 + i) * 6 + 12))));
+      }, 100);
+      return () => clearInterval(idleInterval);
+    }
+
+    const analyser = analyserRef.current;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    const updateSpectrum = () => {
+      analyser.getByteFrequencyData(dataArray);
+      
+      const newHeights = [];
+      for (let i = 0; i < 20; i++) {
+        const binIndex = Math.floor((i / 20) * (bufferLength - 4));
+        const val = dataArray[binIndex] || 0;
+        // Map 0-255 amplitude to 6px - 28px height
+        const height = Math.max(6, Math.min(28, (val / 255) * 28));
+        newHeights.push(height);
+      }
+      setFrequencies(newHeights);
+      animationFrameRef.current = requestAnimationFrame(updateSpectrum);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(updateSpectrum);
+
+    return () => {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    };
+  }, [isPlaying]);
+
+  // Global Concurrency Relay: Automatically pause/duck when any video starts playing
+  useEffect(() => {
+    const handleVideoPlay = () => {
+      if (audioRef.current && !audioRef.current.paused) {
+        audioRef.current.pause();
+        setIsDucked(true);
+        setIsPlaying(false);
+      }
+    };
+
+    const handleVideoPause = () => {
+      if (wasPlayingBeforeVideoRef.current && audioRef.current && audioRef.current.paused) {
+        audioRef.current.play().then(() => {
+          setIsDucked(false);
+          setIsPlaying(true);
+        }).catch(() => {});
+      }
+    };
+
+    // Listen for YouTube iframe state changes via postMessage
+    const handleWindowMessage = (event: MessageEvent) => {
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (data && data.event === 'onStateChange') {
+          // YT.PlayerState.PLAYING === 1
+          if (data.info === 1) {
+            handleVideoPlay();
+          }
+          // YT.PlayerState.PAUSED === 2 || ENDED === 0
+          else if (data.info === 2 || data.info === 0) {
+            handleVideoPause();
+          }
+        }
+      } catch (e) {
+        // Not a JSON message, safely ignore
+      }
+    };
+
+    document.addEventListener('play', handleVideoPlay, true);
+    document.addEventListener('pause', handleVideoPause, true);
+    document.addEventListener('ended', handleVideoPause, true);
+    window.addEventListener('message', handleWindowMessage);
+
+    return () => {
+      document.removeEventListener('play', handleVideoPlay, true);
+      document.removeEventListener('pause', handleVideoPause, true);
+      document.removeEventListener('ended', handleVideoPause, true);
+      window.removeEventListener('message', handleWindowMessage);
+    };
+  }, []);
+
   return (
-    <div className="flex items-end gap-[3px] h-6 px-3 py-1 bg-black/40 border border-white/10 rounded-lg">
-      {[14, 22, 10, 24, 18, 8, 16, 26, 20, 12, 18, 24, 14, 19, 28, 15, 21, 9, 23, 17].map((h, i) => (
-        <motion.div
-          key={i}
-          animate={{ height: [h * 0.4, h, h * 0.6, h * 0.9, h * 0.3] }}
-          transition={{
-            duration: 1.2 + (i % 5) * 0.2,
-            repeat: Infinity,
-            repeatType: "reverse",
-            ease: "easeInOut"
-          }}
-          className={`w-[2.5px] rounded-t-sm ${
-            i % 2 === 0 ? "bg-[#00C2D4]" : "bg-[#FF6600]"
-          }`}
-          style={{ height: `${h}px` }}
-        />
-      ))}
-      <span className="text-[10px] font-mono text-white/50 ml-1.5 uppercase">32-Bit Float 48kHz</span>
+    <div className="flex items-center gap-2">
+      <audio ref={audioRef} src="/studio-audio.mp3" loop preload="metadata" />
+
+      {/* Interactive Sound Engine Toggle */}
+      <button
+        onClick={togglePlay}
+        className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-300 ${
+          isPlaying
+            ? 'bg-[#00C2D4]/20 border-[#00C2D4] text-[#00C2D4] shadow-[0_0_18px_rgba(0,194,212,0.4)]'
+            : isDucked
+            ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+            : 'bg-black/60 border-white/15 text-white/70 hover:text-white hover:border-white/30'
+        }`}
+        title={isPlaying ? 'Mute Studio Audio' : 'Start 48kHz DSP Studio Audio'}
+      >
+        {isPlaying ? (
+          <Volume2 size={13} className="text-[#00C2D4] animate-pulse" />
+        ) : isDucked ? (
+          <VolumeX size={13} className="text-amber-400" />
+        ) : (
+          <VolumeX size={13} className="text-white/40" />
+        )}
+        <span className="font-bold tracking-wider text-[10px] sm:text-[11px]">
+          {isPlaying ? 'DSP LIVE' : isDucked ? 'AUTO-DUCKED' : 'STUDIO AUDIO'}
+        </span>
+      </button>
+
+      {/* Real-time Frequency Spectrum Bars */}
+      <div 
+        onClick={togglePlay}
+        className="flex items-end gap-[3px] h-7 px-2.5 py-1 bg-black/60 border border-white/15 rounded-lg cursor-pointer hover:border-[#00C2D4]/50 transition-all"
+        title="Click to toggle DSP Audio Engine"
+      >
+        {frequencies.map((h, i) => (
+          <div
+            key={i}
+            className={`w-[2.5px] rounded-t-sm transition-all duration-75 ${
+              isPlaying
+                ? i % 2 === 0
+                  ? 'bg-[#00C2D4] shadow-[0_0_8px_rgba(0,194,212,0.8)]'
+                  : 'bg-[#FF2E93] shadow-[0_0_8px_rgba(255,46,147,0.8)]'
+                : 'bg-white/25'
+            }`}
+            style={{ height: `${h}px` }}
+          />
+        ))}
+        <span className="text-[10px] font-mono text-white/50 ml-1.5 uppercase hidden xl:inline">
+          {isPlaying ? '48kHz DSP' : '32-Bit Float'}
+        </span>
+      </div>
     </div>
   );
 }
@@ -2266,7 +2437,7 @@ export function StudioClient() {
                 <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/15 bg-black shadow-[0_0_40px_rgba(0,194,212,0.2)]">
                   <div className="relative aspect-video w-full">
                     <iframe 
-                      src="https://www.youtube-nocookie.com/embed/f4dQBbeSF2I?rel=0&modestbranding=1" 
+                      src="https://www.youtube-nocookie.com/embed/f4dQBbeSF2I?rel=0&modestbranding=1&enablejsapi=1" 
                       title="Real Estate Commercial - Stop Selling Barren Land" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                       allowFullScreen
@@ -2339,7 +2510,7 @@ export function StudioClient() {
                 <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/15 bg-black shadow-[0_0_40px_rgba(255,102,0,0.2)]">
                   <div className="relative aspect-video w-full">
                     <iframe 
-                      src="https://www.youtube-nocookie.com/embed/34LMdZ_wU6A?rel=0&modestbranding=1" 
+                      src="https://www.youtube-nocookie.com/embed/34LMdZ_wU6A?rel=0&modestbranding=1&enablejsapi=1" 
                       title="Cinematic Sci-Fi Drama - Stop Lagging, Start Living" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                       allowFullScreen
@@ -2427,7 +2598,7 @@ export function StudioClient() {
                 <div className="relative w-full max-w-[320px] sm:max-w-[340px] rounded-2xl sm:rounded-3xl overflow-hidden border border-white/20 bg-black shadow-[0_0_50px_rgba(0,194,212,0.25)]">
                   <div className="relative aspect-[9/16] w-full bg-[#050505]">
                     <iframe 
-                      src="https://www.youtube-nocookie.com/embed/FYcQeFGnW3o?rel=0&modestbranding=1" 
+                      src="https://www.youtube-nocookie.com/embed/FYcQeFGnW3o?rel=0&modestbranding=1&enablejsapi=1" 
                       title="Autonomous AI Workflows — The Assistant Era is Dead" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                       allowFullScreen
@@ -2501,7 +2672,7 @@ export function StudioClient() {
                 <div className="relative w-full max-w-[320px] sm:max-w-[340px] rounded-2xl sm:rounded-3xl overflow-hidden border border-white/20 bg-black shadow-[0_0_50px_rgba(255,184,0,0.25)]">
                   <div className="relative aspect-[9/16] w-full bg-[#050505]">
                     <iframe 
-                      src="https://www.youtube-nocookie.com/embed/Qu8r5Dmapmo?rel=0&modestbranding=1" 
+                      src="https://www.youtube-nocookie.com/embed/Qu8r5Dmapmo?rel=0&modestbranding=1&enablejsapi=1" 
                       title="Character Consistency in AI Video — 4-Pillar Modular Architecture" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                       allowFullScreen
