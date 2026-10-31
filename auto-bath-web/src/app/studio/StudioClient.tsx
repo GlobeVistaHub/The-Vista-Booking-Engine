@@ -2923,6 +2923,15 @@ export function StudioClient() {
               Hire Sherif on Upwork <ArrowRight size={15} />
             </a>
 
+            {/* VIRAL HYBRID MOTION ENGINE SHOWCASE */}
+            <Link
+              href="/hybrid-motion"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#FF2E93]/15 hover:bg-[#FF2E93]/25 border border-[#FF2E93]/40 text-[#FF2E93] hover:text-white px-7 sm:px-8 py-3.5 sm:py-4.5 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm hover:shadow-[0_0_35px_rgba(255,46,147,0.4)] transition-all min-h-[48px]"
+            >
+              <Zap size={15} className="text-[#FF2E93]" />
+              <span>Hybrid Motion Engine</span>
+            </Link>
+
             {/* VIEW SAAS ARCHITECTURE */}
             <Link
               href="/showcase"

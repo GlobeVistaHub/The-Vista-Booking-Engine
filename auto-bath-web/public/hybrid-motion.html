@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HARFEN W LAKEN — GoodBrains.Pro Studio Productions | Viral Hybrid Motion Architecture</title>
+
+  <!-- Google Cairo & Inter Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg1: '#070B16',
+              bg2: '#0E1A33',
+              card: '#121E38',
+              border: '#1E2F56',
+              blue: '#3D8BFF',
+              cyan: '#38BDF8',
+              magenta: '#FF2E93',
+              yellow: '#FFD23F',
+              amber: '#F59E0B',
+              emerald: '#10B981',
+              rose: '#F43F5E'
+            }
+          },
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif'],
+            inter: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & Babel Standalone -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body {
+      background-color: #070B16;
+      color: #F8FAFC;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .glass-panel {
+      background: rgba(14, 26, 51, 0.78);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(61, 139, 255, 0.22);
+    }
+
+    .glass-card {
+      background: rgba(18, 30, 56, 0.65);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+    }
+
+    .glow-blue {
+      box-shadow: 0 0 35px rgba(61, 139, 255, 0.25);
+    }
+
+    .glow-gold {
+      box-shadow: 0 0 35px rgba(255, 210, 63, 0.28);
+    }
+
+    .glow-cyan {
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.25);
+    }
+
+    .glow-magenta {
+      box-shadow: 0 0 35px rgba(255, 46, 147, 0.32);
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+
+<body class="bg-[#070B16] text-slate-100 min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // SVG Icons
+    const PlayIcon = () => (
+      <svg className="w-4 h-4 inline-block shrink-0" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    );
+
+    const SparklesIcon = () => (
+      <svg className="w-4 h-4 text-brand-yellow inline-block shrink-0" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6.4-4.8-6.4 4.8 2.4-7.2-6-4.8h7.6z" />
+      </svg>
+    );
+
+    const ShieldCheck = () => (
+      <svg className="w-4 h-4 text-brand-cyan inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    );
+
+    const DownloadIcon = () => (
+      <svg className="w-4 h-4 inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+    );
+
+    const CheckCircle = () => (
+    <svg className="w-4 h-4 text-emerald-400 inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+
+    const SoundIcon = () => (
+    <svg className="w-4 h-4 inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
+    </svg>
+  );
+
+  const TerminalIcon = () => (
+      <svg className="w-4 h-4 text-emerald-400 inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    );
+
+    function App() {
+      // Language State: 'en' | 'ar'
+      const [lang, setLang] = useState('en');
+      const isAr = lang === 'ar';
+
+      // Video Player States
+      const [videoFormat, setVideoFormat] = useState('vertical'); // 'vertical' | 'horizontal'
+      const [videoLanguage, setVideoLanguage] = useState('en'); // 'en' | 'ar'
+
+      // Audio Stems State
+      const [activeStem, setActiveStem] = useState(null);
+
+      // Active Section Tab
+      const [activeTab, setActiveTab] = useState('theater'); // 'theater' | 'analytics' | 'blueprint' | 'skill'
+  const [proofModalOpen, setProofModalOpen] = useState(false);
+
+      return (
+        <div dir={isAr ? 'rtl' : 'ltr'} className={`min-h-screen pb-24 ${isAr ? 'font-cairo' : 'font-inter'}`}>
+
+          {/* Top Bar Navigation */}
+          <header className="sticky top-0 z-50 bg-[#070B16]/90 backdrop-blur-xl border-b border-brand-border/60">
+            <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+              
+              {/* Brand Logo & Name */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center -space-x-2">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden border border-brand-magenta/60 shadow-md glow-magenta flex items-center justify-center bg-slate-900 z-10 p-[1px]">
+                    <img src="harfen_logo.png" alt="Harfen Logo" className="w-full h-full object-cover" onError={(e)=>{e.target.style.display='none'}} />
+                  </div>
+                  <a
+                    href="https://www.goodbrains.pro"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Visit GoodBrains.Pro Studio"
+                    className="w-8 h-8 rounded-lg overflow-hidden border border-cyan-400/60 hover:border-brand-yellow shadow-md flex items-center justify-center bg-slate-950 z-20 hover:scale-105 transition-all cursor-pointer"
+                  >
+                    <img src="goodbrains_logo.png" alt="GoodBrains.Pro" className="w-full h-full object-cover" onError={(e)=>{e.target.style.display='none'}} />
+                  </a>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-base md:text-lg font-black tracking-wider text-white">
+                      HARFEN W <span className="text-brand-yellow">LAKEN</span>
+                    </h1>
+                    <a
+                      href="https://www.goodbrains.pro"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-brand-blue/20 hover:bg-brand-blue/40 text-brand-cyan hover:text-white border border-brand-blue/40 hover:border-cyan-400 rounded-full transition-all duration-200 shadow-sm cursor-pointer group"
+                      title="Navigate to https://www.goodbrains.pro"
+                    >
+                      <span>GoodBrains.Pro Studio</span>
+                      <svg className="w-2.5 h-2.5 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                  <div className="text-[10px] text-slate-400 tracking-wider font-mono">
+                    A <a href="https://www.goodbrains.pro" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-brand-cyan underline-offset-2 hover:underline font-semibold">GoodBrains.Pro Studio</a> Production • Creative AI Motion Architecture
+                  </div>
+                </div>
+              </div>
+
+              {/* Language Switcher & Git Badge */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setLang(isAr ? 'en' : 'ar')}
+                  className="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
+                >
+                  <span>{isAr ? '🇬🇧 English (Mariya)' : '🇸🇦 العربية (الأصلية)'}</span>
+                </button>
+
+                <a
+                  href="#skill"
+                  onClick={() => setActiveTab('skill')}
+                  className="hidden sm:flex bg-gradient-to-r from-brand-blue to-cyan-500 hover:from-blue-600 hover:to-cyan-400 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs items-center gap-1.5 transition-all shadow-md glow-blue"
+                >
+                  <TerminalIcon />
+                  <span>{isAr ? 'حزمة مهارة Claude Skill' : 'Claude Skill Package'}</span>
+                </a>
+              </div>
+            </div>
+          </header>
+
+          {/* Hero Section */}
+          <section className="relative py-14 px-4 overflow-hidden bg-gradient-to-b from-brand-bg2/40 via-transparent to-transparent text-center">
+            {/* Subtle Ambient Harfen Cyber-Neon Halo (Brand Magenta + Cyan) */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[340px] bg-gradient-to-b from-brand-magenta/12 via-brand-cyan/8 to-transparent blur-3xl pointer-events-none -z-10 rounded-full" />
+            <div className="max-w-5xl mx-auto relative z-10">
+              
+                          <div className="inline-flex items-center gap-2 bg-brand-yellow/15 border border-brand-yellow/40 text-brand-yellow px-4 py-1.5 rounded-full text-xs font-black mb-5 glow-gold">
+                <SparklesIcon />
+                <span>
+                  {isAr
+                    ? '★ معمارية المحتوى الفيروسي الهجين (قوس الاحتفاظ النفسي الخماسي)'
+                    : '★ The Viral Hybrid Motion Pipeline (5-Beat Retention Architecture)'}
+                </span>
+              </div>
+
+              <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-5">
+                {isAr ? (
+                  <>
+                    موت مهندسي الفيديو؟ <span className="text-brand-cyan">هل ده بجد؟</span>{' '}
+                    <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-yellow via-rose-400 to-brand-blue">
+                      تعـالوا نشوف.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    The Death of Video Editors!{' '}
+                    <span className="text-brand-cyan">Is it real?</span>{' '}
+                    <span className="block text-transparent bg-clip-text bg-gradient-to-r from-brand-yellow via-rose-400 to-brand-blue">
+                      Let's find out.
+                    </span>
+                  </>
+                )}
+              </h2>
+
+              <p className="text-slate-300 text-xs sm:text-sm md:text-base max-w-3xl mx-auto leading-relaxed mb-8">
+                {isAr
+                  ? 'منظومة إنتاجية هجينة تجمع بين كود Remotion التفاعلي، مجسمات Three.js ثلاثية الأبعاد، ومعايرة صوتية استوديو 48kHz لضربات الصمت والصب-بيس. تكسر خوارزمية تيك توك بنسبة 98.7% وصول مباشر.'
+                  : 'A 55-second programmatic broadcast master powered by React, Remotion, Three.js WebGL, and calibrated 48kHz acoustic DSP with precision tape-stop silence. Engineered to disrupt doom-scrolling and deliver exponential viral retention.'}
+              </p>
+
+              {/* Quick Spec Ribbon */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto text-start">
+                <div className="glass-card p-3.5 rounded-xl border-s-4 border-s-brand-blue">
+                  <div className="text-[11px] text-slate-400">{isAr ? 'محرك الرسوم البرمجية' : 'Code-Driven Engine'}</div>
+                  <div className="text-lg font-black text-white">Remotion + Three.js</div>
+                  <div className="text-[10px] text-brand-cyan">{isAr ? 'دقة sub-pixel و sub-frame' : 'Sub-pixel procedural 4K'}</div>
+                </div>
+
+                <div className="glass-card p-3.5 rounded-xl border-s-4 border-s-brand-yellow">
+                  <div className="text-[11px] text-slate-400">{isAr ? 'الهندسة الصوتية' : 'Acoustic DSP'}</div>
+                  <div className="text-lg font-black text-brand-yellow">48kHz 16-bit PCM</div>
+                  <div className="text-[10px] text-amber-300">{isAr ? 'معايرة الصوت والصمت التام' : 'Dynamic ducking & tape-stop'}</div>
+                </div>
+
+                <div className="glass-card p-3.5 rounded-xl border-s-4 border-s-emerald-400">
+                  <div className="text-[11px] text-slate-400">{isAr ? 'اختراق الخوارزمية (FYP)' : 'Algorithmic FYP Ratio'}</div>
+                  <div className="text-lg font-black text-emerald-400">98.7% Organic</div>
+                  <div className="text-[10px] text-emerald-300">{isAr ? 'وصول لغرباء من حساب بـ 45 متابع' : 'On cold 45-follower base'}</div>
+                </div>
+
+                <div className="glass-card p-3.5 rounded-xl border-s-4 border-s-brand-cyan">
+                  <div className="text-[11px] text-slate-400">{isAr ? 'معدل الحفظ (Saves)' : 'Bookmark / Save Rate'}</div>
+                  <div className="text-lg font-black text-brand-cyan">2.3% (4.6x avg)</div>
+                  <div className="text-[10px] text-cyan-300">{isAr ? '12 حفظ على 522 مشاهدة' : '12 saves / 522 views'}</div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          {/* Sticky Navigation Tabs */}
+          <div className="sticky top-[61px] z-40 bg-[#070B16] border-b border-brand-border">
+            <div className="max-w-7xl mx-auto px-4 flex overflow-x-auto no-scrollbar gap-2 py-2.5">
+              
+              <button
+                onClick={() => setActiveTab('theater')}
+                className={`px-4 py-2 rounded-xl text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  activeTab === 'theater'
+                    ? 'bg-gradient-to-r from-brand-blue to-cyan-500 text-white shadow-lg glow-blue'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <PlayIcon />
+                <span>{isAr ? 'استوديو العرض التفاعلي (4K Theater)' : '4K Broadcast Theater'}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`px-4 py-2 rounded-xl text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  activeTab === 'analytics'
+                    ? 'bg-gradient-to-r from-amber-500 to-brand-yellow text-slate-950 font-black shadow-lg glow-gold'
+                    : 'text-brand-yellow hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <SparklesIcon />
+                <span>{isAr ? "الأرقام لا تكذب: اختبار الانتشار الحقيقي" : "Numbers Don't Lie: Algorithmic Proof"}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('blueprint')}
+                className={`px-4 py-2 rounded-xl text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  activeTab === 'blueprint'
+                    ? 'bg-gradient-to-r from-brand-blue to-cyan-500 text-white shadow-lg glow-blue'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <ShieldCheck />
+                <span>{isAr ? 'قوس الاحتفاظ النفسي الخماسي' : '5-Beat Retention Blueprint'}</span>
+              </button>
+
+                            <button
+                onClick={() => setActiveTab('audio')}
+                className={`px-4 py-2 rounded-xl text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  activeTab === 'audio'
+                    ? 'bg-gradient-to-r from-brand-blue via-brand-magenta to-cyan-500 text-white shadow-lg glow-magenta'
+                    : 'text-brand-magenta hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <SoundIcon />
+                <span>{isAr ? '⚡ المحرك الصوتي البرمجي (Upwork Pitch)' : '⚡ Programmatic Audio Engine'}</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('skill')}
+                className={`px-4 py-2 rounded-xl text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  activeTab === 'skill'
+                    ? 'bg-emerald-500 text-slate-950 font-black shadow-lg glow-emerald'
+                    : 'text-emerald-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <TerminalIcon />
+                <span>{isAr ? 'حزمة مهارة Claude Skill البرمجية' : 'Claude Skill & Git Repo'}</span>
+              </button>
+
+            </div>
+          </div>
+
+          {/* Main Content Body */}
+          <main className="max-w-7xl mx-auto px-4 py-8">
+
+            {/* TAB 1: 4K BROADCAST THEATER */}
+            {activeTab === 'theater' && (
+              <div className="space-y-10">
+
+                {/* Theater Controls */}
+                <div className="glass-panel p-6 rounded-2xl border border-brand-border flex flex-wrap items-center justify-between gap-4">
+                  <div className="text-start">
+                    <span className="text-xs font-mono text-brand-cyan tracking-wider uppercase font-bold">
+                      {isAr ? 'تبديل العرض الحي' : 'Live Master Feeds'}
+                    </span>
+                    <h3 className="text-xl font-black text-white mt-0.5">
+                      {isAr ? 'مشغّل العرض التفاعلي ثنائي الأبعاد واللغات' : 'Dual-Format & Dual-Language Master Stream'}
+                    </h3>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    
+                    {/* Format Switcher */}
+                    <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                      <button
+                        onClick={() => setVideoFormat('vertical')}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          videoFormat === 'vertical'
+                            ? 'bg-brand-blue text-white shadow glow-blue'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        📱 {isAr ? 'رأسي 9:16 (موبايل)' : 'Vertical 9:16 (Shorts)'}
+                      </button>
+                      <button
+                        onClick={() => setVideoFormat('horizontal')}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          videoFormat === 'horizontal'
+                            ? 'bg-brand-blue text-white shadow glow-blue'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        🖥️ {isAr ? 'أفقي 16:9 (سينمائي)' : 'Landscape 16:9 (Cinema)'}
+                      </button>
+                    </div>
+
+                    {/* Language Switcher */}
+                    <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                      <button
+                        onClick={() => setVideoLanguage('en')}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          videoLanguage === 'en'
+                            ? 'bg-brand-yellow text-slate-950 font-black shadow glow-gold'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        🇬🇧 English (Mariya Master)
+                      </button>
+                      <button
+                        onClick={() => setVideoLanguage('ar')}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          videoLanguage === 'ar'
+                            ? 'bg-brand-yellow text-slate-950 font-black shadow glow-gold'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        🇸🇦 العربية (الأصلية)
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Video Container */}
+                <div className="flex justify-center items-center">
+                  {videoFormat === 'vertical' ? (
+                    <div className="w-full max-w-[390px] bg-slate-950 rounded-3xl p-3 border-2 border-brand-blue/60 shadow-2xl relative glow-blue">
+                      <div className="rounded-2xl overflow-hidden aspect-[9/16] bg-black relative">
+                        <video
+                          key={`vertical_${videoLanguage}`}
+                          controls
+                          playsInline
+                          className="w-full h-full object-cover"
+                          src={
+                            videoLanguage === 'en'
+                              ? 'harfen_master_vertical_en_55s.mp4'
+                              : 'harfen_master_vertical_55s.mp4'
+                          }
+                        />
+                      </div>
+                      <div className="flex justify-between items-center text-[11px] text-slate-400 px-2 py-2 mt-1">
+                        <span className="font-bold text-brand-yellow">Vertical 9:16 Master (1080x1920)</span>
+                        <span className="font-mono text-brand-cyan">{videoLanguage === 'en' ? 'EN • 48kHz PCM' : 'AR • RTL Motion'}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full max-w-4xl bg-slate-950 rounded-3xl p-3 border-2 border-brand-blue/60 shadow-2xl relative glow-blue">
+                      <div className="rounded-2xl overflow-hidden aspect-video bg-black relative">
+                        <video
+                          key={`horizontal_${videoLanguage}`}
+                          controls
+                          playsInline
+                          className="w-full h-full object-cover"
+                          src={
+                            videoLanguage === 'en'
+                              ? 'harfen_master_horizontal_en_55s.mp4'
+                              : 'harfen_master_55s.mp4'
+                          }
+                        />
+                      </div>
+                      <div className="flex justify-between items-center text-[11px] text-slate-400 px-2 py-2 mt-1">
+                        <span className="font-bold text-brand-yellow">Landscape 16:9 Master (1920x1080)</span>
+                        <span className="font-mono text-brand-cyan">{videoLanguage === 'en' ? 'EN • 48kHz PCM' : 'AR • Full Symmetry'}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Direct Download Ribbon */}
+                <div className="glass-panel p-5 rounded-2xl border border-slate-800 max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-start">
+                    <div className="text-xs font-bold text-white">{isAr ? 'حزمة تنزيل الماستر الخام:' : 'Lossless Master Exports:'}</div>
+                    <div className="text-[11px] text-slate-400">{isAr ? 'ملفات جاهزة للنشر الفوري بدقة كاملة' : 'Broadcast H.264 MP4s @ 30 FPS CRF 16'}</div>
+                  </div>
+                  <div className="flex flex-wrap gap-2.5">
+                    <a
+                      href="harfen_master_vertical_en_55s.mp4"
+                      download
+                      className="bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-all"
+                    >
+                      <DownloadIcon />
+                      <span>{isAr ? 'تنزيل الرأسي الإنجليزي (9:16)' : 'Download 9:16 (EN)'}</span>
+                    </a>
+                    <a
+                      href="harfen_master_horizontal_en_55s.mp4"
+                      download
+                      className="bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-all"
+                    >
+                      <DownloadIcon />
+                      <span>{isAr ? 'تنزيل الأفقي الإنجليزي (16:9)' : 'Download 16:9 (EN)'}</span>
+                    </a>
+                    <a
+                      href="harfen_master_vertical_55s.mp4"
+                      download
+                      className="bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-all"
+                    >
+                      <DownloadIcon />
+                      <span>{isAr ? 'تنزيل الرأسي العربي (9:16)' : 'Download 9:16 (AR)'}</span>
+                    </a>
+                    <a
+                      href="harfen_master_55s.mp4"
+                      download
+                      className="bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-all"
+                    >
+                      <DownloadIcon />
+                      <span>{isAr ? 'تنزيل الأفقي العربي (16:9)' : 'Download 16:9 (AR)'}</span>
+                    </a>
+                    <a
+                      href="VIRAL_HYBRID_MOTION_PIPELINE_BLUEPRINT.pdf"
+                      target="_blank"
+                      className="bg-brand-blue hover:bg-blue-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-all shadow-md glow-blue"
+                    >
+                      <DownloadIcon />
+                      <span>{isAr ? '📄 كراسة المعمارية التنفيذية (PDF)' : '📄 Executive Blueprint (PDF)'}</span>
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 2: NUMBERS DON'T LIE (ALGORITHMIC PROOF) */}
+            {activeTab === 'analytics' && (
+              <div className="space-y-8">
+                
+                <div className="glass-panel p-6 md:p-8 rounded-3xl border border-brand-yellow/40 glow-gold max-w-5xl mx-auto">
+                  <div className="flex flex-col lg:flex-row gap-8 items-center">
+                    
+                    {/* Left Analytical Thesis */}
+                    <div className="lg:w-7/12 space-y-4 text-start">
+                      <div className="inline-flex items-center gap-2 bg-brand-yellow/20 text-brand-yellow border border-brand-yellow/40 px-3.5 py-1 rounded-full text-xs font-black">
+                        <SparklesIcon />
+                        <span>{isAr ? "الأرقام لا تكذب: موثق من TikTok Studio" : "Numbers Don't Lie: Verified TikTok Studio Proof"}</span>
+                      </div>
+
+                      <h3 className="text-2xl md:text-3xl font-black text-white leading-tight">
+                        {isAr
+                          ? 'اختراق خوارزمي بنسبة 98.7% على حساب تجريبي بـ 45 متابعاً فقط!'
+                          : '98.7% FYP Algorithmic Breakout on a Brand-New 45-Follower Account!'}
+                      </h3>
+
+                      <p className="text-slate-300 text-xs md:text-sm leading-relaxed">
+                        {isAr
+                          ? 'تم نشر هذا الفيديو على حساب تجريبي جديد يمتلك 45 متابعاً فقط، دون إنفاق فلس واحد على الإعلانات. النتيجة الميدانية الموثقة: دفعت الخوارزمية 98.7% من المشاهدات مباشرة إلى صفحة For You Page لجمهور غريب، محققاً 1 ساعة و55 دقيقة من المشاهدة المتراكمة و12 عملية حفظ (Save Rate 2.3%، أي 4.6 أضعاف المتوسط العالمي للمنصة).'
+                          : 'Deployed to an unboosted test account with only 45 followers and zero ad spend. The algorithm pushed 98.7% of all views directly to the For You Page, generating 1h 55m of total watch time and 12 bookmarks (2.3% save rate — 4.6x the TikTok industry benchmark of 0.5%).'}
+                      </p>
+
+                      {/* 4 Breakout Metric Badges */}
+                      <div className="grid grid-cols-2 gap-3 pt-2">
+                        <div className="bg-slate-900/90 border border-brand-yellow/30 p-3.5 rounded-2xl">
+                          <div className="text-[11px] text-slate-400 font-bold">{isAr ? 'وصول For You Page' : 'FYP Organic Ratio'}</div>
+                          <div className="text-2xl font-black text-brand-yellow">98.7%</div>
+                          <div className="text-[10px] text-slate-400">{isAr ? 'اختراق خوارزمي لغرباء' : 'Pure algorithm breakout'}</div>
+                        </div>
+
+                        <div className="bg-slate-900/90 border border-emerald-500/30 p-3.5 rounded-2xl">
+                          <div className="text-[11px] text-slate-400 font-bold">{isAr ? 'معدل الحفظ (Save Rate)' : 'Bookmark / Save Rate'}</div>
+                          <div className="text-2xl font-black text-emerald-400">2.3%</div>
+                          <div className="text-[10px] text-emerald-300 font-semibold">{isAr ? '4.6x المتوسط العالمي' : '4.6x platform benchmark'}</div>
+                        </div>
+
+                        <div className="bg-slate-900/90 border border-brand-cyan/30 p-3.5 rounded-2xl">
+                          <div className="text-[11px] text-slate-400 font-bold">{isAr ? 'إجمالي وقت المشاهدة' : 'Total Play Time'}</div>
+                          <div className="text-2xl font-black text-brand-cyan">1h 55m</div>
+                          <div className="text-[10px] text-slate-400">{isAr ? '115 دقيقة تفاعل تراكمي' : '115 mins watch volume'}</div>
+                        </div>
+
+                        <div className="bg-slate-900/90 border border-rose-500/30 p-3.5 rounded-2xl">
+                          <div className="text-[11px] text-slate-400 font-bold">{isAr ? 'النمو العضوي للمتابعين' : 'Follower Surge'}</div>
+                          <div className="text-2xl font-black text-rose-400">+13.3%</div>
+                          <div className="text-[10px] text-slate-400">{isAr ? '+6 متابعين جدد من منشور واحد' : '+6 followers from 1 video'}</div>
+                        </div>
+                      </div>
+
+                      {/* Multiplier Thesis Box */}
+                      <div className="p-4 rounded-2xl bg-gradient-to-r from-brand-yellow/15 via-brand-cyan/10 to-transparent border-s-4 border-brand-yellow text-xs text-slate-200 leading-relaxed">
+                        <strong className="text-brand-yellow">{isAr ? 'معادلة التضاعف التجاري:' : 'The Commercial Multiplier:'}</strong>{' '}
+                        {isAr
+                          ? 'إذا استطاعت معمارية الفيديو وحدها حصد 98.7% وصول خوارزمي ونمو عضوي بنسبة +13.3% على حساب تجريبي بـ 45 متابعاً فقط.. فتخيل حجم العائد والانتشار عند تفعيل هذا المحرك على علامة تجارية مرموقة تمتلك آلاف المتابعين، أو دعمها بميزانية إعلانية مدفوعة!'
+                          : 'If this video architecture captured 98.7% organic FYP distribution and +13.3% follower growth on a 45-follower test account with $0 ad spend... Imagine the compounding reach when deployed on an established brand with thousands of followers or backed by targeted paid ad spend!'}
+                      </div>
+                    </div>
+
+                    {/* Right Screenshot Embed */}
+                    <div className="lg:w-5/12 w-full">
+                      <div 
+                        className="rounded-2xl overflow-hidden border-2 border-brand-cyan/40 shadow-2xl bg-slate-950 p-2 cursor-pointer hover:border-brand-yellow/60 transition-all duration-300 group"
+                        onClick={() => setProofModalOpen(true)}
+                      >
+                        <div className="relative overflow-hidden rounded-xl">
+                          <img
+                            src="numbers-dont-lie-tiktok-proof.jpg"
+                            alt="TikTok Studio Analytics Proof - Numbers Don't Lie"
+                            className="w-full object-contain group-hover:scale-102 transition-transform duration-300 shadow-inner"
+                          />
+                          <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                            <span className="bg-slate-950/90 text-brand-yellow border border-brand-yellow/40 px-3 py-1.5 rounded-lg text-xs font-bold shadow-xl flex items-center gap-1.5">
+                              <SparklesIcon /> {isAr ? 'انقر لتكبير الإثبات' : 'Click to Inspect Full Resolution'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-center text-[11px] text-brand-cyan mt-2 py-1 flex items-center justify-center gap-1.5 font-semibold">
+                          <CheckCircle />
+                          <span>{isAr ? 'انقر لفتح الإثبات الخوارزمي الكامل بدقة فائقة' : 'Click to view full-screen original TikTok Studio proof'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 3: 5-BEAT RETENTION BLUEPRINT */}
+            {activeTab === 'blueprint' && (
+              <div className="space-y-8 max-w-5xl mx-auto">
+                <div className="glass-panel p-6 md:p-8 rounded-3xl border border-brand-border text-start">
+                  
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                      <span className="text-xs font-mono text-brand-cyan tracking-wider uppercase font-bold">
+                        {isAr ? 'التشريح النفسي المعياري' : 'Cognitive Retention Engineering'}
+                      </span>
+                      <h3 className="text-2xl md:text-3xl font-black text-white mt-1">
+                        {isAr ? 'القوس الخماسي لمنع التمرير والاحتفاظ البصري' : 'The 5-Beat Psychological Retention Arc'}
+                      </h3>
+                      <p className="text-slate-400 text-xs md:text-sm mt-1 max-w-2xl leading-relaxed">
+                        {isAr
+                          ? 'تمت هندسة كل ثانية لتجاوز مرشحات الانتباه اللحظية في تيك توك وريلز، وتحويل المشاهد السلبي إلى متابع متفاعل.'
+                          : 'Every second is calibrated to conquer the 3-second drop-off curve and sustain engagement across the full 55 seconds.'}
+                      </p>
+                    </div>
+
+                    <a
+                      href="VIRAL_HYBRID_MOTION_PIPELINE_BLUEPRINT.pdf"
+                      target="_blank"
+                      className="bg-brand-blue hover:bg-blue-600 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition-all shadow-lg shrink-0 glow-blue"
+                    >
+                      <DownloadIcon />
+                      <span>{isAr ? 'تحميل الكراسة الكاملة PDF' : 'Download Full Blueprint PDF'}</span>
+                    </a>
+                  </div>
+
+                  <div className="space-y-4 mt-8">
+                    
+                    {/* Beat 1 */}
+                    <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-start gap-4">
+                      <div className="px-3 py-1 bg-amber-500/20 text-brand-yellow border border-brand-yellow/40 rounded-xl text-xs font-mono font-bold shrink-0">
+                        00:00 – 00:05.4
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-white">{isAr ? 'النبضة 1: الخطاف الصادم (Contrarian Hook)' : 'Beat 1: The Contrarian Hook'}</h4>
+                        <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                          {isAr
+                            ? 'إيقاف التمرير اللحظي بسؤال وجودي وخط عريض عالي التباين (Headline are screaming: The Death of Video Editors! Is it real? Let\'s find out) مع ضربة صب-بيس وزئير هووش.'
+                            : 'Pattern interrupt arresting doom-scrolling via high-contrast kinetic typography and acoustic whoosh impact, creating instant cognitive dissonance.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Beat 2 */}
+                    <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-start gap-4">
+                      <div className="px-3 py-1 bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40 rounded-xl text-xs font-mono font-bold shrink-0">
+                        00:05.4 – 00:22.4
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-white">{isAr ? 'النبضة 2: التدفق الإيقاعي السريع (Tactical Staccato)' : 'Beat 2: Tactical Staccato Tools'}</h4>
+                        <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                          {isAr
+                            ? 'استعراض 4 أدوات ذكاء اصطناعي (Opus Clip, CapCut, Premiere Pro, Kling) بكروت زجاجية شفافة، وكرات مدارية ثلاثية الأبعاد تنبض باللون الذهبي متزامنة بدقة ملي ثانية مع صوتيات الـ UI Pop.'
+                            : 'High-density utility delivered via 4 animated tool cards with orbiting 3D Three.js satellites, synchronized 1:1 with tactile UI pop sound design.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Beat 3 */}
+                    <div className="bg-slate-900/80 p-5 rounded-2xl border border-brand-yellow/50 bg-brand-yellow/5 flex flex-col sm:flex-row items-start gap-4">
+                      <div className="px-3 py-1 bg-brand-yellow/30 text-brand-yellow border border-brand-yellow/60 rounded-xl text-xs font-mono font-bold shrink-0">
+                        00:22.4 – 00:37.0
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-brand-yellow">{isAr ? 'النبضة 3: المحور الإنساني والصمت المدوّي (Tape-Stop Silence)' : 'Beat 3: Analog Tape-Stop & Vocal Silence'}</h4>
+                        <p className="text-xs text-slate-200 mt-1 leading-relaxed">
+                          {isAr
+                            ? 'الانتقال من التباهي بالأدوات إلى الحقيقة الفلسفية. قطع الموسيقى بصوت توقف شريط كاسيت واقعي عند 30.6 ثانية، وخط صامت تام، ثم دخول صوت ماريا المعاير بنقاء استوديو على عبارة "When silence is louder than the heaviest music".'
+                            : 'The emotional climax: analog tape-stop kills the background score at 30.6s into profound silence. The 64-band visualizer flatlines in yellow, then reignites in electric cyan during the vocal return.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Beat 4 */}
+                    <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-start gap-4">
+                      <div className="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-xl text-xs font-mono font-bold shrink-0">
+                        00:37.0 – 00:48.0
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-white">{isAr ? 'النبضة 4: تحول العقلية والأمر المباشر (Mindset Shift Thesis)' : 'Beat 4: The Mindset Shift Thesis'}</h4>
+                        <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                          {isAr
+                            ? 'إعادة صياغة الخوف إلى سلطة وتمكين: "المونتير لن يخسر أمام الذكاء الاصطناعي.. بل أمام مونتير يتقنه. لا تحاربه.. تعلمه.. استخدمه" مع ضربات صب-بيس 35Hz.'
+                            : 'Transforming anxiety into mastery: "Editors won\'t lose to AI... they will lose to editors who master it. Don\'t fight it. Learn it. Use it." Powered by rhythmic 35Hz sub-bass hits.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Beat 5 */}
+                    <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-start gap-4">
+                      <div className="px-3 py-1 bg-brand-blue/20 text-brand-blue border border-brand-blue/40 rounded-xl text-xs font-mono font-bold shrink-0">
+                        00:48.0 – 00:55.0
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-white">{isAr ? 'النبضة 5: الختام الفاخر وبناء العلامة (3D Medallion Outro)' : 'Beat 5: Luxury Medallion Signature Outro'}</h4>
+                        <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                          {isAr
+                            ? 'ظهور وسام ثلاثي الأبعاد مضيء بقطر 500px ومسحة معدنية براقة بزاوية 45 درجة، مع ترسيخ هوية حرفين و لكن وصوت سويش نهائي حاسم.'
+                            : 'Authority lock-in: 500px volumetric glass medallion with a 45-degree metallic sheen sweep and sub-bass resonance, securing permanent brand equity.'}
+                        </p>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            )}
+
+            
+            {/* TAB 4: PROGRAMMATIC AUDIO-REACTIVE ENGINE (UPWORK PITCH) */}
+            {activeTab === 'audio' && (
+              <div className="space-y-8 max-w-5xl mx-auto text-start">
+                
+                {/* Hero Feature Panel */}
+                <div className="glass-panel p-6 md:p-8 rounded-3xl border border-brand-magenta/40 glow-magenta">
+                  <div className="flex flex-col md:flex-row items-start justify-between gap-6">
+                    <div>
+                      <div className="inline-flex items-center gap-2 bg-brand-magenta/20 text-brand-magenta border border-brand-magenta/40 px-3.5 py-1 rounded-full text-xs font-black mb-3">
+                        <SoundIcon />
+                        <span>{isAr ? 'هندسة الصوت البرمجي المتفاعل • دقة المللي ثانية' : 'DSP Engineering • Sub-Frame & Millisecond Precision'}</span>
+                      </div>
+                      <h3 className="text-2xl md:text-3xl font-black text-white">
+                        {isAr ? 'المحرك الصوتي البرمجي: كود قطعي مقابل كي فريمز تقليدية' : 'Deterministic Code vs. Legacy Keyframing'}
+                      </h3>
+                      <p className="text-xs md:text-sm text-slate-300 mt-2 max-w-3xl leading-relaxed">
+                        {isAr
+                          ? 'على عكس برامج المونتاج القديمة (After Effects و DaVinci Resolve) التي تعتمد على كي فريمز يدوية هشة أو إضافات ثقيلة تتعطل في الريندر، تعمل هذه المنظومة على ربط الترددات الصوتية (20Hz–20kHz) مباشرة بخصائص الإضاءة والمجسمات والكاميرا برمجياً وبدقة sub-pixel عائمة.'
+                          : 'Unlike traditional workflows in Adobe After Effects or DaVinci Resolve that rely on fragile manual keyframing or bloated plugins (Trapcode, Red Giant), our pipeline unifies audio and visual synthesis in pure deterministic code with floating-point sub-pixel and millisecond accuracy.'}
+                      </p>
+                    </div>
+
+                    <a
+                      href="VIRAL_HYBRID_MOTION_PIPELINE_BLUEPRINT.pdf"
+                      target="_blank"
+                      className="bg-brand-blue hover:bg-blue-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all shadow-lg shrink-0 glow-blue"
+                    >
+                      <DownloadIcon />
+                      <span>{isAr ? 'كراسة المواصفات كاملة (PDF)' : 'Full Specs in PDF'}</span>
+                    </a>
+                  </div>
+
+                  {/* 4 Architectural Pillars Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    
+                    {/* Pillar 1 */}
+                    <div className="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-brand-cyan uppercase tracking-wider font-mono">01. Sub-Frame Precision Math</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-brand-blue/20 text-brand-cyan font-mono">20Hz – 20kHz FFT</span>
+                      </div>
+                      <h4 className="text-sm font-black text-white">{isAr ? 'حسابات رياضية عائمة بدون التقيد بإطارات التايم لاين' : 'Floating-Point Waveform Sampling'}</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        {isAr
+                          ? 'يتم استخراج ترددات الصوت ومستويات الطاقة (RMS/FFT) واستخدام دوال Remotion الرياضية interpolate() و spring() لمزامنة حركة النصوص والمجسمات بالمللي ثانية التامة.'
+                          : 'Directly samples audio waveform amplitude and FFT spectrum bins. Binds visual scale, rotation, and camera offsets with programmatic math instead of arbitrary integer frame ticks.'}
+                      </p>
+                      <div className="bg-slate-900 p-2.5 rounded-lg font-mono text-[11px] text-brand-cyan/90 border border-slate-800/80 overflow-x-auto">
+                        const bloom = interpolate(bassRMS, [0.05, 0.45], [0.2, 1.8], clamp);
+                      </div>
+                    </div>
+
+                    {/* Pillar 2 */}
+                    <div className="bg-slate-950/80 p-5 rounded-2xl border border-brand-magenta/30 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-brand-magenta uppercase tracking-wider font-mono">02. 35Hz Sub-Bass Glow & Magenta Bloom</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-brand-magenta/20 text-brand-magenta font-mono">Emissive Shaders</span>
+                      </div>
+                      <h4 className="text-sm font-black text-white">{isAr ? 'توهج وانبعاث ضوئي بلون الماجينتا متزامن مع ضربات الساب باس' : 'Dynamic Emissive & Magenta-Cyan Bloom Spikes'}</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        {isAr
+                          ? 'ضربات الساب باس (35Hz) ترفع انبعاث الخامات ثلاثية الأبعاد وتوهج ماجينتا نيون (#FF2E93) لحظياً من 0.2 إلى 1.8، مما يخلق نبضاً بصرياً حياً يشد انتباه المشاهد.'
+                          : 'Deep 35Hz sub-bass impacts dynamically overdrive Three.js emissive shader intensity from 0.2 to 1.8, shifting from deep blue to Harfen signature cyber-magenta on beat drops.'}
+                      </p>
+                      <div className="bg-slate-900 p-2.5 rounded-lg font-mono text-[11px] text-brand-magenta/90 border border-slate-800/80 overflow-x-auto">
+                        material.emissive.setHex(0xFF2E93); material.emissiveIntensity = 0.2 + 1.6 * subBassPulse;
+                      </div>
+                    </div>
+
+                    {/* Pillar 3 */}
+                    <div className="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">03. Dialogue Contrast Modulation</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono">-12dB Dynamic DIP</span>
+                      </div>
+                      <h4 className="text-sm font-black text-white">{isAr ? 'تعديل التباين والتعريض مع مخارج الكلمات' : 'Voiceover Emphasis & Auto-Ducking'}</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        {isAr
+                          ? 'نبرة الصوت البشري تعدل التباين والسطوع بنسبة +8% تلقائياً، مع خفض تدريجي ذكي للموسيقى الخلفية بمقدار -12dB عند التحدث لضمان وضوح فائق للرسالة.'
+                          : 'Dialogue peaks drive subtle contrast/exposure kicks (+8%), while the music track smoothly ducks by -12dB with mathematically shaped bezier curves during active voiceover.'}
+                      </p>
+                      <div className="bg-slate-900 p-2.5 rounded-lg font-mono text-[11px] text-emerald-400/90 border border-slate-800/80 overflow-x-auto">
+                        const musicVol = interpolate(t, [0, 5.0, 30.6], [0.28, 0.58, 0.0]);
+                      </div>
+                    </div>
+
+                    {/* Pillar 4 */}
+                    <div className="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-rose-400 uppercase tracking-wider font-mono">04. Procedural Spring Physics</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-mono">Sub-Pixel Kick</span>
+                      </div>
+                      <h4 className="text-sm font-black text-white">{isAr ? 'اهتزازات كاميرا برمجية ونبضات فيزيائية ناعمة' : 'Camera Micro-Displacements'}</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        {isAr
+                          ? 'مؤثرات الـ UI Pop والضربات الإيقاعية تطلق اهتزازات فيزيائية طبيعية للكاميرا [dx, dy] بدون أي كي فريم يدوي، وتستقر بنعومة كاملة عبر معادلات الربيع الفيزيائي.'
+                          : 'Snare hits and UI pop sound effects trigger procedural spring micro-kicks with natural physics decay, settling with zero visual jitter or human keyframing.'}
+                      </p>
+                      <div className="bg-slate-900 p-2.5 rounded-lg font-mono text-[11px] text-rose-400/90 border border-slate-800/80 overflow-x-auto">
+                        const kick = spring(&#123; frame: f - impactFrame, fps: 30, config: &#123; damping: 12 &#125; &#125;);
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Head-to-Head Comparison Table */}
+                  <div className="mt-8 border-t border-slate-800 pt-6">
+                    <h4 className="text-base font-black text-white mb-3 flex items-center gap-2">
+                      <SparklesIcon />
+                      <span>{isAr ? 'المقارنة الميدانية: المنظومة البرمجية مقابل برامج المونتاج التقليدية' : 'Head-to-Head: Programmatic Engine vs. Legacy After Effects / DaVinci'}</span>
+                    </h4>
+
+                    <div className="overflow-x-auto rounded-xl border border-slate-800">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-slate-900 text-slate-300 border-b border-slate-800 font-mono">
+                            <th className="p-3 font-bold">{isAr ? 'المعيار الهندسي' : 'Engineering Metric'}</th>
+                            <th className="p-3 text-brand-cyan font-bold">{isAr ? 'منظومة GoodBrains.Pro' : 'GoodBrains.Pro Engine'}</th>
+                            <th className="p-3 text-slate-400 font-bold">Adobe After Effects + Plugins</th>
+                            <th className="p-3 text-slate-400 font-bold">DaVinci Resolve / Fairlight</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                          <tr className="bg-slate-950/60 hover:bg-slate-900/40">
+                            <td className="p-3 font-semibold text-white">{isAr ? 'هشاشة الكي فريمز (Keyframe Fragility)' : 'Keyframe Fragility'}</td>
+                            <td className="p-3 font-bold text-emerald-400">{isAr ? 'صفر كي فريمز (كود قطعي 100%)' : 'Zero Keyframes (100% Code-Bound)'}</td>
+                            <td className="p-3 text-rose-400/80">{isAr ? 'هشة وتتكسر عند تعديل التوقيت' : 'Fragile links; breaks on duration shifts'}</td>
+                            <td className="p-3 text-slate-400">{isAr ? 'كي فريمز يدوية على التايم لاين' : 'Manual timeline keyframes'}</td>
+                          </tr>
+                          <tr className="bg-slate-950/60 hover:bg-slate-900/40">
+                            <td className="p-3 font-semibold text-white">{isAr ? 'سرعة الريندر السحابي' : 'Cloud Render Speed'}</td>
+                            <td className="p-3 font-bold text-brand-cyan">{isAr ? 'أسرع 10x عبر Chromium و GPU' : '10x Faster Headless Cloud Render'}</td>
+                            <td className="p-3 text-rose-400/80">{isAr ? 'بطيء ومكلف بسبب واجهة GUI الثقيلة' : 'Heavy GUI overhead; Trapcode bloat'}</td>
+                            <td className="p-3 text-slate-400">{isAr ? 'ريندر محلي على الجهاز فقط' : 'Local workstation only'}</td>
+                          </tr>
+                          <tr className="bg-slate-950/60 hover:bg-slate-900/40">
+                            <td className="p-3 font-semibold text-white">{isAr ? 'دقة التزامن الصوتي' : 'Audio Transient Accuracy'}</td>
+                            <td className="p-3 font-bold text-brand-yellow">{isAr ? 'دقة sub-frame ومللي ثانية حقيقية' : 'Sub-Frame & Millisecond Floating Point'}</td>
+                            <td className="p-3 text-slate-400">{isAr ? 'تكات إطارات صحيحة (عرضة للـ Jitter)' : 'Integer timeline frame ticks (Jitter)'}</td>
+                            <td className="p-3 text-slate-400">{isAr ? 'تكات إطارات صحيحة' : 'Integer timeline frame ticks'}</td>
+                          </tr>
+                          <tr className="bg-slate-950/60 hover:bg-slate-900/40">
+                            <td className="p-3 font-semibold text-white">{isAr ? 'التعديلات التوليدية السريعة' : 'Parametric Scalability'}</td>
+                            <td className="p-3 font-bold text-emerald-400">{isAr ? 'فورية (غيّر الصوت، والكود يعيد الحساب)' : 'Instant (Swap audio, code re-computes)'}</td>
+                            <td className="p-3 text-rose-400/80">{isAr ? 'ساعات من إعادة التحريك اليدوي' : 'Hours of manual re-timing and fixing'}</td>
+                            <td className="p-3 text-slate-400">{isAr ? 'إعادة قص وتحريك يدوي' : 'Manual timeline re-editing'}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 4: CLAUDE SKILL & GIT REPO */}
+            {activeTab === 'skill' && (
+              <div className="space-y-8 max-w-5xl mx-auto text-start">
+                
+                <div className="glass-panel p-6 md:p-8 rounded-3xl border border-emerald-500/40 glow-emerald">
+                  <div className="flex flex-col md:flex-row items-start justify-between gap-6">
+                    <div>
+                      <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3.5 py-1 rounded-full text-xs font-black mb-3">
+                        <TerminalIcon />
+                        <span>Universal AI Skill & MCP Server (Claude • Higgsfield • Antigravity)</span>
+                      </div>
+                      <h3 className="text-2xl md:text-3xl font-black text-white">
+                        hybrid-motion-director
+                      </h3>
+                      <p className="text-xs md:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                        {isAr
+                          ? 'مهارة ذكاء اصطناعي معيارية وخادم بروتوكول MCP JSON متوافق مع Claude وHiggsfield وAntigravity لإنتاج وتوليد سكريبتات ومونتاج Remotion بدقة صوتية قطعية.'
+                          : 'A multi-platform AI Skill & MCP JSON Server for Claude Desktop, Higgsfield AI, and Antigravity. Architected to script, simulate, and render broadcast-grade Remotion/Three.js vertical videos with deterministic DSP audio sync.'}
+                      </p>
+                    </div>
+
+                    <a
+                      href="hybrid-motion-director-skill.zip"
+                      download
+                      className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all shadow-lg shrink-0"
+                    >
+                      <DownloadIcon />
+                      <span>{isAr ? 'تنزيل حزمة Skill الكاملة (ZIP)' : 'Download Skill Package (ZIP)'}</span>
+                    </a>
+                  </div>
+
+                  {/* Code Snippet Box */}
+                  <div className="mt-6 bg-slate-950 rounded-2xl p-4 border border-slate-800 font-mono text-xs overflow-x-auto text-slate-300">
+                    <div className="text-slate-500 mb-2">// 1-Command Remotion Production Pipeline</div>
+                    <div className="text-brand-cyan">npx remotion render <span className="text-white">src/index.ts VerticalEN</span> <span className="text-brand-yellow">out/master.mp4</span> \</div>
+                    <div className="text-slate-400 pl-4">--concurrency=1 --crf=16 --pixel-format=yuv420p</div>
+                  </div>
+
+                  {/* Features List */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-800">
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-white">100% Procedural 4K</div>
+                      <div className="text-[11px] text-slate-400">Zero blurry pixel scaling. Renders native vector & Three.js geometry.</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-white">Acoustic Auto-Ducking</div>
+                      <div className="text-[11px] text-slate-400">Synchronizes 14 sound stems to exact perceptual acoustic centers.</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-white">Mobile Safe-Zone Guard</div>
+                      <div className="text-[11px] text-slate-400">Clamps all typography within Y: 280px to Y: 1540px for TikTok UI safety.</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+          
+            {/* LIGHTBOX MODAL FOR NUMBERS DON'T LIE PROOF */}
+            {proofModalOpen && (
+              <div 
+                className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
+                onClick={() => setProofModalOpen(false)}
+              >
+                <div 
+                  className="relative max-w-5xl w-full bg-slate-900 border border-brand-cyan/50 rounded-2xl overflow-hidden shadow-2xl p-3 sm:p-5 flex flex-col max-h-[92vh]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-brand-yellow font-bold text-sm sm:text-base">📊 Empirical Validation • Numbers Don't Lie</span>
+                      <span className="hidden sm:inline-block text-[11px] text-brand-cyan font-mono bg-brand-blue/20 px-2 py-0.5 rounded border border-brand-blue/30">
+                        98.7% FYP • 85.7% Bookmark • Cold 45-Follower Account
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => setProofModalOpen(false)}
+                      className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-rose-600 text-white text-xs font-bold transition-all"
+                    >
+                      ✕ Close
+                    </button>
+                  </div>
+
+                  <div className="flex-1 overflow-auto rounded-xl border border-slate-800 bg-slate-950 p-1 flex items-center justify-center">
+                    <img 
+                      src="numbers-dont-lie-tiktok-proof.jpg" 
+                      alt="TikTok Studio Analytics Proof High Resolution"
+                      className="max-w-full max-h-[72vh] object-contain rounded-lg"
+                    />
+                  </div>
+
+                  <div className="mt-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400 pt-2 border-t border-slate-800">
+                    <span className="text-[11px]">GoodBrains.Pro Studio Productions • Production Metric Verified</span>
+                    <a 
+                      href="numbers-dont-lie-tiktok-proof.jpg" 
+                      download="TikTok_Studio_Algorithmic_Proof_GoodBrainsPro.jpg"
+                      className="text-brand-cyan hover:text-white hover:underline font-bold flex items-center gap-1.5"
+                    >
+                      <DownloadIcon /> Download Original JPG (100% Quality)
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+
+        </main>
+
+          {/* Sticky Bottom Bar */}
+          <footer className="fixed bottom-0 right-0 left-0 bg-[#070B16]/95 border-t border-brand-border/60 py-3 px-4 backdrop-blur-md z-50">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-xs font-bold text-slate-300 hidden sm:inline">
+                  HARFEN W LAKEN • 4K Hybrid Motion Engine
+                </span>
+                <span className="text-xs text-brand-yellow font-mono">
+                  98.7% FYP Algorithmic Proof
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <a
+                  href="harfen_master_vertical_en_55s.mp4"
+                  download
+                  className="bg-brand-blue hover:bg-blue-600 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5 shadow"
+                >
+                  <DownloadIcon />
+                  <span>{isAr ? 'تنزيل الماستر (9:16 EN)' : 'Download 9:16 EN Master'}</span>
+                </a>
+              </div>
+            </div>
+          </footer>
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+
+</html>
