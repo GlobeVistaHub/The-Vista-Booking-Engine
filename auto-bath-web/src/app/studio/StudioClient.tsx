@@ -529,9 +529,10 @@ interface AudioControlsProps {
   isPlaying: boolean;
   isDucked: boolean;
   togglePlay: () => void;
+  headerBarsRef: React.MutableRefObject<(HTMLDivElement | null)[]>;
 }
 
-function HeaderFrequencyVisualizer({ isPlaying, isDucked, togglePlay }: AudioControlsProps) {
+function HeaderFrequencyVisualizer({ isPlaying, isDucked, togglePlay, headerBarsRef }: AudioControlsProps) {
   return (
     <div className="flex items-center gap-2">
       {/* Interactive Sound Engine Toggle */}
@@ -564,20 +565,19 @@ function HeaderFrequencyVisualizer({ isPlaying, isDucked, togglePlay }: AudioCon
         className="hidden sm:flex items-end gap-[3px] h-7 px-2.5 py-1 bg-black/60 border border-white/15 rounded-lg cursor-pointer hover:border-[#00C2D4]/50 transition-all select-none"
         title="Click to toggle DSP Audio Engine"
       >
-        {DSP_BAR_DURATIONS.map((dur, i) => (
+        {Array.from({ length: 20 }).map((_, i) => (
           <div
             key={i}
-            className={`w-[2.5px] rounded-t-sm transition-all duration-200 ${
-              isPlaying
-                ? i % 2 === 0
-                  ? 'bg-[#00C2D4] shadow-[0_0_8px_rgba(0,194,212,0.8)] dsp-bar-active'
-                  : 'bg-[#FF2E93] shadow-[0_0_8px_rgba(255,46,147,0.8)] dsp-bar-active'
-                : 'bg-white/20'
+            ref={(el) => {
+              if (headerBarsRef.current) headerBarsRef.current[i] = el;
+            }}
+            className={`w-[2.5px] rounded-t-sm transition-[height] duration-75 ${
+              i % 2 === 0
+                ? 'bg-[#00C2D4] shadow-[0_0_8px_rgba(0,194,212,0.8)]'
+                : 'bg-[#FF2E93] shadow-[0_0_8px_rgba(255,46,147,0.8)]'
             }`}
             style={{
-              height: isPlaying ? '14px' : '5px',
-              animationDuration: isPlaying ? dur : undefined,
-              animationDelay: isPlaying ? DSP_BAR_DELAYS[i] : undefined,
+              height: '4px',
             }}
           />
         ))}
@@ -2035,35 +2035,142 @@ export function StudioClient() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isDucked, setIsDucked] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isPlayingRef = useRef(false);
   const wasPlayingBeforeVideoRef = useRef(false);
 
-  // Lazy resilient Audio instance getter (Guarantees client-side audio availability without failing)
+  // Direct DOM Visualizer Refs (Zero React Re-renders, Zero Buffer Starvation)
+  const headerBarsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const miniBarsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  // Lazy resilient Audio instance getter (Guarantees client-side audio availability with crossOrigin)
   const getAudio = () => {
     if (typeof window === 'undefined') return null;
     if (!audioRef.current) {
       const audio = new Audio('/studio-audio.mp3');
       audio.loop = true;
       audio.preload = 'auto';
+      audio.crossOrigin = 'anonymous';
       audioRef.current = audio;
     }
     return audioRef.current;
   };
 
-  // Toggle Background Audio directly via native HTML5 Audio (Zero buffer under-run, Zero distortion)
-  const togglePlay = () => {
+  // Initialize Web Audio API Real-time FFT Analyser
+  const initAudioContext = () => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (!audioCtxRef.current) {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        const ctx = new AudioCtx();
+        audioCtxRef.current = ctx;
+
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 64; // 32 frequency bins
+        analyser.smoothingTimeConstant = 0.72; // Crisp transient reaction to kicks & beats
+        analyserRef.current = analyser;
+        dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
+
+        const audio = getAudio();
+        if (audio && !sourceRef.current) {
+          const source = ctx.createMediaElementSource(audio);
+          source.connect(analyser);
+          analyser.connect(ctx.destination);
+          sourceRef.current = source;
+        }
+      }
+    } catch (err) {
+      console.warn('Real-time Web Audio API FFT notice:', err);
+    }
+  };
+
+  // 60 FPS Beat-Synced Direct DOM Animation Loop (Runs without triggering React state updates)
+  const startVisualizerLoop = () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+
+    const draw = () => {
+      if (!isPlayingRef.current) return;
+
+      if (analyserRef.current && dataArrayRef.current) {
+        analyserRef.current.getByteFrequencyData(dataArrayRef.current as any);
+        const data = dataArrayRef.current;
+
+        // 1. Real-time FFT mapping to 20 Header Spectrum Bars
+        const hBars = headerBarsRef.current;
+        for (let i = 0; i < 20; i++) {
+          const el = hBars[i];
+          if (el) {
+            // Logarithmic frequency curve: concentrates resolution on bass kicks and snares (0-500Hz)
+            const bin = Math.min(31, Math.floor(Math.pow(i / 20, 1.35) * 28));
+            const val = data[bin] || 0;
+            // Map 0-255 amplitude to 4px - 26px height
+            const h = Math.max(4, Math.min(26, (val / 255) * 26));
+            el.style.height = `${h}px`;
+          }
+        }
+
+        // 2. Real-time FFT mapping to 5 Floating Mini Bars
+        const mBars = miniBarsRef.current;
+        const miniBins = [1, 3, 6, 12, 20];
+        for (let i = 0; i < 5; i++) {
+          const el = mBars[i];
+          if (el) {
+            const val = data[miniBins[i]] || 0;
+            const h = Math.max(4, Math.min(18, (val / 255) * 18));
+            el.style.height = `${h}px`;
+          }
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
+    rafRef.current = requestAnimationFrame(draw);
+  };
+
+  const stopVisualizerLoop = () => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    // Return bars smoothly to idle resting state
+    headerBarsRef.current.forEach((el) => {
+      if (el) el.style.height = '4px';
+    });
+    miniBarsRef.current.forEach((el) => {
+      if (el) el.style.height = '4px';
+    });
+  };
+
+  // Toggle Background Audio & Real-time Beat Sync
+  const togglePlay = async () => {
     const audio = getAudio();
     if (!audio) return;
 
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
+      isPlayingRef.current = false;
       setIsDucked(false);
       wasPlayingBeforeVideoRef.current = false;
+      stopVisualizerLoop();
     } else {
+      initAudioContext();
+      if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+        try {
+          await audioCtxRef.current.resume();
+        } catch (e) {}
+      }
       audio.play().then(() => {
         setIsPlaying(true);
+        isPlayingRef.current = true;
         setIsDucked(false);
         wasPlayingBeforeVideoRef.current = true;
+        startVisualizerLoop();
       }).catch((e) => {
         console.warn('Audio playback notice:', e);
       });
@@ -2075,17 +2182,24 @@ export function StudioClient() {
     if (audio && !audio.paused) {
       audio.pause();
       setIsPlaying(false);
+      isPlayingRef.current = false;
       setIsDucked(true);
       wasPlayingBeforeVideoRef.current = true;
+      stopVisualizerLoop();
     }
   };
 
   const resumeAfterVideo = () => {
     const audio = audioRef.current;
     if (wasPlayingBeforeVideoRef.current && audio && audio.paused) {
+      if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume().catch(() => {});
+      }
       audio.play().then(() => {
         setIsPlaying(true);
+        isPlayingRef.current = true;
         setIsDucked(false);
+        startVisualizerLoop();
       }).catch(() => {});
     }
   };
@@ -2158,6 +2272,7 @@ export function StudioClient() {
       window.removeEventListener('message', handleWindowMessage);
       document.removeEventListener('play', handleNativePlay, true);
       document.removeEventListener('pause', handleNativePause, true);
+      stopVisualizerLoop();
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -2265,7 +2380,7 @@ export function StudioClient() {
   return (
     <main className="min-h-screen bg-[#050505] text-white selection:bg-[#00C2D4] selection:text-black font-sans relative overflow-x-hidden">
       {/* Persistent Native Audio Element (Direct OS Hardware Output) */}
-      <audio ref={audioRef} src="/studio-audio.mp3" loop preload="auto" />
+      <audio ref={audioRef} src="/studio-audio.mp3" loop preload="auto" crossOrigin="anonymous" />
       
 
 
@@ -2294,7 +2409,7 @@ export function StudioClient() {
 
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center">
-              <HeaderFrequencyVisualizer isPlaying={isPlaying} isDucked={isDucked} togglePlay={togglePlay} />
+              <HeaderFrequencyVisualizer isPlaying={isPlaying} isDucked={isDucked} togglePlay={togglePlay} headerBarsRef={headerBarsRef} />
             </div>
 
             {/* Visit GoodBrains.pro Header Button */}
@@ -3163,14 +3278,15 @@ export function StudioClient() {
           </span>
           {isPlaying && (
             <div className="flex items-end gap-[2px] h-3.5 ml-1">
-              {[8, 14, 10, 16, 6].map((h, i) => (
+              {[0, 1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="w-[2px] rounded-full bg-[#00C2D4] dsp-bar-active"
+                  ref={(el) => {
+                    if (miniBarsRef.current) miniBarsRef.current[i] = el;
+                  }}
+                  className="w-[2px] rounded-full bg-[#00C2D4] transition-[height] duration-75"
                   style={{
-                    animationDuration: DSP_BAR_DURATIONS[i % DSP_BAR_DURATIONS.length],
-                    animationDelay: DSP_BAR_DELAYS[i % DSP_BAR_DELAYS.length],
-                    height: `${h}px`
+                    height: '4px'
                   }}
                 />
               ))}
