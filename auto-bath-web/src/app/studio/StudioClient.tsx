@@ -2112,8 +2112,8 @@ export function StudioClient() {
 
             {/* Visit GoodBrains.pro Header Button */}
             <a 
-              href="https://goodbrains.pro"
-              target="_blank"
+              href="https://www.goodbrains.pro"
+              target="_top"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 hover:text-white transition-all"
             >
@@ -2905,8 +2905,8 @@ export function StudioClient() {
             
             {/* PRIMARY BUTTON TO HTTPS://GOODBRAINS.PRO */}
             <a
-              href="https://goodbrains.pro"
-              target="_blank"
+              href="https://www.goodbrains.pro"
+              target="_top"
               rel="noopener noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 sm:gap-3 bg-white text-[#050505] px-8 sm:px-10 py-3.5 sm:py-4.5 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm hover:bg-[#00C2D4] hover:shadow-[0_0_50px_rgba(0,194,212,0.6)] active:scale-95 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.25)] min-h-[48px]"
             >
@@ -2924,13 +2924,14 @@ export function StudioClient() {
             </a>
 
             {/* VIRAL HYBRID MOTION ENGINE SHOWCASE */}
-            <Link
-              href="/hybrid-motion"
+            <a
+              href="https://www.goodbrains.pro/hybrid-motion"
+              target="_top"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#FF2E93]/15 hover:bg-[#FF2E93]/25 border border-[#FF2E93]/40 text-[#FF2E93] hover:text-white px-7 sm:px-8 py-3.5 sm:py-4.5 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm hover:shadow-[0_0_35px_rgba(255,46,147,0.4)] transition-all min-h-[48px]"
             >
               <Zap size={15} className="text-[#FF2E93]" />
               <span>Hybrid Motion Engine</span>
-            </Link>
+            </a>
 
             {/* VIEW SAAS ARCHITECTURE */}
             <Link
