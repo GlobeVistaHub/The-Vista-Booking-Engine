@@ -3239,7 +3239,7 @@ export function StudioClient() {
                           Akkari Commercial Master
                         </h4>
                         <p className="text-[11px] text-white/60 font-mono mt-1">
-                          Going Live Tomorrow @ 3:00 PM
+                          Going Live Tomorrow @ 10:00 AM (AEST / Melbourne)
                         </p>
                       </div>
                       <div className="pt-2">
@@ -3264,7 +3264,7 @@ export function StudioClient() {
                     <span className="flex items-center gap-1.5 sm:gap-2 text-[#00C2D4]">
                       <Smartphone size={13} /> 9:16 MOBILE MASTER
                     </span>
-                    <span>OFFICIAL RELEASE 3:00 PM</span>
+                    <span>RELEASE 10:00 AM AEST</span>
                   </div>
                 </div>
               </div>
