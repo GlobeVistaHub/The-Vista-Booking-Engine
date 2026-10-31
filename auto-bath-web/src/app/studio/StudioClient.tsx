@@ -415,21 +415,22 @@ function AnamorphicOpticalHorizon({
 
       {/* 2. Horizontal Anamorphic Flare Streak Beam */}
       <div className="relative w-full flex items-center justify-center pointer-events-none overflow-visible">
-        {/* Outer Tapering Flare Horizon */}
-        <motion.div 
+        {/* Outer Tapering Flare Horizon (Audio-Reactive: expands scale on kick hits) */}
+        <div 
           ref={outerStreakRef}
-          animate={{ opacity: isInteracting ? 0.9 : [0.45, 0.75, 0.45], scaleX: [0.97, 1.03, 0.97] }}
-          transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-          className="w-full h-[1.5px] bg-gradient-to-r from-transparent via-[#00C2D4]/50 via-white/70 to-transparent transition-[opacity] duration-75" 
+          className="w-full h-[1.5px] bg-gradient-to-r from-transparent via-[#00C2D4]/50 via-white/70 to-transparent transition-[opacity,transform] duration-75 pointer-events-none" 
+          style={{ opacity: 0.45, transform: 'scaleX(1)' }}
         />
 
-        {/* High-Intensity Core Laser Beam (Audio-Reactive: explodes 45% -> 100% width on kick drum hits!) */}
+        {/* High-Intensity Core Laser Beam (Audio-Reactive: physically surges across screen 44% -> 96% width on kick drum hits!) */}
         <div
           ref={coreBeamRef}
-          className="absolute h-[3px] sm:h-[4px] rounded-full bg-gradient-to-r from-transparent via-[#00C2D4] via-white to-transparent transition-[width,filter,opacity] duration-75 pointer-events-none"
+          className="absolute h-[3px] rounded-full bg-gradient-to-r from-transparent via-[#00C2D4] via-white to-transparent transition-[width,height,filter,opacity] duration-75 pointer-events-none"
           style={{
-            width: "45%",
-            filter: "drop-shadow(0 0 10px rgba(0, 194, 212, 0.8)) drop-shadow(0 0 22px rgba(0, 194, 212, 0.5))"
+            width: "44%",
+            height: "3px",
+            filter: "drop-shadow(0 0 10px rgba(0, 194, 212, 0.7))",
+            opacity: 0.65
           }}
         />
 
@@ -2110,20 +2111,16 @@ export function StudioClient() {
   const dataArrayRef = useRef<Uint8Array | null>(null);
   const rafRef = useRef<number | null>(null);
 
-  // Lazy resilient Audio instance getter (Loop set to false so track finishes cleanly)
+  // Direct Audio element accessor (Guaranteed single hardware instance)
   const getAudio = () => {
     if (typeof window === 'undefined') return null;
     if (!audioRef.current) {
-      const audio = new Audio('/studio-audio.mp3');
-      audio.loop = false; // Allow track to play to completion and fire 'ended'
-      audio.preload = 'auto';
-      audio.crossOrigin = 'anonymous';
-      audioRef.current = audio;
+      audioRef.current = document.getElementById('studio-audio-player') as HTMLAudioElement;
     }
     return audioRef.current;
   };
 
-  // Initialize Web Audio API Real-time FFT Analyser (256 FFT = 128 bins for high resolution)
+  // Initialize Web Audio API Real-time FFT Analyser
   const initAudioContext = () => {
     if (typeof window === 'undefined') return;
     try {
@@ -2133,196 +2130,312 @@ export function StudioClient() {
         audioCtxRef.current = ctx;
 
         const analyser = ctx.createAnalyser();
-        analyser.fftSize = 256; // 128 frequency bins (High resolution, 187Hz per bin)
-        analyser.smoothingTimeConstant = 0.65; // Snappy, dynamic transient tracking
+        analyser.fftSize = 256; // 128 frequency bins
+        analyser.smoothingTimeConstant = 0.55;
         analyserRef.current = analyser;
         dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
 
         const audio = getAudio();
         if (audio && !sourceRef.current) {
-          const source = ctx.createMediaElementSource(audio);
-          source.connect(analyser);
-          analyser.connect(ctx.destination);
-          sourceRef.current = source;
+          try {
+            const source = ctx.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(ctx.destination);
+            sourceRef.current = source;
+          } catch (e) {
+            // Safe ignore if media element is already connected
+          }
         }
       }
     } catch (err) {
-      console.warn('Real-time Web Audio API FFT notice:', err);
+      console.warn('Web Audio API FFT notice:', err);
     }
   };
 
-  // 60 FPS Beat-Synced Direct DOM Animation Loop with Dynamic Transient Detection & Pink-Noise Equalization
+  // Complete Clean Reset of all Audio Visualizer and Horizon elements to baseline
+  const resetAllVisualizersToZero = () => {
+    // 1. Force all 20 Header Bars and Peak Caps to 4px flatline
+    if (headerBarsRef.current) {
+      headerBarsRef.current.forEach((el) => {
+        if (el) el.style.height = '4px';
+      });
+    }
+    if (headerPeakCapsRef.current) {
+      headerPeakCapsRef.current.forEach((el) => {
+        if (el) {
+          el.style.bottom = '4px';
+          el.style.opacity = '0.3';
+        }
+      });
+    }
+    peakHeightsRef.current.fill(4);
+
+    // 2. Force Mini Floating Bars in bottom-right pill to 4px
+    if (miniBarsRef.current) {
+      miniBarsRef.current.forEach((el) => {
+        if (el) el.style.height = '4px';
+      });
+    }
+    if (miniPeakCapsRef.current) {
+      miniPeakCapsRef.current.forEach((el) => {
+        if (el) el.style.bottom = '4px';
+      });
+    }
+    miniPeakHeightsRef.current.fill(4);
+    kickBaselineRef.current = 140;
+
+    // 3. Reset Horizon Laser Beam to resting state
+    if (horizonCoreBeamRef.current) {
+      horizonCoreBeamRef.current.style.width = '44%';
+      horizonCoreBeamRef.current.style.height = '3px';
+      horizonCoreBeamRef.current.style.filter = 'drop-shadow(0 0 10px rgba(0, 194, 212, 0.7))';
+      horizonCoreBeamRef.current.style.opacity = '0.55';
+    }
+    if (horizonOuterStreakRef.current) {
+      horizonOuterStreakRef.current.style.transform = 'scaleX(1)';
+      horizonOuterStreakRef.current.style.opacity = '0.45';
+    }
+    if (horizonDiamondStarRef.current) {
+      horizonDiamondStarRef.current.style.transform = 'scale(1)';
+    }
+    if (horizonHalationRef.current) {
+      horizonHalationRef.current.style.transform = 'scale(1)';
+      horizonHalationRef.current.style.opacity = '0.25';
+    }
+    if (horizonAmbientBloomRef.current) {
+      horizonAmbientBloomRef.current.style.opacity = '0.12';
+      horizonAmbientBloomRef.current.style.transform = 'scaleY(1)';
+    }
+
+    // 4. Reset Container Glows
+    if (headerContainerRef.current) {
+      headerContainerRef.current.style.boxShadow = '';
+      headerContainerRef.current.style.borderColor = '';
+    }
+    if (pillButtonRef.current) {
+      pillButtonRef.current.style.boxShadow = '';
+    }
+  };
+
+  // 60 FPS Dual-Engine Visualizer Loop: Synchronized Beat DSP + Web Audio Real-Time FFT
   const startVisualizerLoop = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
+    const bpm = 124; // Studio score tempo
+    const beatSec = 60 / bpm; // 0.48387s per beat
+
     const draw = () => {
-      if (!isPlayingRef.current) return;
+      const audio = audioRef.current;
+      // If audio is paused, ended, or stopped: cleanly reset and halt
+      if (!audio || audio.paused || audio.ended || !isPlayingRef.current) {
+        resetAllVisualizersToZero();
+        return;
+      }
 
-      if (analyserRef.current && dataArrayRef.current) {
-        analyserRef.current.getByteFrequencyData(dataArrayRef.current as any);
-        const data = dataArrayRef.current;
+      const curTime = audio.currentTime || 0;
 
-        // 0. Compute total acoustic energy to detect silence / track ending fadeout
-        let totalSum = 0;
-        for (let k = 1; k < 60; k++) {
-          totalSum += data[k] || 0;
+      // 1. Time-Synchronized Beat Metrics (Accurate down to the millisecond)
+      const beatPos = curTime / beatSec;
+      const beatFract = beatPos % 1; // 0.0 at strike -> 1.0 before next
+      // Exponential fast attack, crisp snappy decay:
+      const kickBeatEnergy = Math.pow(Math.max(0, 1 - beatFract * 2.8), 2.5);
+
+      // Snare backbeat on beats 2 and 4
+      const snarePhase = ((beatPos + 1) / 2) % 1;
+      const snareBeatEnergy = Math.pow(Math.max(0, 1 - snarePhase * 3.6), 2.2);
+
+      // Off-beat 8th-note groove
+      const groovePhase = (beatPos * 2) % 1;
+      const grooveEnergy = Math.pow(Math.max(0, 1 - groovePhase * 3.0), 2.0);
+
+      // 2. Real-time Web Audio FFT (when available)
+      let fftKick = 0;
+      let fftSnare = 0;
+      let hasRealFft = false;
+      const data = dataArrayRef.current;
+
+      if (analyserRef.current && data) {
+        analyserRef.current.getByteFrequencyData(data as any);
+        let energySum = 0;
+        for (let k = 1; k < 40; k++) {
+          energySum += data[k] || 0;
         }
-        const avgEnergy = totalSum / 59;
+        const meanEnergy = energySum / 39;
+        if (meanEnergy > 10) {
+          hasRealFft = true;
+          // Sub-bass kick (bins 1 to 3, 40Hz - 160Hz)
+          const rawKick = ((data[1] || 0) + (data[2] || 0)) / 2;
+          if (rawKick > kickBaselineRef.current + 15) {
+            fftKick = Math.min(1.0, (rawKick - kickBaselineRef.current) / 40);
+          }
+          kickBaselineRef.current = kickBaselineRef.current * 0.94 + rawKick * 0.06;
 
-        const hBars = headerBarsRef.current;
-        const hCaps = headerPeakCapsRef.current;
-        const peaks = peakHeightsRef.current;
+          // Snare / mid transients (bins 10 to 18)
+          const rawSnare = ((data[12] || 0) + (data[16] || 0)) / 2;
+          fftSnare = Math.max(0, Math.min(1.0, (rawSnare - 25) / 100));
+        }
+      }
 
-        if (avgEnergy < 6) {
-          // Track is silent or ended: immediately drop all bars to 4px
-          peaks.fill(4);
-          for (let i = 0; i < 20; i++) {
-            if (hBars[i]) hBars[i]!.style.height = '4px';
-            if (hCaps[i]) {
-              hCaps[i]!.style.bottom = '4px';
-              hCaps[i]!.style.opacity = '0.3';
-            }
-          }
-          if (horizonCoreBeamRef.current) {
-            horizonCoreBeamRef.current.style.width = '45%';
-            horizonCoreBeamRef.current.style.filter = 'drop-shadow(0 0 10px rgba(0, 194, 212, 0.8))';
-          }
-          if (horizonDiamondStarRef.current) {
-            horizonDiamondStarRef.current.style.transform = 'scale(1)';
-          }
-          rafRef.current = requestAnimationFrame(draw);
-          return;
+      // Master Transient Pulses (Dual-Engine: blends FFT with synchronous beat clock)
+      const masterKick = Math.min(1.0, Math.max(fftKick, kickBeatEnergy));
+      const masterSnare = Math.min(1.0, Math.max(fftSnare, snareBeatEnergy));
+
+      // 3. ANAMORPHIC OPTICAL HORIZON: THE HORIZONTAL LASER BEAM SURGES DRAMATICALLY!
+      if (horizonCoreBeamRef.current) {
+        // Physical surge from 44% width at rest up to 96% width on every kick drum!
+        const widthPct = Math.round(44 + masterKick * 52);
+        horizonCoreBeamRef.current.style.width = `${widthPct}%`;
+
+        // Physical beam thickness surge from 3px to 5.5px on kick
+        const beamH = (3 + masterKick * 2.5).toFixed(1);
+        horizonCoreBeamRef.current.style.height = `${beamH}px`;
+
+        // Explosive cyan lens flare drop shadow (3-layer multi-stage halation)
+        const glowCore = Math.round(10 + masterKick * 30);
+        const glowOuter = Math.round(20 + masterKick * 55);
+        const glowCorona = Math.round(40 + masterKick * 75);
+        horizonCoreBeamRef.current.style.filter = 
+          `drop-shadow(0 0 ${glowCore}px rgba(0, 194, 212, 1)) drop-shadow(0 0 ${glowOuter}px rgba(0, 194, 212, 0.85)) drop-shadow(0 0 ${glowCorona}px rgba(0, 194, 212, 0.45))`;
+        horizonCoreBeamRef.current.style.opacity = (0.60 + masterKick * 0.40).toFixed(2);
+      }
+
+      if (horizonOuterStreakRef.current) {
+        const outerScale = (1.0 + masterKick * 0.25).toFixed(2);
+        horizonOuterStreakRef.current.style.transform = `scaleX(${outerScale})`;
+        horizonOuterStreakRef.current.style.opacity = (0.45 + masterKick * 0.55).toFixed(2);
+      }
+
+      if (horizonDiamondStarRef.current) {
+        // Central aperture star glint scales up dynamically!
+        const starScale = (1.0 + masterKick * 0.95 + masterSnare * 0.40).toFixed(2);
+        horizonDiamondStarRef.current.style.transform = `scale(${starScale})`;
+      }
+
+      if (horizonHalationRef.current) {
+        const halationScale = (1.0 + masterKick * 1.5).toFixed(2);
+        const halationOp = (0.25 + masterKick * 0.70).toFixed(2);
+        horizonHalationRef.current.style.transform = `scale(${halationScale})`;
+        horizonHalationRef.current.style.opacity = halationOp;
+      }
+
+      if (horizonAmbientBloomRef.current) {
+        // Broad volumetric lens bloom flares up across the hero
+        horizonAmbientBloomRef.current.style.opacity = (0.12 + masterKick * 0.78).toFixed(2);
+        horizonAmbientBloomRef.current.style.transform = `scaleY(${(1.0 + masterKick * 1.3).toFixed(2)})`;
+      }
+
+      // Container Optical Glow
+      if (headerContainerRef.current) {
+        if (masterKick > 0.35) {
+          const glow = Math.round(12 + masterKick * 20);
+          headerContainerRef.current.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, 0.6), inset 0 0 6px rgba(0, 194, 212, 0.3)`;
+          headerContainerRef.current.style.borderColor = 'rgba(0, 194, 212, 0.85)';
+        } else {
+          headerContainerRef.current.style.boxShadow = '0 0 10px rgba(0, 194, 212, 0.15)';
+          headerContainerRef.current.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        }
+      }
+
+      if (pillButtonRef.current) {
+        if (masterKick > 0.35) {
+          const glow = Math.round(18 + masterKick * 24);
+          pillButtonRef.current.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, 0.75)`;
+        } else {
+          pillButtonRef.current.style.boxShadow = '0 0 20px rgba(0, 194, 212, 0.35)';
+        }
+      }
+
+      // 4. EQUALIZER BARS & FLOATING PHOSPHOR PEAK-CAPS (20 HEADER BARS)
+      const hBars = headerBarsRef.current;
+      const hCaps = headerPeakCapsRef.current;
+      const peaks = peakHeightsRef.current;
+
+      for (let i = 0; i < 20; i++) {
+        const stem = hBars[i];
+        const cap = hCaps[i];
+
+        // Multi-frequency wave pattern across the frequency spectrum
+        const wave1 = Math.sin(curTime * 9 + i * 0.55) * 0.5 + 0.5;
+        const wave2 = Math.cos(curTime * 14 - i * 0.35) * 0.5 + 0.5;
+        const polyWave = (wave1 * 0.6 + wave2 * 0.4);
+
+        // Band-specific rhythmic excitation
+        let bandBeat = 0;
+        if (i < 4) {
+          // Low Bass: driven dynamically by kick drum transients
+          bandBeat = masterKick * 0.85 + polyWave * 0.20;
+        } else if (i < 9) {
+          // Warm Low-Mids: groove energy
+          bandBeat = grooveEnergy * 0.65 + masterKick * 0.35 + polyWave * 0.25;
+        } else if (i < 15) {
+          // Bright Mids: snare & vocal energy
+          bandBeat = masterSnare * 0.70 + grooveEnergy * 0.40 + polyWave * 0.25;
+        } else {
+          // Highs / Air: shimmer and percussive ticks
+          bandBeat = grooveEnergy * 0.55 + wave1 * 0.45;
         }
 
-        // 1. Kick Drum Transient Follower (Delta above moving baseline)
-        const rawKick = ((data[1] || 0) + (data[2] || 0) + (data[3] || 0)) / 3;
-        kickBaselineRef.current = kickBaselineRef.current * 0.88 + rawKick * 0.12;
-        const kickDelta = Math.max(0, rawKick - kickBaselineRef.current);
-        const kickPulse = Math.min(1.0, kickDelta / 22); // 0.0 to 1.0 transient punch!
+        let finalNorm = bandBeat;
 
-        // 2. Snare / Mid-high transient snap (Bins 12 to 24)
-        const snapRaw = ((data[12] || 0) + (data[18] || 0) + (data[24] || 0)) / 3;
-        const snapNorm = Math.max(0, (snapRaw - 30) / (255 - 30));
-
-        // 3. OPTION 1: HORIZON MASTER LASER BEAM EXPLODES ON KICKS!
-        if (horizonCoreBeamRef.current) {
-          // Surges from 45% (resting) to 100% (screen-wide burst!)
-          const widthPct = Math.round(45 + kickPulse * 55);
-          horizonCoreBeamRef.current.style.width = `${widthPct}%`;
-          // Cyan drop shadow flares up to 45px!
-          const glowPx = Math.round(10 + kickPulse * 35);
-          const glowOp = (0.7 + kickPulse * 0.3).toFixed(2);
-          horizonCoreBeamRef.current.style.filter = `drop-shadow(0 0 ${glowPx}px rgba(0, 194, 212, ${glowOp})) drop-shadow(0 0 ${glowPx * 1.8}px rgba(0, 194, 212, 0.45))`;
-          horizonCoreBeamRef.current.style.opacity = (0.65 + kickPulse * 0.35).toFixed(2);
+        // If Web Audio FFT is live, blend real FFT spectrum
+        if (hasRealFft && data) {
+          const binIndex = Math.min(120, Math.floor(1 + Math.pow(i / 19, 1.4) * 55));
+          const rawVal = data[binIndex] || 0;
+          const dynamicTilt = 0.75 + (i / 19) * 0.75;
+          const fftNorm = Math.max(0, Math.min(1.0, (rawVal * dynamicTilt - 18) / 140));
+          finalNorm = Math.max(0, Math.min(1.0, fftNorm * 0.6 + bandBeat * 0.4));
         }
 
-        if (horizonDiamondStarRef.current) {
-          // Central diamond aperture star scales up dynamically!
-          const starScale = (1.0 + kickPulse * 0.75 + snapNorm * 0.45).toFixed(2);
-          horizonDiamondStarRef.current.style.transform = `scale(${starScale})`;
+        // Map norm (0..1) to height (4px..26px)
+        const h = Math.round(4 + Math.max(0, Math.min(1.0, finalNorm)) * 22);
+
+        if (stem) {
+          stem.style.height = `${h}px`;
         }
 
-        if (horizonHalationRef.current) {
-          const halationScale = (1.0 + kickPulse * 1.4).toFixed(2);
-          const halationOp = (0.3 + kickPulse * 0.65).toFixed(2);
-          horizonHalationRef.current.style.transform = `scale(${halationScale})`;
-          horizonHalationRef.current.style.opacity = halationOp;
+        // Floating peak caps with smooth gravity decay
+        if (h >= peaks[i]) {
+          peaks[i] = h;
+        } else {
+          peaks[i] = Math.max(4, peaks[i] - 0.75);
         }
 
-        if (horizonOuterStreakRef.current) {
-          horizonOuterStreakRef.current.style.opacity = (0.45 + kickPulse * 0.55).toFixed(2);
+        if (cap) {
+          cap.style.bottom = `${peaks[i]}px`;
+          cap.style.opacity = peaks[i] > 5 ? '1' : '0.3';
+        }
+      }
+
+      // 5. Update 5 Floating Mini Bars in bottom-right corner
+      const mBars = miniBarsRef.current;
+      const mCaps = miniPeakCapsRef.current;
+      const mPeaks = miniPeakHeightsRef.current;
+      const miniPulses = [
+        masterKick,
+        grooveEnergy * 0.75 + masterKick * 0.35,
+        masterSnare * 0.80 + grooveEnergy * 0.30,
+        grooveEnergy * 0.70 + Math.sin(curTime * 12) * 0.30,
+        grooveEnergy * 0.50 + Math.cos(curTime * 15) * 0.50
+      ];
+
+      for (let i = 0; i < 5; i++) {
+        const stem = mBars[i];
+        const cap = mCaps[i];
+        const norm = Math.max(0, Math.min(1.0, miniPulses[i]));
+        const h = Math.round(4 + norm * 14);
+
+        if (stem) {
+          stem.style.height = `${h}px`;
         }
 
-        if (horizonAmbientBloomRef.current) {
-          // Volumetric flare ribbon expands across hero
-          horizonAmbientBloomRef.current.style.opacity = (0.15 + kickPulse * 0.7).toFixed(2);
-          horizonAmbientBloomRef.current.style.transform = `scaleY(${(1.0 + kickPulse * 0.8).toFixed(2)})`;
+        if (h >= mPeaks[i]) {
+          mPeaks[i] = h;
+        } else {
+          mPeaks[i] = Math.max(4, mPeaks[i] - 0.65);
         }
 
-        // 4. Optical Bloom Halo Glow Pulse on Containers
-        if (headerContainerRef.current) {
-          if (kickPulse > 0.35) {
-            const glowPx = Math.round(12 + kickPulse * 22);
-            headerContainerRef.current.style.boxShadow = `0 0 ${glowPx}px rgba(0, 194, 212, 0.55), inset 0 0 6px rgba(0, 194, 212, 0.3)`;
-            headerContainerRef.current.style.borderColor = `rgba(0, 194, 212, 0.8)`;
-          } else {
-            headerContainerRef.current.style.boxShadow = '0 0 10px rgba(0, 194, 212, 0.15)';
-            headerContainerRef.current.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-          }
-        }
-
-        if (pillButtonRef.current) {
-          if (kickPulse > 0.35) {
-            const glowPx = Math.round(20 + kickPulse * 28);
-            pillButtonRef.current.style.boxShadow = `0 0 ${glowPx}px rgba(0, 194, 212, 0.7)`;
-          } else {
-            pillButtonRef.current.style.boxShadow = '0 0 22px rgba(0, 194, 212, 0.35)';
-          }
-        }
-
-        // 5. Update 20 Header Bars & Floating Peak Caps with Pink-Noise Tilt Compensation
-        for (let i = 0; i < 20; i++) {
-          const stem = hBars[i];
-          const cap = hCaps[i];
-
-          // Map logarithmic curve (Bins 1 to 58)
-          const bin = Math.min(120, Math.floor(1 + Math.pow(i / 19, 1.45) * 56));
-          const rawVal = data[bin] || 0;
-
-          // Pink-Noise Spectral Equalization:
-          // Low frequencies naturally have +20dB more energy than highs in mastered tracks.
-          // We apply a tilt curve: attenuate bass (0.48), boost highs (1.30) to create a balanced responsive meter!
-          const tilt = 0.48 + (i / 19) * 0.82;
-          const weightedVal = rawVal * tilt;
-
-          // Dynamic range mapping
-          const norm = Math.max(0, Math.min(1.0, (weightedVal - 22) / (185 - 22)));
-          const h = Math.max(4, Math.min(26, 4 + norm * 22));
-
-          if (stem) {
-            stem.style.height = `${h}px`;
-          }
-
-          // Peak Hold with snappy gravity decay
-          if (h >= peaks[i]) {
-            peaks[i] = h;
-          } else {
-            peaks[i] = Math.max(4, peaks[i] - 1.1); // Crisp decay
-          }
-
-          if (cap) {
-            cap.style.bottom = `${peaks[i]}px`;
-            cap.style.opacity = peaks[i] > 5 ? '1' : '0.3';
-          }
-        }
-
-        // 6. Update 5 Floating Mini Bars
-        const mBars = miniBarsRef.current;
-        const mCaps = miniPeakCapsRef.current;
-        const mPeaks = miniPeakHeightsRef.current;
-        const miniBins = [1, 3, 7, 15, 28];
-        const miniTilts = [0.5, 0.65, 0.85, 1.1, 1.35];
-
-        for (let i = 0; i < 5; i++) {
-          const stem = mBars[i];
-          const cap = mCaps[i];
-          const val = (data[miniBins[i]] || 0) * miniTilts[i];
-          const norm = Math.max(0, Math.min(1.0, (val - 22) / (180 - 22)));
-          const h = Math.max(4, Math.min(18, 4 + norm * 14));
-
-          if (stem) {
-            stem.style.height = `${h}px`;
-          }
-
-          if (h >= mPeaks[i]) {
-            mPeaks[i] = h;
-          } else {
-            mPeaks[i] = Math.max(4, mPeaks[i] - 0.9);
-          }
-
-          if (cap) {
-            cap.style.bottom = `${mPeaks[i]}px`;
-          }
+        if (cap) {
+          cap.style.bottom = `${mPeaks[i]}px`;
         }
       }
 
@@ -2337,55 +2450,7 @@ export function StudioClient() {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
-    // Cleanly reset header bars and peak caps to 4px resting state
-    headerBarsRef.current.forEach((el) => {
-      if (el) el.style.height = '4px';
-    });
-    headerPeakCapsRef.current.forEach((el) => {
-      if (el) {
-        el.style.bottom = '4px';
-        el.style.opacity = '0.3';
-      }
-    });
-    peakHeightsRef.current.fill(4);
-    miniPeakHeightsRef.current.fill(4);
-    kickBaselineRef.current = 140;
-
-    miniBarsRef.current.forEach((el) => {
-      if (el) el.style.height = '4px';
-    });
-    miniPeakCapsRef.current.forEach((el) => {
-      if (el) el.style.bottom = '4px';
-    });
-
-    // Reset Horizon elements to baseline resting flare
-    if (horizonCoreBeamRef.current) {
-      horizonCoreBeamRef.current.style.width = '45%';
-      horizonCoreBeamRef.current.style.filter = 'drop-shadow(0 0 10px rgba(0, 194, 212, 0.8)) drop-shadow(0 0 22px rgba(0, 194, 212, 0.5))';
-      horizonCoreBeamRef.current.style.opacity = '0.65';
-    }
-    if (horizonDiamondStarRef.current) {
-      horizonDiamondStarRef.current.style.transform = 'scale(1)';
-    }
-    if (horizonHalationRef.current) {
-      horizonHalationRef.current.style.transform = 'scale(1)';
-      horizonHalationRef.current.style.opacity = '0.3';
-    }
-    if (horizonOuterStreakRef.current) {
-      horizonOuterStreakRef.current.style.opacity = '0.45';
-    }
-    if (horizonAmbientBloomRef.current) {
-      horizonAmbientBloomRef.current.style.opacity = '0.15';
-      horizonAmbientBloomRef.current.style.transform = 'scaleY(1)';
-    }
-
-    if (headerContainerRef.current) {
-      headerContainerRef.current.style.boxShadow = '';
-      headerContainerRef.current.style.borderColor = '';
-    }
-    if (pillButtonRef.current) {
-      pillButtonRef.current.style.boxShadow = '';
-    }
+    resetAllVisualizersToZero();
   };
 
   // Toggle Background Audio & Real-time Beat Sync
@@ -2420,7 +2485,7 @@ export function StudioClient() {
   };
 
   const pauseForVideo = () => {
-    const audio = audioRef.current;
+    const audio = getAudio();
     if (audio && !audio.paused) {
       audio.pause();
       setIsPlaying(false);
@@ -2432,7 +2497,7 @@ export function StudioClient() {
   };
 
   const resumeAfterVideo = () => {
-    const audio = audioRef.current;
+    const audio = getAudio();
     if (wasPlayingBeforeVideoRef.current && audio && audio.paused) {
       if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
         audioCtxRef.current.resume().catch(() => {});
@@ -2448,7 +2513,6 @@ export function StudioClient() {
 
   // Global Concurrency Relay: YouTube Iframe click (window blur), message events, and native video events
   useEffect(() => {
-    // Eagerly pre-instantiate audio on client
     const audio = getAudio();
 
     // Listen for track ending to reset visualizer state cleanly
@@ -2460,8 +2524,18 @@ export function StudioClient() {
       stopVisualizerLoop();
     };
 
+    const handlePause = () => {
+      if (!wasPlayingBeforeVideoRef.current) {
+        setIsPlaying(false);
+        isPlayingRef.current = false;
+        stopVisualizerLoop();
+      }
+    };
+
     if (audio) {
+      audio.loop = false;
       audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('pause', handlePause);
     }
 
     const handleWindowBlur = () => {
@@ -2493,13 +2567,15 @@ export function StudioClient() {
     };
 
     const handleNativePlay = (e: Event) => {
-      if (audioRef.current && e.target !== audioRef.current) {
+      const currentAudio = audioRef.current;
+      if (currentAudio && e.target !== currentAudio) {
         pauseForVideo();
       }
     };
 
     const handleNativePause = (e: Event) => {
-      if (audioRef.current && e.target !== audioRef.current) {
+      const currentAudio = audioRef.current;
+      if (currentAudio && e.target !== currentAudio) {
         resumeAfterVideo();
       }
     };
@@ -2525,6 +2601,7 @@ export function StudioClient() {
       clearTimeout(timer);
       if (audio) {
         audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('pause', handlePause);
       }
       window.removeEventListener('blur', handleWindowBlur);
       window.removeEventListener('message', handleWindowMessage);
@@ -2638,7 +2715,7 @@ export function StudioClient() {
   return (
     <main className="min-h-screen bg-[#050505] text-white selection:bg-[#00C2D4] selection:text-black font-sans relative overflow-x-hidden">
       {/* Persistent Native Audio Element (Direct OS Hardware Output) */}
-      <audio ref={audioRef} src="/studio-audio.mp3" preload="auto" crossOrigin="anonymous" />
+      <audio id="studio-audio-player" ref={audioRef} src="/studio-audio.mp3" preload="auto" playsInline crossOrigin="anonymous" />
       
 
 
