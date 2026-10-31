@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akkari Tiling | Commercial Revenue Engine & Executive Strategic Proposal</title>
+  
+  <!-- Google Cairo & Inter Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#0B1120',
+              slate: '#0F172A',
+              card: '#1E293B',
+              border: '#334155',
+              blue: '#0284C7',
+              blueHover: '#0369A1',
+              emerald: '#10B981',
+              amber: '#D97706',
+              rose: '#E11D48',
+              gold: '#F59E0B'
+            }
+          },
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif'],
+            inter: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & Babel Standalone -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body {
+      background-color: #0B1120;
+      color: #F8FAFC;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    input[type=range] {
+      accent-color: #0284C7;
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(51, 65, 85, 0.65);
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+    }
+    .glow-blue {
+      box-shadow: 0 0 25px rgba(2, 132, 199, 0.25);
+    }
+    .glow-gold {
+      box-shadow: 0 0 30px rgba(217, 119, 6, 0.25);
+    }
+    .glow-emerald {
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.25);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-[#0B1120] text-slate-100 min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    // SVG Icons
+    const CheckCircle = () => (
+      <svg className="w-4 h-4 text-emerald-400 inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
+
+    const AlertTriangle = () => (
+      <svg className="w-4 h-4 text-rose-500 inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    );
+
+    const ShieldCheck = () => (
+      <svg className="w-4 h-4 text-sky-400 inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    );
+
+    const CalculatorIcon = () => (
+      <svg className="w-4 h-4 text-amber-400 inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      </svg>
+    );
+
+    const GlobeIcon = () => (
+      <svg className="w-4 h-4 text-slate-300 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+      </svg>
+    );
+
+    const WhatsAppIcon = () => (
+      <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+      </svg>
+    );
+
+    function App() {
+      // Language State: 'ar' (RTL) | 'en' (LTR)
+      const [lang, setLang] = useState('ar');
+      const isAr = lang === 'ar';
+
+      const [activeTab, setActiveTab] = useState('roi');
+      const [selectedFlaw, setSelectedFlaw] = useState(0);
+
+      // ROI Calculator States
+      const [area, setArea] = useState(2500); // sqm
+      const [projectType, setProjectType] = useState('hotel'); // hotel, commercial, residential
+      const [hasWaterproofing, setHasWaterproofing] = useState(true);
+      const [hasMechanicalCladding, setHasMechanicalCladding] = useState(false);
+      
+      // Default recommended package is 'pro' ($5,200 AUD / $3,500 USD)
+      const [selectedPackage, setSelectedPackage] = useState('pro'); // pro, enterprise
+
+      // Calculations
+      const calculation = useMemo(() => {
+        let baseRate = 145; // AUD per sqm
+        if (projectType === 'hotel') baseRate = 185;
+        if (projectType === 'commercial') baseRate = 160;
+        if (projectType === 'residential') baseRate = 130;
+
+        if (hasWaterproofing) baseRate += 28;
+        if (hasMechanicalCladding) baseRate += 45;
+
+        const totalContractValue = area * baseRate;
+        const avgGrossMargin = totalContractValue * 0.22;
+
+        const oldCapturedTenders = 1;
+        const newCapturedTenders = Math.max(2, Math.round(1 * 3.4));
+        const additionalRevenueCaptured = (newCapturedTenders - oldCapturedTenders) * totalContractValue;
+        const netProfitUplift = additionalRevenueCaptured * 0.22;
+
+        const packageCost = selectedPackage === 'enterprise' ? 8800 : 5200;
+        const roiMultiplier = Math.round(netProfitUplift / packageCost);
+
+        return {
+          baseRate,
+          totalContractValue,
+          avgGrossMargin,
+          additionalRevenueCaptured,
+          netProfitUplift,
+          roiMultiplier,
+          packageCost
+        };
+      }, [area, projectType, hasWaterproofing, hasMechanicalCladding, selectedPackage]);
+
+      // Australian WhatsApp Dispatcher
+      const AUSTRALIAN_PHONE = "61400764508"; // +61 400 764 508 (Melbourne, VIC)
+
+      const getWhatsAppUrl = (pkg = selectedPackage) => {
+        if (isAr) {
+          let pkgTitle = "";
+          let pkgPrice = "";
+          let pkgScope = "";
+          let timeline = "";
+
+          if (pkg === 'pro') {
+            pkgTitle = "Commercial Pro (الباقة الموصى بها للانطلاق)";
+            pkgPrice = "$5,200 AUD (~ 3,500 USD)";
+            pkgScope = "إعادة بناء معماري شامل بشفرة فائقة السرعة، معرض مشاريع تفاعلي، شريط اتصال لمديري مواقع البناء، واجهة الامتثال الفيكتورية (VBA وتأمين 20M$)، مع التأسيس المعماري القابل للترقية المباشرة لمستوى Enterprise عند التوسع لاحقاً.";
+            timeline = "٢ - ٣ أسابيع";
+          } else {
+            pkgTitle = "Enterprise Revenue Engine (محرك المناقصات الشامل)";
+            pkgPrice = "$8,800 AUD (~ 5,900 USD)";
+            pkgScope = "المحرك المتكامل: كل ما سبق + حاسبة المناقصات التفاعلية، بوابة رفع المخططات الهندسية PDF/AutoCAD، الإشعار المزدوج الفوري CRM و SMS، وتغطية السيو التجاري لملبورن.";
+            timeline = "٣ - ٤ أسابيع";
+          }
+
+          const msg = 
+            `مرحباً، أود اعتماد وتفعيل محرك الإيرادات التجاري لشركة Akkari Tiling:\n\n` +
+            `• الباقة المطلوبة: ${pkgTitle} (${pkgPrice})\n` +
+            `• نطاق العمل المعتمد: ${pkgScope}\n` +
+            `• المساحة المستهدفة: ${area.toLocaleString()} م²\n` +
+            `• تصنيف المشروع: ${projectType === 'hotel' ? 'فندق أو منتجع فاخر' : projectType === 'commercial' ? 'مول أو برج مكاتب' : 'مجمع سكني راقٍ'}\n` +
+            `• مدة التنفيذ والتسليم: ${timeline}\n` +
+            (pkg === 'enterprise' ? `• العائد المالي التقديري: x${calculation.roiMultiplier} أضعاف تكلفة الباقة.\n\n` : `\n`) +
+            `يرجى التنسيق لبدء جدول التنفيذ الفني في ملبورن.`;
+
+          return `https://wa.me/${AUSTRALIAN_PHONE}?text=${encodeURIComponent(msg)}`;
+        } else {
+          // English Dispatch
+          let pkgTitle = "";
+          let pkgPrice = "";
+          let pkgScope = "";
+          let timeline = "";
+
+          if (pkg === 'pro') {
+            pkgTitle = "Commercial Pro (Recommended Starting Foundation)";
+            pkgPrice = "$5,200 AUD (~ 3,500 USD)";
+            pkgScope = "Full architectural rebuild with sub-1-second clean code, interactive case studies, site manager emergency bar, Victorian Compliance Trust Hub (VBA & $20M Insurance), with modular foundation engineered for seamless future upgrade to Enterprise grade.";
+            timeline = "2 - 3 Weeks";
+          } else {
+            pkgTitle = "Enterprise Revenue Engine (Full Tender System)";
+            pkgPrice = "$8,800 AUD (~ 5,900 USD)";
+            pkgScope = "Full enterprise engine: Everything in Pro + Interactive Scope & Tender Calculator, AutoCAD/PDF Blueprint Upload Portal, Automated Dual SMS/CRM Dispatch, and Greater Melbourne Commercial SEO coverage.";
+            timeline = "3 - 4 Weeks";
+          }
+
+          const msg = 
+            `Hello, I would like to confirm and activate the Commercial Revenue Engine for Akkari Tiling:\n\n` +
+            `• Selected Package: ${pkgTitle} (${pkgPrice})\n` +
+            `• Approved Scope: ${pkgScope}\n` +
+            `• Target Project Area: ${area.toLocaleString()} sqm\n` +
+            `• Facility Type: ${projectType === 'hotel' ? 'Luxury Hotel / Resort' : projectType === 'commercial' ? 'Commercial Mall / Office Tower' : 'High-End Residential'}\n` +
+            `• Delivery Timeline: ${timeline}\n` +
+            (pkg === 'enterprise' ? `• Estimated Return Multiplier: x${calculation.roiMultiplier} return on package cost.\n\n` : `\n`) +
+            `Please coordinate to schedule the engineering kickoff in Melbourne.`;
+
+          return `https://wa.me/${AUSTRALIAN_PHONE}?text=${encodeURIComponent(msg)}`;
+        }
+      };
+
+      // Flaws Data
+      const flaws = isAr ? [
+        {
+          id: 0,
+          title: "تضخم الشفرة (348KB+ كود خام قبل أول صورة)",
+          impact: "كارثي على سرعة التصفح ودرجات Google Web Vitals",
+          tag: "هندسة معمارية",
+          metric: "4.8s تحميل",
+          details: "تحميل أكثر من 16 طبقة div متداخلة ناتجة عن مخلفات Elementor وقوالب ووردبريس الجاهزة، بالإضافة إلى ملفات CSS وJS لمتجر WooCommerce غير موجود أصلاً بالموقع. هذا البطء يضاعف تكلفة إعلانات Google بمقدار 2.4x بسبب انخفاض Quality Score."
+        },
+        {
+          id: 1,
+          title: "تسريب المناقصات بالنموذج العقيم",
+          impact: "خسارة مباشرة لمشاريع تزيد قيمتها عن 250,000$ AUD",
+          tag: "مسار التحويل",
+          metric: "0% رفع مخططات",
+          details: "مديرو المشاريع والمطورون العقاريون (Tier-1 Builders) لن يكتبوا طلباً تفصيلياً لمشروع مساحته 4,000 متر مربع في 4 خانات نصية قصيرة دون إمكانية إرفاق ملفات الـ AutoCAD والمخططات المعمارية PDF، مما يدفعهم لمغادرة الموقع فوراً."
+        },
+        {
+          id: 2,
+          title: "طمس شارات الامتثال الفيكتورية",
+          impact: "عجز عن اجتياز فحص الثقة لمسؤولي العقود",
+          tag: "المصداقية القانونية",
+          metric: "غياب أرقام التراخيص",
+          details: "الموقع لا يُبرز رقم تسجيل هيئة البناء في فيكتوريا (VBA)، ولا كود مطابقة العزل المائي الأسترالي AS 3740 وAS 3958، ولا وثيقة التأمين التجاري بقيمة 20,000,000$ AUD Public Liability. هذا الغياب يجعل لجان الشراء تصنف الشركة كورشة عادية."
+        },
+        {
+          id: 3,
+          title: "معارض صور صامتة وميتة",
+          impact: "انعدام الإثبات الفني للجودة الهندسية",
+          tag: "الأثر البصري",
+          metric: "صور ثابتة بدون مواصفات",
+          details: "معرض الصور يقتصر على صور جامدة دون مقارنة تفاعلية (قبل / بعد)، ودون تفصيل للمواصفات المعمارية: نوع ألواح البورسلان، المواد اللاصقة المعتمدة، فواصل التمدد الميكانيكية، أو تقنيات الصب المسبق (Screed)."
+        },
+        {
+          id: 4,
+          title: "انعدام بيئة العمل عبر الموبايل",
+          impact: "تجاهل 68% من سلوك مديري المواقع",
+          tag: "تجربة الجوال",
+          metric: "غياب شريط الطوارئ",
+          details: "أكثر من 68% من قرارات التعاقد والاتصال تتم أثناء تواجد المقاول في موقع البناء (Construction Site). الموقع الحالي يفتقر لشريط الاتصال السريع الثابت (Sticky Job-Site Bar) الذي يمنح زر اتصال فوري واستدعاء مهندس التقديرات."
+        },
+        {
+          id: 5,
+          title: "عجز السيو المحلي التجاري (Melbourne B2B)",
+          impact: "اختفاء عن المناقصات الكبرى في ضواحي فيكتوريا",
+          tag: "الظهور الرقمي",
+          metric: "صفر Schema Markup",
+          details: "غياب كامل لبيانات السيو المنظمة (LocalBusiness Schema) المخصصة للمناطق التجارية الحيوية مثل Melbourne CBD، Docklands، Chadstone، وSouthbank، مما يحرم الشركة من تصدر نتائج البحث عند بحث كبار مديري المشتريات."
+        }
+      ] : [
+        {
+          id: 0,
+          title: "Severe DOM Bloat (348KB+ Raw Code Pre-Image)",
+          impact: "Devastating for Mobile Speeds & Google Web Vitals",
+          tag: "Architecture",
+          metric: "4.8s Load Time",
+          details: "Loads over 16 nested div layers from Elementor and generic Astra starter templates, plus residual CSS/JS from inactive WooCommerce stores. This friction doubles Google Ads CPC by depressing Core Web Vitals Quality Scores."
+        },
+        {
+          id: 1,
+          title: "Tender Leakage via Sterile Contact Forms",
+          impact: "Direct loss of $250,000+ AUD commercial contracts",
+          tag: "Conversion Funnel",
+          metric: "0% CAD/PDF Upload",
+          details: "Tier-1 builders and commercial project managers will not describe a 4,000 sqm development in a 4-line contact box without attaching AutoCAD drawings and architectural PDF tender packages, abandoning the page immediately."
+        },
+        {
+          id: 2,
+          title: "Obscured Victorian Compliance Credentials",
+          impact: "Fails procurement institutional trust audits",
+          tag: "Legal Compliance",
+          metric: "Missing VBA Licenses",
+          details: "The website fails to feature the Victorian Building Authority (VBA) registration, AS 3740 / AS 3958 waterproofing standards compliance, or $20,000,000 AUD Public Liability insurance certificates, reducing perceived scale."
+        },
+        {
+          id: 3,
+          title: "Static, Lifeless Project Galleries",
+          impact: "Lack of engineering proof & execution authority",
+          tag: "Visual Proof",
+          metric: "Zero Spec Data",
+          details: "Project presentations are limited to static photos without interactive before/after sliders or technical specifications (large-format porcelain specs, mechanical expansion joints, or engineered screed bed systems)."
+        },
+        {
+          id: 4,
+          title: "Unforgiving Job-Site Mobile Experience",
+          impact: "Ignores 68% of commercial builder behavioral triggers",
+          tag: "Mobile UX",
+          metric: "Missing Emergency Bar",
+          details: "Over 68% of initial contracting and subcontractor dispatch calls happen directly from active construction sites. The current site lacks a persistent, one-tap Job-Site Sticky Bar for estimators and site managers."
+        },
+        {
+          id: 5,
+          title: "Absent Commercial Local SEO (Melbourne B2B)",
+          impact: "Invisible for high-value tenders in key Melbourne hubs",
+          tag: "Search Discovery",
+          metric: "Zero Schema Markup",
+          details: "Completely lacks LocalBusiness Schema structured data for prime Melbourne commercial corridors like Docklands, Chadstone, and Southbank, leaving high-intent builder searches to competing contractors."
+        }
+      ];
+
+      return (
+        <div dir={isAr ? "rtl" : "ltr"} className={`min-h-screen flex flex-col pb-24 ${isAr ? 'font-cairo' : 'font-inter'}`}>
+          
+          {/* Top Executive Header */}
+          <header className="border-b border-brand-border bg-brand-slate/95 sticky top-0 z-50 backdrop-blur-md">
+            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-blue to-cyan-400 flex items-center justify-center font-black text-xl text-white shadow-lg">
+                  A
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-lg font-black tracking-wide text-white">AKKARI TILING</h1>
+                    <span className="text-[10px] bg-brand-blue/20 text-brand-blue border border-brand-blue/30 px-2 py-0.5 rounded font-bold">
+                      MELBOURNE // VIC
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    {isAr ? 'محرك الإيرادات التجاري المتطور والتقييم الاستراتيجي 2026' : 'Commercial Revenue Engine & Strategic Proposal 2026'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Verified Trust Badges */}
+              <div className="hidden lg:flex items-center gap-3 text-xs font-semibold text-slate-300">
+                <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                  <ShieldCheck />
+                  <span>{isAr ? 'مشاريع موثقة: Marriott • Seafarers • Gucci' : 'Verified: Marriott • Seafarers • Gucci'}</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 text-emerald-400">
+                  <CheckCircle />
+                  <span>{isAr ? 'تأمين فيكتوريا $20M Public Liability' : 'Victorian $20M Public Liability'}</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 text-sky-400 font-mono">
+                  <span>🇦🇺 +61 400 764 508</span>
+                </div>
+              </div>
+
+              {/* Controls: Language Toggle & Direct WhatsApp */}
+              <div className="flex items-center gap-3">
+                
+                {/* Language Switcher */}
+                <div className="flex items-center bg-slate-900 border border-slate-700 rounded-lg p-0.5 text-xs font-bold">
+                  <button
+                    onClick={() => setLang('ar')}
+                    className={`px-2.5 py-1 rounded-md transition-all ${isAr ? 'bg-brand-blue text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    العربية
+                  </button>
+                  <button
+                    onClick={() => setLang('en')}
+                    className={`px-2.5 py-1 rounded-md transition-all ${!isAr ? 'bg-brand-blue text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    English
+                  </button>
+                </div>
+
+                <a
+                  href={getWhatsAppUrl(selectedPackage)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-brand-emerald hover:bg-emerald-600 text-slate-950 font-black px-4 py-2 rounded-lg text-xs md:text-sm transition-all shadow-md flex items-center gap-1.5"
+                >
+                  <span>{isAr ? 'اعتماد المحرك التجاري' : 'Confirm Revenue Engine'}</span>
+                  <WhatsAppIcon />
+                </a>
+              </div>
+            </div>
+          </header>
+
+          {/* Hero Section with Generous Line-Height & No Overlap */}
+          <section className="relative py-14 px-4 border-b border-brand-border overflow-hidden bg-gradient-to-b from-brand-blue/10 via-transparent to-transparent">
+            <div className="max-w-5xl mx-auto text-center relative z-10">
+              <span className="inline-block bg-brand-amber/15 border border-brand-amber/40 text-brand-amber px-4 py-1 rounded-full text-xs font-bold mb-5">
+                {isAr ? '★ التقرير الاستشاري التنفيذي لإغلاق المناقصات الكبرى' : '★ Executive Architectural Audit for High-Value Commercial Tenders'}
+              </span>
+
+              {/* FIXED HERO TITLE: Generous spacing between lines to prevent overlapping */}
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-relaxed md:leading-[1.35] mb-6">
+                <span className="block mb-2.5 md:mb-4">
+                  {isAr ? (
+                    <>التحول من <span className="text-rose-400 line-through decoration-rose-500">موقع ووردبريس بطيء</span> إلى</>
+                  ) : (
+                    <>Transforming from a <span className="text-rose-400 line-through decoration-rose-500">Slow WordPress Brochure</span> to an</>
+                  )}
+                </span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-emerald-400 pb-1">
+                  {isAr ? 'محرك إيرادات تجاري فائق السرعة' : 'Ultra-Fast Commercial Revenue Engine'}
+                </span>
+              </h2>
+
+              <p className="text-slate-300 text-sm md:text-base max-w-3xl mx-auto leading-relaxed mb-8">
+                {isAr 
+                  ? 'دراسة ميدانية وتشريح برمجي لمنصة akkaritiling.com.au تكشف كيف تتسرب مناقصات التبليط التجاري المليونية في ملبورن، مع المعمارية الرقمية المقترحة لحصد عقود كبار المطورين العقاريين برفع معدل التحويل بأكثر من +240%.'
+                  : 'Forensic architectural audit of akkaritiling.com.au exposing how tier-1 commercial tiling tenders are lost to competing firms, and the modern engineering foundation to elevate conversion rates by over +240%.'}
+              </p>
+              
+              {/* Quick Metrics Ribbon */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto text-start">
+                <div className="glass-card p-3.5 rounded-xl border-s-4 border-s-rose-500">
+                  <div className="text-xs text-slate-400">{isAr ? 'زمن التحميل الحالي' : 'Current Load Time'}</div>
+                  <div className="text-xl font-black text-rose-400">4.8s {isAr ? '(بطيء)' : '(Slow)'}</div>
+                  <div className="text-[10px] text-slate-400">{isAr ? '16 طبقة Elementor' : '16 DOM Bloat Layers'}</div>
+                </div>
+                <div className="glass-card p-3.5 rounded-xl border-s-4 border-s-emerald-500">
+                  <div className="text-xs text-slate-400">{isAr ? 'المستهدف بالمحرك الجديد' : 'Target Load Time'}</div>
+                  <div className="text-xl font-black text-emerald-400">0.7s {isAr ? '(فوري)' : '(Instant)'}</div>
+                  <div className="text-[10px] text-emerald-400">{isAr ? 'شفرة نقية 98+ Score' : 'Clean Code 98+ Score'}</div>
+                </div>
+                <div className="glass-card p-3.5 rounded-xl border-s-4 border-s-sky-500">
+                  <div className="text-xs text-slate-400">{isAr ? 'معدل تحويل التندرات' : 'Tender Conversion'}</div>
+                  <div className="text-xl font-black text-sky-400">+240%</div>
+                  <div className="text-[10px] text-slate-400">{isAr ? 'بوابة رفع مخططات هندسية' : 'Interactive CAD/PDF Portal'}</div>
+                </div>
+                <div className="glass-card p-3.5 rounded-xl border-s-4 border-s-emerald-400">
+                  <div className="text-xs text-slate-400">{isAr ? 'باقة الانطلاق الموصى بها' : 'Recommended Starting Tier'}</div>
+                  <div className="text-xl font-black text-emerald-400">$5,200 AUD</div>
+                  <div className="text-[10px] text-slate-300">{isAr ? '(~3,500 USD) قابلة للتوسع' : '(~3,500 USD) Scale-Up Ready'}</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Navigation Tabs */}
+          <div className="sticky top-[61px] z-40 bg-brand-slate border-b border-brand-border">
+            <div className="max-w-7xl mx-auto px-4 flex overflow-x-auto no-scrollbar gap-2 py-2.5">
+              <button
+                onClick={() => setActiveTab('roi')}
+                className={`px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  activeTab === 'roi'
+                    ? 'bg-brand-blue text-white shadow-lg glow-blue'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <CalculatorIcon />
+                <span>{isAr ? 'حاسبة العائد الاستثماري (ROI Simulator)' : 'Tender ROI Simulator'}</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('flaws')}
+                className={`px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  activeTab === 'flaws'
+                    ? 'bg-brand-blue text-white shadow-lg glow-blue'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <AlertTriangle />
+                <span>{isAr ? 'تشريح الثغرات الست الحالية' : 'The 6 Pipeline Flaws'}</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('pillars')}
+                className={`px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  activeTab === 'pillars'
+                    ? 'bg-brand-blue text-white shadow-lg glow-blue'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <CheckCircle />
+                <span>{isAr ? 'الركائز الهندسية الخمس للمحرك' : '5 Architecture Pillars'}</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('comparison')}
+                className={`px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  activeTab === 'comparison'
+                    ? 'bg-brand-blue text-white shadow-lg glow-blue'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <ShieldCheck />
+                <span>{isAr ? 'مقارنة الأداء التقني المباشر' : 'Head-to-Head Comparison'}</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('packages')}
+                className={`px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  activeTab === 'packages'
+                    ? 'bg-emerald-500 text-slate-950 font-black shadow-lg glow-emerald'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <span>{isAr ? '★ باقات الاستثمار والترسية' : '★ Investment Packages'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Main Body Content by Tab */}
+          <main className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
+
+            {/* TAB 1: ROI CALCULATOR */}
+            {activeTab === 'roi' && (
+              <div className="space-y-8">
+                <div className="glass-panel p-6 md:p-8 rounded-2xl border border-brand-border">
+                  <div className="max-w-3xl mb-6">
+                    <span className="text-brand-blue font-bold text-xs uppercase tracking-wider">
+                      {isAr ? 'المحاكاة المالية التفاعلية للمناقصات' : 'Interactive Commercial Tender Simulation'}
+                    </span>
+                    <h3 className="text-2xl md:text-3xl font-black text-white mt-1">
+                      {isAr ? 'حاسبة العائد المالي لاسترداد المناقصات المفقودة' : 'Recovered Tender Revenue Calculator'}
+                    </h3>
+                    <p className="text-slate-400 text-sm mt-2">
+                      {isAr 
+                        ? 'اضبط معايير المشروع لاكتشاف القيمة المالية المباشرة التي تُهدر حالياً بسبب نموذج الاتصال البدائي، ومقدار الأرباح الإضافية التي يحصدها محرك المناقصات الجديد.'
+                        : 'Calibrate project parameters to discover the commercial contract revenue lost to sterile contact forms, and the profit uplift generated by our tender engine.'}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    
+                    {/* Controls Column */}
+                    <div className="lg:col-span-7 space-y-6">
+                      
+                      {/* Area Slider */}
+                      <div className="bg-slate-900/90 p-5 rounded-xl border border-slate-800">
+                        <div className="flex justify-between items-center mb-3">
+                          <label className="text-sm font-bold text-slate-200">
+                            {isAr ? 'مساحة المشروع المستهدفة بالمتر المربع (Tiling Area):' : 'Target Project Area (sqm):'}
+                          </label>
+                          <span className="text-lg font-black text-brand-blue bg-brand-blue/10 border border-brand-blue/30 px-3 py-0.5 rounded-lg">
+                            {area.toLocaleString()} {isAr ? 'م²' : 'sqm'}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="500"
+                          max="15000"
+                          step="250"
+                          value={area}
+                          onChange={(e) => setArea(Number(e.target.value))}
+                          className="w-full h-2.5 bg-slate-700 rounded-lg cursor-pointer"
+                        />
+                        <div className="flex justify-between text-[11px] text-slate-400 mt-2">
+                          <span>500 {isAr ? 'م² (متجر تجاري / فيلا فاخرة)' : 'sqm (Boutique / Villa)'}</span>
+                          <span>5,000 {isAr ? 'م² (برج سكني)' : 'sqm (High-Rise)'}</span>
+                          <span>15,000 {isAr ? 'م² (فندق / مول ضخم)' : 'sqm (Major Hotel / Mall)'}</span>
+                        </div>
+                      </div>
+
+                      {/* Project Type */}
+                      <div className="bg-slate-900/90 p-5 rounded-xl border border-slate-800">
+                        <label className="text-sm font-bold text-slate-200 block mb-3">
+                          {isAr ? 'تصنيف المنشأة ومستوى الفخامة:' : 'Facility Tier & Commercial Grade:'}
+                        </label>
+                        <div className="grid grid-cols-3 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setProjectType('hotel')}
+                            className={`p-3 rounded-xl text-center border transition-all ${
+                              projectType === 'hotel'
+                                ? 'bg-brand-blue/20 border-brand-blue text-white shadow-md'
+                                : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <div className="text-xs font-bold">{isAr ? 'فندق أو منتجع فاخر' : 'Luxury Hotel / Resort'}</div>
+                            <div className="text-[10px] text-slate-400 mt-1">$185 AUD / {isAr ? 'م²' : 'sqm'}</div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setProjectType('commercial')}
+                            className={`p-3 rounded-xl text-center border transition-all ${
+                              projectType === 'commercial'
+                                ? 'bg-brand-blue/20 border-brand-blue text-white shadow-md'
+                                : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <div className="text-xs font-bold">{isAr ? 'مول أو برج مكاتب' : 'Mall / Commercial Tower'}</div>
+                            <div className="text-[10px] text-slate-400 mt-1">$160 AUD / {isAr ? 'م²' : 'sqm'}</div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setProjectType('residential')}
+                            className={`p-3 rounded-xl text-center border transition-all ${
+                              projectType === 'residential'
+                                ? 'bg-brand-blue/20 border-brand-blue text-white shadow-md'
+                                : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <div className="text-xs font-bold">{isAr ? 'مجمع سكني راقٍ' : 'Residential Complex'}</div>
+                            <div className="text-[10px] text-slate-400 mt-1">$130 AUD / {isAr ? 'م²' : 'sqm'}</div>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Addon Specifications */}
+                      <div className="bg-slate-900/90 p-5 rounded-xl border border-slate-800 space-y-3">
+                        <label className="text-sm font-bold text-slate-200 block mb-1">
+                          {isAr ? 'المواصفات الفنية المعتمدة للمناقصة:' : 'Approved Architectural Addons:'}
+                        </label>
+                        
+                        <label className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 border border-slate-700/70 cursor-pointer">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={hasWaterproofing}
+                              onChange={(e) => setHasWaterproofing(e.target.checked)}
+                              className="w-4 h-4 text-brand-blue rounded bg-slate-700 border-slate-600"
+                            />
+                            <div>
+                              <div className="text-xs font-bold text-white">
+                                {isAr ? 'نظام عزل مائي متكامل مطابق لكود AS 3740' : 'AS 3740 Certified Waterproofing Membrane'}
+                              </div>
+                              <div className="text-[10px] text-slate-400">
+                                {isAr ? 'يشمل شهادات الضمان المعتمدة في فيكتوريا' : 'Includes Victorian warranty compliance certificates'}
+                              </div>
+                            </div>
+                          </div>
+                          <span className="text-xs font-bold text-brand-blue">+$28 / {isAr ? 'م²' : 'sqm'}</span>
+                        </label>
+
+                        <label className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 border border-slate-700/70 cursor-pointer">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={hasMechanicalCladding}
+                              onChange={(e) => setHasMechanicalCladding(e.target.checked)}
+                              className="w-4 h-4 text-brand-blue rounded bg-slate-700 border-slate-600"
+                            />
+                            <div>
+                              <div className="text-xs font-bold text-white">
+                                {isAr ? 'تكسية جدارية ميكانيكية وألواح بورسلان ضخمة' : 'Large-Format Porcelain & Mechanical Cladding'}
+                              </div>
+                              <div className="text-[10px] text-slate-400">
+                                {isAr ? 'تقنيات تثبيت متطورة للواجهات المرتفعة' : 'Engineered fixing systems for high-elevation walls'}
+                              </div>
+                            </div>
+                          </div>
+                          <span className="text-xs font-bold text-brand-blue">+$45 / {isAr ? 'م²' : 'sqm'}</span>
+                        </label>
+                      </div>
+
+                      {/* Package Selector */}
+                      <div className="bg-slate-900/90 p-5 rounded-xl border border-slate-800">
+                        <label className="text-sm font-bold text-slate-200 block mb-3">
+                          {isAr ? 'اختر باقة التطوير لحساب مضاعف العائد (ROI):' : 'Select Package Tier to Calculate ROI Multiplier:'}
+                        </label>
+                        <div className="grid grid-cols-2 gap-4">
+                          
+                          {/* Commercial Pro (RECOMMENDED) */}
+                          <div
+                            onClick={() => setSelectedPackage('pro')}
+                            className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                              selectedPackage === 'pro'
+                                ? 'bg-gradient-to-br from-emerald-950/40 to-slate-900 border-emerald-500 shadow-lg glow-emerald'
+                                : 'bg-slate-800/40 border-slate-700 text-slate-400'
+                            }`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs font-black text-emerald-400">
+                                {isAr ? '★ الباقة الموصى بها للانطلاق' : '★ RECOMMENDED TIER'}
+                              </span>
+                              <span className="text-sm font-black text-white">$5,200 AUD</span>
+                            </div>
+                            <div className="text-sm font-bold text-white mt-1">Commercial Pro (~ 3,500 USD)</div>
+                            <div className="text-[11px] text-slate-300 mt-1">
+                              {isAr ? 'معمارية معيارية قابلة للترقية المباشرة لـ Enterprise' : 'Modular stack: fully expandable to Enterprise grade'}
+                            </div>
+                          </div>
+
+                          {/* Enterprise Tier */}
+                          <div
+                            onClick={() => setSelectedPackage('enterprise')}
+                            className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                              selectedPackage === 'enterprise'
+                                ? 'bg-gradient-to-br from-brand-blue/30 to-brand-slate border-brand-blue glow-blue'
+                                : 'bg-slate-800/40 border-slate-700 text-slate-400'
+                            }`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs font-bold text-slate-400">
+                                {isAr ? 'ترقية لاحقة (Scale-Up)' : 'Future Scale-Up'}
+                              </span>
+                              <span className="text-sm font-black text-white">$8,800 AUD</span>
+                            </div>
+                            <div className="text-sm font-bold text-white mt-1">Enterprise Engine (~ 5,900 USD)</div>
+                            <div className="text-[11px] text-slate-400 mt-1">
+                              {isAr ? 'حاسبة تندر + رفع أوتوكاد + ربط CRM' : 'Includes tender calculator & CAD portal'}
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Results Display Column */}
+                    <div className="lg:col-span-5 space-y-5">
+                      <div className="bg-gradient-to-b from-slate-900 via-brand-card to-slate-900 p-6 rounded-2xl border-2 border-brand-blue shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-cyan-400 via-brand-blue to-emerald-400"></div>
+                        
+                        <div className="text-xs font-black tracking-wider text-brand-blue mb-1">
+                          {isAr ? 'الأثر المالي المباشر للمشروع التقديري' : 'PROJECTED CONTRACT FINANCIAL IMPACT'}
+                        </div>
+                        <h4 className="text-xl font-black text-white mb-4">
+                          {isAr ? 'نتائج المحاكاة المالية لعقد المناقصة' : 'Simulation Financial Outputs'}
+                        </h4>
+
+                        <div className="space-y-4 text-start">
+                          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                            <div className="text-xs text-slate-400">
+                              {isAr ? 'القيمة الإجمالية التقديرية للمناقصة (Contract Value):' : 'Estimated Total Contract Value:'}
+                            </div>
+                            <div className="text-2xl font-black text-white mt-0.5">
+                              ${calculation.totalContractValue.toLocaleString()} <span className="text-sm font-normal text-slate-400">AUD</span>
+                            </div>
+                            <div className="text-[11px] text-slate-400 mt-1">
+                              {isAr ? `معدل المتر المربع التراكمي: $${calculation.baseRate} AUD / م²` : `Cumulative rate: $${calculation.baseRate} AUD / sqm`}
+                            </div>
+                          </div>
+
+                          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                            <div className="text-xs text-slate-400">
+                              {isAr ? 'هامش الربح الإجمالي المتوقع للشركة (~22%):' : 'Estimated Gross Profit Margin (~22%):'}
+                            </div>
+                            <div className="text-xl font-black text-emerald-400 mt-0.5">
+                              +${Math.round(calculation.avgGrossMargin).toLocaleString()} <span className="text-xs text-slate-400">AUD</span>
+                            </div>
+                          </div>
+
+                          <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/50">
+                            <div className="text-xs font-bold text-emerald-400">
+                              {isAr ? 'صافي الأرباح الإضافية المتوقعة من رفع التحويل (+240%):' : 'Projected Net Profit from +240% Conversion Uplift:'}
+                            </div>
+                            <div className="text-3xl font-black text-emerald-300 mt-1">
+                              +${Math.round(calculation.netProfitUplift).toLocaleString()} <span className="text-sm font-normal text-slate-300">AUD</span>
+                            </div>
+                            <p className="text-[11px] text-emerald-200/80 mt-2 leading-relaxed">
+                              {isAr 
+                                ? 'بناءً على التقاط مناقصتين إضافيتين ربع سنوياً كانتا لتضيعا بسبب نموذج الاتصال العقيم وبطء التحميل.'
+                                : 'Based on capturing 2 additional commercial tenders per quarter previously lost to sterile contact forms.'}
+                            </p>
+                          </div>
+
+                          {/* Multiplier Badge */}
+                          <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/40 flex items-center justify-between">
+                            <div>
+                              <div className="text-xs font-bold text-amber-300">
+                                {isAr ? 'مضاعف استرداد الاستثمار (ROI):' : 'Return on Investment (ROI):'}
+                              </div>
+                              <div className="text-[10px] text-amber-200/70">
+                                {isAr ? `مقارنة بتكلفة الباقة ($${calculation.packageCost.toLocaleString()} AUD)` : `Against selected package ($${calculation.packageCost.toLocaleString()} AUD)`}
+                              </div>
+                            </div>
+                            <div className="text-3xl font-black text-amber-400">
+                              x{calculation.roiMultiplier}
+                            </div>
+                          </div>
+
+                          <a
+                            href={getWhatsAppUrl(selectedPackage)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block w-full text-center bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black py-3.5 px-6 rounded-xl text-sm transition-all shadow-xl"
+                          >
+                            {isAr 
+                              ? `تثبيت مواصفات ${selectedPackage === 'pro' ? 'Commercial Pro ($5,200 AUD)' : 'Enterprise ($8,800 AUD)'} والتنفيذ` 
+                              : `Confirm ${selectedPackage === 'pro' ? 'Commercial Pro ($5,200 AUD)' : 'Enterprise ($8,800 AUD)'} & Kickoff`}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: FLAWS AUDIT */}
+            {activeTab === 'flaws' && (
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-2">
+                  <div>
+                    <span className="text-rose-400 font-bold text-xs uppercase tracking-wider">
+                      {isAr ? 'التشريح الفني المعماري' : 'Forensic Architecture Audit'}
+                    </span>
+                    <h3 className="text-2xl md:text-3xl font-black text-white mt-1">
+                      {isAr ? 'التشريح الفني للثغرات الست الجوهرية' : 'The 6 Critical Tender Pipeline Flaws'}
+                    </h3>
+                    <p className="text-slate-400 text-sm mt-1">
+                      {isAr 
+                        ? 'تحليل هندسي مباشر يوضح أسباب تسرب المناقصات الكبرى من موقع Akkari Tiling الحالي.'
+                        : 'Technical breakdown exposing why commercial tiling tenders leak from Akkari Tiling's existing website.'}
+                    </p>
+                  </div>
+                  <div className="text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+                    {isAr ? 'النطاق المفحوص:' : 'Audited Domain:'} <code className="text-brand-blue font-bold">akkaritiling.com.au</code>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                  {/* Flaw Selector Cards */}
+                  <div className="md:col-span-5 space-y-3">
+                    {flaws.map((flaw) => (
+                      <div
+                        key={flaw.id}
+                        onClick={() => setSelectedFlaw(flaw.id)}
+                        className={`p-4 rounded-xl border cursor-pointer transition-all text-start ${
+                          selectedFlaw === flaw.id
+                            ? 'bg-rose-950/40 border-rose-500 shadow-md'
+                            : 'bg-brand-card/60 border-brand-border hover:bg-slate-800'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs font-bold text-slate-400">{flaw.tag}</span>
+                          <span className="text-xs font-black text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded">
+                            {flaw.metric}
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-black text-white">{flaw.title}</h4>
+                        <p className="text-xs text-slate-400 mt-1">{flaw.impact}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Detailed Flaw Breakdown */}
+                  <div className="md:col-span-7">
+                    <div className="glass-panel p-6 md:p-8 rounded-2xl border border-rose-500/40 h-full flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+                          <span className="text-xs font-bold text-rose-400 uppercase tracking-wider">
+                            {isAr ? `تفصيل الثغرة الفنية #${selectedFlaw + 1}` : `Flaw Diagnostic #${selectedFlaw + 1}`}
+                          </span>
+                        </div>
+                        <h3 className="text-2xl font-black text-white mb-2">{flaws[selectedFlaw].title}</h3>
+                        <div className="inline-block bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs px-3 py-1 rounded-md font-bold mb-4">
+                          {isAr ? 'الأثر التجاري:' : 'Commercial Impact:'} {flaws[selectedFlaw].impact}
+                        </div>
+                        <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
+                          {flaws[selectedFlaw].details}
+                        </p>
+
+                        {/* Architectural Solution */}
+                        <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+                          <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 mb-1">
+                            <CheckCircle />
+                            <span>{isAr ? 'الحل الهندسي المطبق في محرك الإيرادات المتطور:' : 'Engineering Solution Implemented:'}</span>
+                          </div>
+                          <p className="text-xs text-slate-300 leading-relaxed">
+                            {isAr 
+                              ? 'استبدال كامل منظومة القوالب بكود Next-Gen فائق السرعة، مع تضمين بوابات الرفع التفاعلية والمطابقة التامة لشروط لجان التدقيق الفيكتورية.'
+                              : 'Rebuilding from scratch with a sub-1-second clean code stack, compliant with Victorian VBA licensing, AS 3740 standards, and interactive tender document dispatch.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="pt-6 border-t border-slate-800 mt-6 flex justify-between items-center text-xs text-slate-400">
+                        <span>{isAr ? 'التقييم:' : 'Severity:'} <b className="text-rose-400">{isAr ? 'حرج جداً لمناقصات 2026' : 'Critical for 2026 Tenders'}</b></span>
+                        <button
+                          onClick={() => setActiveTab('pillars')}
+                          className="text-brand-blue hover:underline font-bold"
+                        >
+                          {isAr ? 'انتقل إلى الركائز الهندسية البديلة ←' : 'View Proposed Engineering Pillars →'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: THE 5 PILLARS */}
+            {activeTab === 'pillars' && (
+              <div className="space-y-6">
+                <div className="max-w-3xl mb-6">
+                  <span className="text-brand-blue font-bold text-xs uppercase tracking-wider">
+                    {isAr ? 'معايير البنية المؤسسية' : 'Enterprise Architecture Pillars'}
+                  </span>
+                  <h3 className="text-2xl md:text-3xl font-black text-white mt-1">
+                    {isAr ? 'الركائز الهندسية الخمس للبناء الجديد' : 'The 5 Core Engineering Pillars'}
+                  </h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    {isAr 
+                      ? 'المعايير الرقمية الصارمة التي تحول المنصة إلى محرك استحواذ يستقطب كبار المطورين العقاريين في ملبورن.'
+                      : 'Digital specifications designed to convert tier-1 builders, architects, and quantity surveyors in Victoria.'}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  
+                  {/* Pillar 1 */}
+                  <div className="glass-card p-6 rounded-2xl border-t-4 border-t-brand-blue flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-black text-brand-blue">{isAr ? 'الركيزة ٠١' : 'PILLAR 01'}</span>
+                        <span className="text-[10px] bg-brand-blue/20 text-brand-blue px-2 py-0.5 rounded font-bold">
+                          {isAr ? 'حاسم للمناقصات' : 'Tender Critical'}
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-black text-white mb-2">
+                        {isAr ? 'بوابة التندرات والمخططات (Tender Portal)' : 'Commercial Tender & Blueprint Portal'}
+                      </h4>
+                      <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                        {isAr 
+                          ? 'معالج تسعير رقمي ذكي يتيح لمدير المشروع اختيار تصنيف المنشأة والمساحة، مع نافذة لسحب وإفلات ملفات الـ AutoCAD والمخططات المعمارية PDF، مع إشعار فوري لمدير التقديرات.'
+                          : 'Interactive scope wizard allowing estimators and builders to drag & drop AutoCAD drawings, finishes schedules, and PDF tender packages directly to the estimating desk.'}
+                      </p>
+                    </div>
+                    <div className="text-[11px] font-bold text-emerald-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                      {isAr ? 'الأثر: رفع استجابة كبار المطورين بنسبة +320%' : 'Impact: +320% Qualified Builder Enquiries'}
+                    </div>
+                  </div>
+
+                  {/* Pillar 2 */}
+                  <div className="glass-card p-6 rounded-2xl border-t-4 border-t-emerald-500 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-black text-emerald-400">{isAr ? 'الركيزة ٠٢' : 'PILLAR 02'}</span>
+                        <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold">
+                          Sub-1-Second Stack
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-black text-white mb-2">
+                        {isAr ? 'بنية شفرة فائقة السرعة خالية من الحشو' : 'Zero-Bloat Sub-1-Second Stack'}
+                      </h4>
+                      <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                        {isAr 
+                          ? 'الاستغناء التام عن Elementor وقوالب ووردبريس. تشييد كود نقي يعتمد معايير الأداء الحديثة ويحقق 98+ في مؤشرات أداء Google Web Vitals مع تحميل فوري حتى في شبكات المواقع الضعيفة.'
+                          : 'Eliminating bloated WordPress plugins. Rebuilding with clean, modern code achieving 98+ Google Core Web Vitals with instantaneous loads even on spotty job-site cellular connections.'}
+                      </p>
+                    </div>
+                    <div className="text-[11px] font-bold text-emerald-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                      {isAr ? 'الأثر: خفض تكلفة النقرة الإعلانية بمقدار النصف' : 'Impact: 50% Reduction in Search Ad CPC'}
+                    </div>
+                  </div>
+
+                  {/* Pillar 3 */}
+                  <div className="glass-card p-6 rounded-2xl border-t-4 border-t-amber-500 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-black text-amber-400">{isAr ? 'الركيزة ٠٣' : 'PILLAR 03'}</span>
+                        <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">
+                          {isAr ? 'إثبات الجدارة' : 'Authority Proof'}
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-black text-white mb-2">
+                        {isAr ? 'معارض تفاعلية بمقارنة (Before / After)' : 'Interactive Before/After Case Studies'}
+                      </h4>
+                      <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                        {isAr 
+                          ? 'استبدال الصور الصامتة بسلايدرات تفاعلية للمشاريع المنجزة كفندق ماريوت وغوتشي، مع توثيق المواصفات الفنية وأنظمة التثبيت ومواد الـ Screed المطبقة بالصور الحية.'
+                          : 'Transforming galleries into interactive before/after sliders of flagship sites like Marriott and Gucci, complete with screed bed specifications and acoustic underlay data.'}
+                      </p>
+                    </div>
+                    <div className="text-[11px] font-bold text-emerald-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                      {isAr ? 'الأثر: ترسيخ مكانة الشركة كخيار تجاري أول' : 'Impact: Establishes Premier Contractor Authority'}
+                    </div>
+                  </div>
+
+                  {/* Pillar 4 */}
+                  <div className="glass-card p-6 rounded-2xl border-t-4 border-t-cyan-500 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-black text-cyan-400">{isAr ? 'الركيزة ٠٤' : 'PILLAR 04'}</span>
+                        <span className="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded font-bold">
+                          {isAr ? 'السرعة التشغيلية' : 'Speed to Lead'}
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-black text-white mb-2">
+                        {isAr ? 'التوزيع اللحظي للعملاء (CRM & SMS)' : 'Instant Multi-Channel CRM & SMS Dispatch'}
+                      </h4>
+                      <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                        {isAr 
+                          ? 'نظام إشعار مزدوج وفوري: فور إرسال أي مناقصة، يستلم مدير التقديرات تنبيهاً فورياً عبر SMS والبريد، بينما يستلم العميل إيصالاً رسمياً برقم المعاملة وتراخيص الشركة في ثوانٍ.'
+                          : 'Instant dual-channel notification: Estimators receive immediate SMS and email alerts with blueprints attached, while builders receive formal stamped transaction confirmations.'}
+                      </p>
+                    </div>
+                    <div className="text-[11px] font-bold text-emerald-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                      {isAr ? 'الأثر: إغلاق العقود قبل أن يتواصل المنافسون' : 'Impact: Close Deals Before Competitors Respond'}
+                    </div>
+                  </div>
+
+                  {/* Pillar 5 */}
+                  <div className="glass-card p-6 rounded-2xl border-t-4 border-t-indigo-500 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-black text-indigo-400">{isAr ? 'الركيزة ٠٥' : 'PILLAR 05'}</span>
+                        <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-bold">
+                          {isAr ? 'الامتثال المؤسسي' : 'Institutional Trust'}
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-black text-white mb-2">
+                        {isAr ? 'واجهة التراخيص الفيكتورية (Trust Hub)' : 'Victorian Compliance Trust Hub'}
+                      </h4>
+                      <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                        {isAr 
+                          ? 'إبراز شارات الترخيص في ترويسة الموقع: رخصة هيئة البناء الفيكتورية (VBA)، كود العزل AS 3740، وشهادة التأمين التجاري بقيمة 20M$، مما يزيل أي تردد لدى لجان الشراء الحكومية والخاصة.'
+                          : 'Prominently displaying Victorian Building Authority (VBA) registration, AS 3740 / AS 3958 waterproofing standards, and $20M Public Liability insurance certificates.'}
+                      </p>
+                    </div>
+                    <div className="text-[11px] font-bold text-emerald-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                      {isAr ? 'الأثر: اجتياز شروط التدقيق للمطورين الكبار' : 'Impact: Passes Commercial Procurement Checks'}
+                    </div>
+                  </div>
+
+                  {/* Pillar 6 */}
+                  <div className="glass-card p-6 rounded-2xl border-t-4 border-t-purple-500 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-black text-purple-400">{isAr ? 'الركيزة الإضافية' : 'MOBILE EXPANSION'}</span>
+                        <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded font-bold">
+                          {isAr ? 'مواقع العمل' : 'Job-Site UX'}
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-black text-white mb-2">
+                        {isAr ? 'شريط الاتصال السريع لمواقع البناء (Sticky Bar)' : 'Dedicated Job-Site Quick-Action Bar'}
+                      </h4>
+                      <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                        {isAr 
+                          ? 'واجهة مهام مخصصة للهواتف الذكية تمنح مديري المواقع وصولاً مباشراً بلمسة واحدة لطلب مهندس تسعير إلى الموقع فوراً أو استدعاء طوارئ التثبيت دون تصفح معقد.'
+                          : 'Specialized mobile-first interface giving project managers one-tap access to dispatch estimating engineers to site or request urgent technical installation support.'}
+                      </p>
+                    </div>
+                    <div className="text-[11px] font-bold text-emerald-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                      {isAr ? 'الأثر: الاستحواذ على طلبات العمل الميداني العاجلة' : 'Impact: Captures Urgent On-Site Builder Requests'}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: DIRECT COMPARISON */}
+            {activeTab === 'comparison' && (
+              <div className="space-y-6">
+                <div className="max-w-3xl mb-6">
+                  <span className="text-brand-blue font-bold text-xs uppercase tracking-wider">
+                    {isAr ? 'مصفوفة المقارنة الفنية' : 'Direct Performance Matrix'}
+                  </span>
+                  <h3 className="text-2xl md:text-3xl font-black text-white mt-1">
+                    {isAr ? 'مقارنة المواصفات: الوضع الحالي مقابل المحرك الجديد' : 'Current Status vs. Proposed Revenue Engine'}
+                  </h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    {isAr ? 'فوارق الأداء الجوهرية وتأثيرها على النتيجة التجارية النهائية.' : 'Forensic performance disparities and their commercial revenue consequences.'}
+                  </p>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-start border-collapse glass-panel rounded-2xl overflow-hidden">
+                    <thead>
+                      <tr className="bg-slate-900/90 border-b border-brand-border text-xs text-slate-300">
+                        <th className="p-4 w-1/4">{isAr ? 'معيار المقارنة الفني' : 'Technical Criteria'}</th>
+                        <th className="p-4 w-3/8 text-rose-400">{isAr ? 'الموقع الحالي (WordPress + Elementor)' : 'Current Site (WordPress + Elementor)'}</th>
+                        <th className="p-4 w-3/8 text-emerald-400">{isAr ? 'محرك الإيرادات المتطور (المقترح)' : 'Proposed Commercial Revenue Engine'}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800 text-xs md:text-sm">
+                      <tr>
+                        <td className="p-4 font-bold text-white">{isAr ? 'سرعة التحميل (Core Web Vitals)' : 'Load Speed (Core Web Vitals)'}</td>
+                        <td className="p-4 text-rose-400 bg-rose-950/20 font-semibold">{isAr ? '3.8s - 5.2s (بطيء ومثقل بالقوالب)' : '3.8s - 5.2s (Heavy & Bloated)'}</td>
+                        <td className="p-4 text-emerald-400 bg-emerald-950/20 font-bold">{isAr ? '0.6s - 1.1s (تحميل فوري وشفرة نقية)' : '0.6s - 1.1s (Instant Clean Architecture)'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-bold text-white">{isAr ? 'آلية التقاط المناقصات' : 'Tender Intake Mechanism'}</td>
+                        <td className="p-4 text-slate-300">{isAr ? 'نموذج نصي عام 4 خانات (يتجاهل المخططات)' : 'Generic 4-line text form (Zero CAD upload)'}</td>
+                        <td className="p-4 text-emerald-300 font-bold">{isAr ? 'بوابة مناقصات تفاعلية + رفع مخططات PDF/AutoCAD' : 'Interactive Scope Portal + PDF/CAD Blueprint Upload'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-bold text-white">{isAr ? 'تجربة الهاتف بمواقع العمل' : 'Job-Site Mobile Experience'}</td>
+                        <td className="p-4 text-slate-300">{isAr ? 'تصغير وتكديس تقليدي غير متجاوب' : 'Generic unresponsive scaling & stacking'}</td>
+                        <td className="p-4 text-emerald-300 font-bold">{isAr ? 'شريط اتصال وتوجيه سريع لموقع العمل (Sticky Bar)' : 'Dedicated Sticky Job-Site Quick-Action Bar'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-bold text-white">{isAr ? 'توثيق الامتثال والتراخيص' : 'Compliance & Licensing Trust'}</td>
+                        <td className="p-4 text-slate-300">{isAr ? 'غائب تماماً عن الواجهة الرئيسية' : 'Completely buried / invisible on homepage'}</td>
+                        <td className="p-4 text-emerald-300 font-bold">{isAr ? 'مركز ثقة متكامل (VBA • AS 3740 • $20M Insurance)' : 'Trust Hub (VBA • AS 3740 • $20M Insurance)'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-bold text-white">{isAr ? 'معدل تحويل الزوار لمناقصات (CR)' : 'Tender Conversion Rate (CR)'}</td>
+                        <td className="p-4 text-rose-400 bg-rose-950/20 font-bold">{isAr ? '1.2% - 1.8% (تسريب مستمر للمنافسين)' : '1.2% - 1.8% (Severe tender leakage)'}</td>
+                        <td className="p-4 text-emerald-400 bg-emerald-950/20 font-black">{isAr ? '4.8% - 6.5% (زيادة تفوق +240%)' : '4.8% - 6.5% (Over +240% Target Uplift)'}</td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-bold text-white">{isAr ? 'السيو التجاري لملبورن (B2B SEO)' : 'Melbourne B2B Local SEO'}</td>
+                        <td className="p-4 text-slate-300">{isAr ? 'معدوم بدون Schema Markup محددة' : 'Non-existent, zero schema markup'}</td>
+                        <td className="p-4 text-emerald-300 font-bold">{isAr ? 'تغطية Schema لضواحي فيكتوريا والمشاريع الفاخرة' : 'B2B Schema for Docklands, Chadstone & CBD'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 5: PACKAGES & INVESTMENT */}
+            {activeTab === 'packages' && (
+              <div className="space-y-6">
+                <div className="text-center max-w-3xl mx-auto mb-8">
+                  <span className="text-brand-amber font-bold text-xs uppercase tracking-wider">
+                    {isAr ? 'باقات الاستثمار والجدول الزمني' : 'Investment Tiers & Delivery Schedule'}
+                  </span>
+                  <h3 className="text-3xl font-black text-white mt-1">
+                    {isAr ? 'باقات الاستثمار والجدول الزمني للتنفيذ' : 'Investment Packages & Delivery Schedule'}
+                  </h3>
+                  <p className="text-slate-400 text-sm mt-2">
+                    {isAr 
+                      ? 'خيارات تسعير مصممة لتناسب الرؤية الاستراتيجية لشركة Akkari Tiling، مع استرداد كامل لقيمة الاستثمار من أول مناقصة تجارية مستعادة.'
+                      : 'Commercial pricing engineered for Akkari Tiling, fully recouped from the first recovered commercial project.'}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
+                  
+                  {/* Pro Package (PRIMARY RECOMMENDED TIER WITH MODULAR SCALABILITY) */}
+                  <div className="bg-gradient-to-b from-brand-card via-slate-900 to-slate-950 p-8 rounded-3xl border-2 border-emerald-500 shadow-2xl flex flex-col justify-between relative glow-emerald">
+                    <div className="absolute -top-3.5 right-6 rtl:right-6 rtl:left-auto ltr:left-6 ltr:right-auto bg-emerald-500 text-slate-950 font-black text-xs px-4 py-1 rounded-full shadow-lg">
+                      {isAr ? '★ الباقة الموصى بها للانطلاق والمثالية لميزانية النشاط' : '★ RECOMMENDED STARTING FOUNDATION'}
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <span className="text-xs font-black text-emerald-400">
+                            {isAr ? 'الباقة الاحترافية المعمارية الأساسية' : 'Core Architectural Package'}
+                          </span>
+                          <h4 className="text-2xl font-black text-white mt-0.5">Commercial Pro</h4>
+                        </div>
+                        <div className="text-end">
+                          <div className="text-3xl font-black text-emerald-400">$5,200 <span className="text-xs text-slate-400">AUD</span></div>
+                          <div className="text-xs text-emerald-300 font-bold">~ 3,500 USD</div>
+                        </div>
+                      </div>
+                      
+                      <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                        {isAr 
+                          ? 'إعادة بناء معماري شامل بشفرة فائقة السرعة، يمنح شركة Akkari Tiling واجهة فاخرة ومصداقية مؤسسية تضاهي مشاريع ماريوت وغوتشي، وتوقف تسريب المناقصات اليومي.'
+                          : 'Comprehensive architectural rebuild with sub-1-second clean code, granting Akkari Tiling the elite prestige matching Marriott and Gucci Chadstone, eliminating tender leakage.'}
+                      </p>
+
+                      {/* Expandable Architecture Guarantee Box */}
+                      <div className="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 mb-6 text-start">
+                        <div className="text-xs font-black text-emerald-300 flex items-center gap-1.5 mb-1">
+                          <CheckCircle />
+                          <span>{isAr ? 'ضمان المعمارية المعيارية القابلة للتوسع (Future Scale-Up Ready):' : 'Modular Scalable Architecture Guarantee:'}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-300 leading-relaxed">
+                          {isAr 
+                            ? 'نؤسس الموقع على بنية كود حديثة معيارية بالكامل؛ تمكنكم في أي وقت لاحق من الترقية المباشرة إلى مزايا Enterprise (كحاسبة التندر وبوابة المخططات والربط الآلي) بسلاسة تامة ودون الحاجة لإعادة بناء الموقع أو هدر أي استثمار سابق.'
+                            : 'Engineered on a modular next-gen stack that enables seamless future upgrades to Enterprise features (interactive scope calculator, CAD upload portal, and automated SMS/CRM dispatch) anytime without rebuilding from scratch.'}
+                        </p>
+                      </div>
+
+                      <div className="space-y-3 mb-8">
+                        <div className="text-xs font-bold text-slate-200">
+                          {isAr ? 'المخرجات المسلّمة في الباقة:' : 'Deliverables Included in Pro:'}
+                        </div>
+                        <ul className="text-xs text-slate-300 space-y-2.5">
+                          <li className="flex items-center gap-2 font-semibold text-white">
+                            <CheckCircle /> 
+                            <span>{isAr ? 'كود برمجي نقي فائق السرعة بسرعة تحميل تحت ثانية واحدة' : 'Sub-1-second clean code stack (Google 98+ Score)'}</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle /> 
+                            <span>{isAr ? 'معرض مشاريع تفاعلي بدقة عالية مع فلاتر التصنيف المعماري' : 'Interactive high-res portfolio with architectural filters'}</span>
+                          </li>
+                          <li className="flex items-center gap-2 font-semibold text-white">
+                            <CheckCircle /> 
+                            <span>{isAr ? 'مركز إثبات الامتثال الفيكتوري الرسمي (VBA وشهادة تأمين 20M$)' : 'Victorian Compliance Trust Hub (VBA & $20M Insurance)'}</span>
+                          </li>
+                          <li className="flex items-center gap-2 font-semibold text-white">
+                            <CheckCircle /> 
+                            <span>{isAr ? 'شريط اتصال وتوجيه سريع لمديري المواقع (Sticky Job-Site Bar)' : 'Job-Site Mobile Emergency Bar for Project Managers'}</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle /> 
+                            <span>{isAr ? 'مدة التنفيذ والتسليم القياسية: ٢ - ٣ أسابيع' : 'Standard Delivery Timeline: 2 - 3 Weeks'}</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <a
+                      href={getWhatsAppUrl('pro')}
+                      onClick={() => setSelectedPackage('pro')}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block text-center bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black py-3.5 px-6 rounded-xl text-sm transition-all shadow-xl"
+                    >
+                      {isAr 
+                        ? 'اعتماد باقة Commercial Pro الموصى بها ($5,200 AUD / $3,500 USD)' 
+                        : 'Confirm Commercial Pro ($5,200 AUD / $3,500 USD)'}
+                    </a>
+                  </div>
+
+                  {/* Enterprise Revenue Engine (FUTURE EXPANSION TIER) */}
+                  <div className="glass-panel p-8 rounded-3xl border border-slate-700/80 flex flex-col justify-between opacity-90 hover:opacity-100 transition-opacity">
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <span className="text-xs font-bold text-slate-400">
+                            {isAr ? 'باقة التوسع والترقية اللاحقة (Enterprise Scale-Up)' : 'Future Scale-Up Tier (Enterprise)'}
+                          </span>
+                          <h4 className="text-2xl font-black text-white mt-0.5">Enterprise Revenue Engine</h4>
+                        </div>
+                        <div className="text-end">
+                          <div className="text-2xl font-black text-slate-300">$8,800 <span className="text-xs text-slate-400">AUD</span></div>
+                          <div className="text-xs text-slate-400">~ 5,900 USD</div>
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-400 leading-relaxed mb-6">
+                        {isAr 
+                          ? 'محرك متكامل مخصص للمؤسسات الكبرى التي تتطلب أتمتة كاملة لمعالجة المناقصات اللحظية وبوابات التندر الرقمية ورفع المخططات الهندسية.'
+                          : 'Full-scale enterprise engine engineered for institutional automated tender processing and CAD blueprint intake.'}
+                      </p>
+
+                      <div className="space-y-3 mb-8">
+                        <div className="text-xs font-bold text-slate-400">
+                          {isAr ? 'المزايا الإضافية المتاحة عند الترقية:' : 'Available Upgrades in Enterprise:'}
+                        </div>
+                        <ul className="text-xs text-slate-400 space-y-2.5">
+                          <li className="flex items-center gap-2">
+                            <CheckCircle /> 
+                            <span>{isAr ? 'بوابة تفاعلية لرفع مخططات AutoCAD وPDF الهندسية' : 'Interactive AutoCAD & PDF Blueprint Tender Portal'}</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle /> 
+                            <span>{isAr ? 'حاسبة تسعير النطاق والمساحات الحية لمديري المشتريات' : 'Interactive Scope & Sqm Estimator for Builders'}</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle /> 
+                            <span>{isAr ? 'نظام الإشعار المزدوج الفوري التلقائي عبر SMS و CRM' : 'Instant Multi-Channel SMS & CRM Dispatch'}</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle /> 
+                            <span>{isAr ? 'تغطية كاملة للسيو التجاري المحلي لضواحي فيكتوريا' : 'Full Local B2B Commercial SEO Coverage'}</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle /> 
+                            <span>{isAr ? 'مدة التنفيذ والتسليم: ٣ - ٤ أسابيع' : 'Delivery Timeline: 3 - 4 Weeks'}</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <a
+                      href={getWhatsAppUrl('enterprise')}
+                      onClick={() => setSelectedPackage('enterprise')}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block text-center bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-6 rounded-xl text-xs md:text-sm transition-all border border-slate-600"
+                    >
+                      {isAr 
+                        ? 'طلب الترقية لاحقاً إلى Enterprise Engine ($8,800 AUD)' 
+                        : 'Upgrade to Enterprise Engine ($8,800 AUD)'}
+                    </a>
+                  </div>
+
+                </div>
+              </div>
+            )}
+
+          </main>
+
+          {/* Sticky Bottom Bar */}
+          <footer className="fixed bottom-0 right-0 left-0 bg-brand-slate/95 border-t border-brand-border py-3 px-4 backdrop-blur-md z-50">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-xs font-bold text-slate-300 hidden sm:inline">
+                  {isAr ? 'جاهز للتشغيل والتسليم التجاري لشركة Akkari Tiling' : 'Ready for Engineering Kickoff — Akkari Tiling'}
+                </span>
+                <span className="text-xs text-slate-400 font-mono">
+                  Melbourne, Victoria
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-bold text-emerald-400 hidden md:inline">
+                  {selectedPackage === 'pro'
+                    ? (isAr ? '★ الباقة الموصى بها: Commercial Pro ($5,200 AUD / $3,500 USD) - قابلة للتوسع' : '★ Recommended: Commercial Pro ($5,200 AUD / $3,500 USD) - Scale-Up Ready')
+                    : (isAr ? 'باقة التوسع المتقدم: Enterprise Engine ($8,800 AUD / $5,900 USD)' : 'Advanced Expansion: Enterprise Engine ($8,800 AUD / $5,900 USD)')}
+                </span>
+                <a
+                  href={getWhatsAppUrl(selectedPackage)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-brand-emerald hover:bg-emerald-600 text-slate-950 font-black px-4 py-2 rounded-lg text-xs md:text-sm transition-all shadow-md flex items-center gap-1.5"
+                >
+                  <span>{isAr ? 'مراسلة عبر واتساب للتفعيل' : 'Message on WhatsApp to Activate'}</span>
+                  <WhatsAppIcon />
+                </a>
+              </div>
+            </div>
+          </footer>
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

@@ -1342,7 +1342,7 @@ function FairlightAudioConsole() {
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <span className="px-2.5 py-1 bg-[#00C2D4]/10 border border-[#00C2D4]/30 text-[#00C2D4] font-mono text-[10px] sm:text-xs uppercase tracking-widest font-bold rounded">
-                DaVinci Resolve 19 Fairlight
+                DaVinci Resolve 20 Fairlight
               </span>
               <span className="px-2.5 py-1 bg-white/5 border border-white/10 text-white/60 font-mono text-[10px] sm:text-xs uppercase tracking-widest rounded">
                 32-Bit Float 48kHz Broadcast Engine
@@ -2841,7 +2841,7 @@ export function StudioClient() {
           transition={{ duration: 0.7, delay: 0.3 }}
           className="text-white/60 text-sm sm:text-base md:text-xl max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10 font-sans"
         >
-          We do not deliver plastic AI slop. We fuse state-of-the-art generative passes with DaVinci Resolve 19 Fusion color science, anamorphic halation, 35mm photochemical grain, and Fairlight 32-bit broadcast audio mastering—delivering commercials that arrest thumb-scrolling and command high-ticket enterprise trust.
+          We do not deliver plastic AI slop. We fuse state-of-the-art generative passes with DaVinci Resolve 20 Fusion color science, anamorphic halation, 35mm photochemical grain, and Fairlight 32-bit broadcast audio mastering—delivering commercials that arrest thumb-scrolling and command high-ticket enterprise trust.
         </motion.p>
 
         {/* Interactive Tab Navigation */}
@@ -3040,6 +3040,104 @@ export function StudioClient() {
             </div>
           </motion.div>
 
+                    {/* COMMERCIAL 3: AKKARI TILING & SURFACE ARCHITECTURE */}
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl relative overflow-hidden"
+          >
+            <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 items-center">
+              
+              {/* Interactive Showcase / Video Preview Container */}
+              <div className="w-full lg:w-7/12" onPointerDown={pauseForVideo}>
+                <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/15 bg-black shadow-[0_0_40px_rgba(0,194,212,0.2)] group">
+                  <div className="relative aspect-video w-full bg-[#050505] flex items-center justify-center overflow-hidden">
+                    {/* Interactive Portal Live Preview Frame */}
+                    <iframe 
+                      src="/akkari.html" 
+                      title="Akkari Tiling Commercial & Interactive Revenue Engine" 
+                      className="w-full h-full border-0 pointer-events-auto"
+                      loading="lazy"
+                    />
+                    <div className="absolute top-3 right-3 z-20 pointer-events-none">
+                      <span className="px-2.5 py-1 rounded-md bg-black/80 border border-[#00C2D4]/50 text-[#00C2D4] font-mono text-[10px] uppercase font-bold shadow-[0_0_12px_rgba(0,194,212,0.4)] flex items-center gap-1.5">
+                        <Zap size={11} className="animate-pulse" /> LIVE INTERACTIVE PORTAL
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-[10px] sm:text-xs font-mono text-white/50">
+                    <span className="flex items-center gap-1.5 sm:gap-2 text-[#00C2D4]">
+                      <MonitorPlay size={13} /> FULL COMMERCIAL PIPELINE
+                    </span>
+                    <span>BILINGUAL AR/EN // TENDER CALCULATOR</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Client Business Breakdown */}
+              <div className="w-full lg:w-5/12 space-y-4 sm:space-y-6">
+                <div>
+                  <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-[#00C2D4] font-bold block mb-1">
+                    Commercial Spot 03 // B2B Luxury Architecture & Tenders
+                  </span>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase tracking-tight text-white">
+                    "Precision Meets Prestige — Commercial Surface Architecture"
+                  </h3>
+                </div>
+
+                <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-white/70">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <ShieldCheck size={14} className="text-[#00C2D4]" /> The Business Hook (Closing Enterprise Bids)
+                    </h4>
+                    <p className="leading-relaxed">
+                      High-end commercial contractors can't close $250k+ tenders with plain PDF quotes. We delivered a dual-conversion asset: a cinema-grade commercial film highlighting sub-millimeter laser craft, coupled with a dynamic interactive client proposal engine where project directors customize tiers and calculate ROI in real time.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <Sliders size={14} className="text-[#FF6600]" /> Optical & Pipeline Science (DaVinci Resolve 20)
+                    </h4>
+                    <p className="leading-relaxed">
+                      Macro optical lens physics with DaVinci Resolve 20 surface tracking. Micro-bevel reflection passes simulate true porcelain glaze physics, and Fairlight 32-bit acoustic mastering highlights diamond wet-saw precision without harsh metallic clatter.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Direct Interactive Call to Action Links */}
+                <div className="flex flex-wrap items-center gap-2.5 pt-2">
+                  <a 
+                    href="/akkari.html" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00C2D4] text-black font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#00C2D4]/90 transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)]"
+                  >
+                    Launch Interactive Portal <ExternalLink size={13} />
+                  </a>
+                  <a 
+                    href="/Akkari_Tiling_Elevated_Revenue_Engine_Proposal.pdf" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/5 border border-white/15 text-white/80 font-mono text-xs font-medium uppercase tracking-wider hover:text-white hover:border-white/30 transition-all"
+                  >
+                    View Executive Proposal (PDF) <ExternalLink size={13} />
+                  </a>
+                </div>
+
+                <div className="pt-1 sm:pt-2 flex flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono text-white/50">
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">B2B Tender Engine</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">DaVinci 20 Color</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Interactive ROI Matrix</span>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+
           {/* SECTION HEADER: VERTICAL VIRAL REELS & SOCIAL ARCHITECTURE */}
           <div className="pt-8 sm:pt-14 border-t border-white/10 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
@@ -3212,7 +3310,7 @@ export function StudioClient() {
           
           <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
             <span className="px-3 py-1 bg-[#00C2D4]/10 border border-[#00C2D4]/30 text-[#00C2D4] font-mono text-[10px] sm:text-xs uppercase tracking-widest font-bold rounded">
-              DaVinci Resolve 19 // Fusion Engine Architecture
+              DaVinci Resolve 20 // Fusion Engine Architecture
             </span>
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-heading font-bold uppercase tracking-tight mt-3 sm:mt-4 mb-3 sm:mb-4">
               The Optical Node Canvas
@@ -3249,7 +3347,7 @@ export function StudioClient() {
               {/* Header HUD */}
               <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/10">
                 <span className="font-mono text-xs font-bold text-white/60 tracking-wider flex items-center gap-2">
-                  <Activity size={14} className="text-[#00C2D4]" /> DAVINCI 19 FUSION WORKSPACE // 10-STAGE GRAPH
+                  <Activity size={14} className="text-[#00C2D4]" /> DAVINCI 20 FUSION WORKSPACE // 10-STAGE GRAPH
                 </span>
                 <span className="text-[11px] font-mono text-[#00C2D4] bg-[#00C2D4]/10 px-2.5 py-1 rounded border border-[#00C2D4]/30">
                   ACTIVE: {activeNode.name}
@@ -3370,7 +3468,7 @@ export function StudioClient() {
               {/* Signal Flow Legend */}
               <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-[11px] font-mono text-white/40">
                 <span>PIPELINE: Diffusion ➔ Log Comp ➔ Luma Key ➔ 35mm Halation ➔ Planar Lock ➔ ProRes 4444</span>
-                <span className="text-[#00C2D4]">DAVINCI RESOLVE STUDIO 19 CERTIFIED</span>
+                <span className="text-[#00C2D4]">DAVINCI RESOLVE STUDIO 20 CERTIFIED</span>
               </div>
             </div>
 
@@ -3492,7 +3590,7 @@ export function StudioClient() {
                   <td className="p-3.5 sm:p-4 md:p-6 font-bold text-white">Color Science & Fidelity</td>
                   <td className="p-3.5 sm:p-4 md:p-6 text-white/50">Manual DaVinci Grade ($350/hr)</td>
                   <td className="p-3.5 sm:p-4 md:p-6 text-red-400">None (8-bit banding, clipped neon)</td>
-                  <td className="p-3.5 sm:p-4 md:p-6 text-[#00C2D4] font-bold font-mono">DaVinci 19 Fusion Multi-Plane Curve</td>
+                  <td className="p-3.5 sm:p-4 md:p-6 text-[#00C2D4] font-bold font-mono">DaVinci 20 Fusion Multi-Plane Curve</td>
                 </tr>
                 <tr>
                   <td className="p-3.5 sm:p-4 md:p-6 font-bold text-white">Audio Mastering & Dialogue</td>
@@ -3587,7 +3685,7 @@ export function StudioClient() {
           </div>
 
           <p className="text-[11px] font-mono text-white/30 pt-10">
-            © 2026 GOOD BRAINS STUDIO // GLOBE VISTA HUB // POWERED BY DAVINCI RESOLVE 19 & NEXT.JS 16
+            © 2026 GOOD BRAINS STUDIO // GLOBE VISTA HUB // POWERED BY DAVINCI RESOLVE 20 & NEXT.JS 16
           </p>
 
         </div>
