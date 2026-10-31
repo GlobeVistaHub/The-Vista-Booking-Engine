@@ -513,149 +513,27 @@ function AnamorphicOpticalHorizon() {
 }
 
 
-function FrequencyVisualizer() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isDucked, setIsDucked] = useState(false);
-  const [frequencies, setFrequencies] = useState<number[]>([12, 18, 10, 22, 16, 8, 14, 24, 18, 11, 16, 22, 13, 17, 25, 14, 19, 8, 20, 15]);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-  const wasPlayingBeforeVideoRef = useRef(false);
+const DSP_BAR_DURATIONS = [
+  '0.65s', '0.85s', '0.5s', '1.1s', '0.7s', '0.95s', '0.6s', '1.2s',
+  '0.75s', '0.9s', '0.55s', '1.05s', '0.8s', '0.65s', '1.15s', '0.7s',
+  '0.9s', '0.6s', '1.0s', '0.8s'
+];
 
-  // Toggle Background Audio & initialize Web Audio API FFT analyzer
-  const togglePlay = async () => {
-    if (!audioRef.current) return;
+const DSP_BAR_DELAYS = [
+  '0ms', '120ms', '40ms', '200ms', '80ms', '160ms', '30ms', '180ms',
+  '90ms', '140ms', '60ms', '220ms', '100ms', '50ms', '170ms', '70ms',
+  '130ms', '40ms', '190ms', '110ms'
+];
 
-    try {
-      if (!audioCtxRef.current) {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioCtx();
-        audioCtxRef.current = ctx;
+interface AudioControlsProps {
+  isPlaying: boolean;
+  isDucked: boolean;
+  togglePlay: () => void;
+}
 
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 64; // 32 frequency bins
-        analyser.smoothingTimeConstant = 0.8;
-        analyserRef.current = analyser;
-
-        const source = ctx.createMediaElementSource(audioRef.current);
-        source.connect(analyser);
-        analyser.connect(ctx.destination);
-        sourceRef.current = source;
-      }
-
-      if (audioCtxRef.current.state === 'suspended') {
-        await audioCtxRef.current.resume();
-      }
-
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-        setIsDucked(false);
-        wasPlayingBeforeVideoRef.current = false;
-      } else {
-        await audioRef.current.play();
-        setIsPlaying(true);
-        setIsDucked(false);
-        wasPlayingBeforeVideoRef.current = true;
-      }
-    } catch (e) {
-      console.warn('Web Audio playback notice:', e);
-    }
-  };
-
-  // Real-time FFT Frequency Spectrum Loop
-  useEffect(() => {
-    if (!isPlaying || !analyserRef.current) {
-      // Idle ambient breathing animation when not playing
-      const idleInterval = setInterval(() => {
-        setFrequencies(prev => prev.map((h, i) => Math.max(6, Math.min(22, Math.sin(Date.now() / 600 + i) * 6 + 12))));
-      }, 100);
-      return () => clearInterval(idleInterval);
-    }
-
-    const analyser = analyserRef.current;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    const updateSpectrum = () => {
-      analyser.getByteFrequencyData(dataArray);
-      
-      const newHeights = [];
-      for (let i = 0; i < 20; i++) {
-        const binIndex = Math.floor((i / 20) * (bufferLength - 4));
-        const val = dataArray[binIndex] || 0;
-        // Map 0-255 amplitude to 6px - 28px height
-        const height = Math.max(6, Math.min(28, (val / 255) * 28));
-        newHeights.push(height);
-      }
-      setFrequencies(newHeights);
-      animationFrameRef.current = requestAnimationFrame(updateSpectrum);
-    };
-
-    animationFrameRef.current = requestAnimationFrame(updateSpectrum);
-
-    return () => {
-      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-    };
-  }, [isPlaying]);
-
-  // Global Concurrency Relay: Automatically pause/duck when any video starts playing
-  useEffect(() => {
-    const handleVideoPlay = () => {
-      if (audioRef.current && !audioRef.current.paused) {
-        audioRef.current.pause();
-        setIsDucked(true);
-        setIsPlaying(false);
-      }
-    };
-
-    const handleVideoPause = () => {
-      if (wasPlayingBeforeVideoRef.current && audioRef.current && audioRef.current.paused) {
-        audioRef.current.play().then(() => {
-          setIsDucked(false);
-          setIsPlaying(true);
-        }).catch(() => {});
-      }
-    };
-
-    // Listen for YouTube iframe state changes via postMessage
-    const handleWindowMessage = (event: MessageEvent) => {
-      try {
-        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        if (data && data.event === 'onStateChange') {
-          // YT.PlayerState.PLAYING === 1
-          if (data.info === 1) {
-            handleVideoPlay();
-          }
-          // YT.PlayerState.PAUSED === 2 || ENDED === 0
-          else if (data.info === 2 || data.info === 0) {
-            handleVideoPause();
-          }
-        }
-      } catch (e) {
-        // Not a JSON message, safely ignore
-      }
-    };
-
-    document.addEventListener('play', handleVideoPlay, true);
-    document.addEventListener('pause', handleVideoPause, true);
-    document.addEventListener('ended', handleVideoPause, true);
-    window.addEventListener('message', handleWindowMessage);
-
-    return () => {
-      document.removeEventListener('play', handleVideoPlay, true);
-      document.removeEventListener('pause', handleVideoPause, true);
-      document.removeEventListener('ended', handleVideoPause, true);
-      window.removeEventListener('message', handleWindowMessage);
-    };
-  }, []);
-
+function HeaderFrequencyVisualizer({ isPlaying, isDucked, togglePlay }: AudioControlsProps) {
   return (
     <div className="flex items-center gap-2">
-      <audio ref={audioRef} src="/studio-audio.mp3" loop preload="metadata" />
-
       {/* Interactive Sound Engine Toggle */}
       <button
         onClick={togglePlay}
@@ -663,10 +541,10 @@ function FrequencyVisualizer() {
           isPlaying
             ? 'bg-[#00C2D4]/20 border-[#00C2D4] text-[#00C2D4] shadow-[0_0_18px_rgba(0,194,212,0.4)]'
             : isDucked
-            ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+            ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
             : 'bg-black/60 border-white/15 text-white/70 hover:text-white hover:border-white/30'
         }`}
-        title={isPlaying ? 'Mute Studio Audio' : 'Start 48kHz DSP Studio Audio'}
+        title={isPlaying ? 'Mute Studio Audio' : isDucked ? 'Video Active (Click to force resume)' : 'Start 48kHz DSP Studio Audio'}
       >
         {isPlaying ? (
           <Volume2 size={13} className="text-[#00C2D4] animate-pulse" />
@@ -676,27 +554,31 @@ function FrequencyVisualizer() {
           <VolumeX size={13} className="text-white/40" />
         )}
         <span className="font-bold tracking-wider text-[10px] sm:text-[11px]">
-          {isPlaying ? 'DSP LIVE' : isDucked ? 'AUTO-DUCKED' : 'STUDIO AUDIO'}
+          {isPlaying ? 'DSP LIVE' : isDucked ? 'AUTO-DUCKED' : 'STUDIO SCORE'}
         </span>
       </button>
 
-      {/* Real-time Frequency Spectrum Bars */}
+      {/* Real-time Frequency Spectrum Bars - GPU Accelerated (Zero React Re-renders, Zero Distortion) */}
       <div 
         onClick={togglePlay}
-        className="flex items-end gap-[3px] h-7 px-2.5 py-1 bg-black/60 border border-white/15 rounded-lg cursor-pointer hover:border-[#00C2D4]/50 transition-all"
+        className="flex items-end gap-[3px] h-7 px-2.5 py-1 bg-black/60 border border-white/15 rounded-lg cursor-pointer hover:border-[#00C2D4]/50 transition-all select-none"
         title="Click to toggle DSP Audio Engine"
       >
-        {frequencies.map((h, i) => (
+        {DSP_BAR_DURATIONS.map((dur, i) => (
           <div
             key={i}
-            className={`w-[2.5px] rounded-t-sm transition-all duration-75 ${
+            className={`w-[2.5px] rounded-t-sm transition-all duration-200 ${
               isPlaying
                 ? i % 2 === 0
-                  ? 'bg-[#00C2D4] shadow-[0_0_8px_rgba(0,194,212,0.8)]'
-                  : 'bg-[#FF2E93] shadow-[0_0_8px_rgba(255,46,147,0.8)]'
-                : 'bg-white/25'
+                  ? 'bg-[#00C2D4] shadow-[0_0_8px_rgba(0,194,212,0.8)] dsp-bar-active'
+                  : 'bg-[#FF2E93] shadow-[0_0_8px_rgba(255,46,147,0.8)] dsp-bar-active'
+                : 'bg-white/20'
             }`}
-            style={{ height: `${h}px` }}
+            style={{
+              height: isPlaying ? '14px' : '5px',
+              animationDuration: isPlaying ? dur : undefined,
+              animationDelay: isPlaying ? DSP_BAR_DELAYS[i] : undefined,
+            }}
           />
         ))}
         <span className="text-[10px] font-mono text-white/50 ml-1.5 uppercase hidden xl:inline">
@@ -2150,6 +2032,131 @@ function FairlightAudioConsole() {
 
 export function StudioClient() {
   const [activeNode, setActiveNode] = useState<NodeData>(FUSION_NODES[4]); // SoftGlow
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isDucked, setIsDucked] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const wasPlayingBeforeVideoRef = useRef(false);
+  const reelsSectionRef = useRef<HTMLElement | null>(null);
+
+  // Toggle Background Audio directly via native HTML5 Audio (Zero buffer under-run, Zero distortion)
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      setIsDucked(false);
+      wasPlayingBeforeVideoRef.current = false;
+    } else {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+        setIsDucked(false);
+        wasPlayingBeforeVideoRef.current = true;
+      }).catch((e) => {
+        console.warn('Audio playback notice:', e);
+      });
+    }
+  };
+
+  const pauseForVideo = () => {
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      setIsDucked(true);
+      wasPlayingBeforeVideoRef.current = true;
+    }
+  };
+
+  const resumeAfterVideo = () => {
+    if (wasPlayingBeforeVideoRef.current && audioRef.current && audioRef.current.paused) {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+        setIsDucked(false);
+      }).catch(() => {});
+    }
+  };
+
+  // Global Concurrency Relay: YouTube Iframe click (window blur), message events, and native video events
+  useEffect(() => {
+    const handleWindowBlur = () => {
+      setTimeout(() => {
+        if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+          pauseForVideo();
+        }
+      }, 60);
+    };
+
+    const handleWindowMessage = (event: MessageEvent) => {
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (data && data.event === 'onStateChange') {
+          if (data.info === 1) {
+            // YT video playing
+            pauseForVideo();
+          } else if (data.info === 2 || data.info === 0) {
+            // YT video paused or ended
+            resumeAfterVideo();
+          }
+        }
+      } catch (e) {
+        // Safe ignore non-JSON messages
+      }
+    };
+
+    const handleNativePlay = (e: Event) => {
+      if (e.target !== audioRef.current) {
+        pauseForVideo();
+      }
+    };
+
+    const handleNativePause = (e: Event) => {
+      if (e.target !== audioRef.current) {
+        resumeAfterVideo();
+      }
+    };
+
+    window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('message', handleWindowMessage);
+    document.addEventListener('play', handleNativePlay, true);
+    document.addEventListener('pause', handleNativePause, true);
+
+    // Initial handshake to YouTube iframes
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach((iframe) => {
+      try {
+        iframe.contentWindow?.postMessage('{"event":"listening"}', '*');
+      } catch (e) {}
+    });
+
+    return () => {
+      window.removeEventListener('blur', handleWindowBlur);
+      window.removeEventListener('message', handleWindowMessage);
+      document.removeEventListener('play', handleNativePlay, true);
+      document.removeEventListener('pause', handleNativePause, true);
+    };
+  }, []);
+
+  // IntersectionObserver: Auto-duck studio audio when scrolling deep into commercial reel, resume when back up
+  useEffect(() => {
+    const el = reelsSectionRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio > 0.35) {
+          if (isPlaying) {
+            pauseForVideo();
+          }
+        } else if (!entry.isIntersecting || entry.intersectionRatio < 0.1) {
+          if (isDucked && wasPlayingBeforeVideoRef.current) {
+            resumeAfterVideo();
+          }
+        }
+      });
+    }, { threshold: [0.1, 0.35, 0.7] });
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isPlaying, isDucked]);
   const [activeTab, setActiveTab] = useState<"reel" | "fusion" | "fairlight" | "matrix">("reel");
   const [logoError, setLogoError] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -2278,7 +2285,7 @@ export function StudioClient() {
 
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="hidden lg:flex">
-              <FrequencyVisualizer />
+              <HeaderFrequencyVisualizer isPlaying={isPlaying} isDucked={isDucked} togglePlay={togglePlay} />
             </div>
 
             {/* Visit GoodBrains.pro Header Button */}
@@ -2420,7 +2427,7 @@ export function StudioClient() {
 
       {/* ================= TAB 1: COMMERCIAL REEL ================= */}
       {activeTab === "reel" && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-16 sm:space-y-24 relative z-10">
+        <section ref={reelsSectionRef} id="commercial-reels" className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-16 sm:space-y-24 relative z-10">
           
           {/* COMMERCIAL 1: REAL ESTATE */}
           <motion.div 
@@ -2433,7 +2440,7 @@ export function StudioClient() {
             <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 items-center">
               
               {/* Cinema Player Container */}
-              <div className="w-full lg:w-7/12">
+              <div className="w-full lg:w-7/12" onPointerDown={pauseForVideo}>
                 <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/15 bg-black shadow-[0_0_40px_rgba(0,194,212,0.2)]">
                   <div className="relative aspect-video w-full">
                     <iframe 
@@ -2506,7 +2513,7 @@ export function StudioClient() {
             <div className="flex flex-col lg:flex-row-reverse gap-6 sm:gap-10 items-center">
               
               {/* Cinema Player Container */}
-              <div className="w-full lg:w-7/12">
+              <div className="w-full lg:w-7/12" onPointerDown={pauseForVideo}>
                 <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/15 bg-black shadow-[0_0_40px_rgba(255,102,0,0.2)]">
                   <div className="relative aspect-video w-full">
                     <iframe 
@@ -2594,7 +2601,7 @@ export function StudioClient() {
             <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 items-center">
               
               {/* Vertical Mobile Player Container */}
-              <div className="w-full lg:w-5/12 flex justify-center">
+              <div className="w-full lg:w-5/12 flex justify-center" onPointerDown={pauseForVideo}>
                 <div className="relative w-full max-w-[320px] sm:max-w-[340px] rounded-2xl sm:rounded-3xl overflow-hidden border border-white/20 bg-black shadow-[0_0_50px_rgba(0,194,212,0.25)]">
                   <div className="relative aspect-[9/16] w-full bg-[#050505]">
                     <iframe 
@@ -2668,7 +2675,7 @@ export function StudioClient() {
             <div className="flex flex-col lg:flex-row-reverse gap-6 sm:gap-10 items-center">
               
               {/* Vertical Mobile Player Container */}
-              <div className="w-full lg:w-5/12 flex justify-center">
+              <div className="w-full lg:w-5/12 flex justify-center" onPointerDown={pauseForVideo}>
                 <div className="relative w-full max-w-[320px] sm:max-w-[340px] rounded-2xl sm:rounded-3xl overflow-hidden border border-white/20 bg-black shadow-[0_0_50px_rgba(255,184,0,0.25)]">
                   <div className="relative aspect-[9/16] w-full bg-[#050505]">
                     <iframe 
@@ -3120,6 +3127,63 @@ export function StudioClient() {
 
         </div>
       </motion.section>
+
+
+      {/* ================= FLOATING DSP AUDIO PILL (MOBILE & DESKTOP) ================= */}
+      <aside aria-label="DSP Audio Engine" className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-2">
+        <button
+          onClick={togglePlay}
+          className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full border shadow-2xl backdrop-blur-md font-mono text-xs transition-all duration-300 ${
+            isPlaying
+              ? 'bg-black/90 border-[#00C2D4] text-[#00C2D4] shadow-[0_0_25px_rgba(0,194,212,0.45)]'
+              : isDucked
+              ? 'bg-black/90 border-amber-500/50 text-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.3)]'
+              : 'bg-black/85 border-white/20 text-white/80 hover:text-white hover:border-white/40'
+          }`}
+          title={isPlaying ? 'Mute Studio Score' : isDucked ? 'Video Active (Click to force resume score)' : 'Play 48kHz Studio Score'}
+        >
+          {isPlaying ? (
+            <Volume2 size={14} className="text-[#00C2D4] animate-pulse" />
+          ) : isDucked ? (
+            <VolumeX size={14} className="text-amber-400" />
+          ) : (
+            <VolumeX size={14} className="text-white/40" />
+          )}
+          <span className="font-bold tracking-wider text-[11px] sm:text-xs">
+            {isPlaying ? 'DSP LIVE' : isDucked ? 'AUTO-DUCKED • VIDEO ACTIVE' : 'STUDIO SCORE'}
+          </span>
+          {isPlaying && (
+            <div className="flex items-end gap-[2px] h-3.5 ml-1">
+              {[8, 14, 10, 16, 6].map((h, i) => (
+                <div
+                  key={i}
+                  className="w-[2px] rounded-full bg-[#00C2D4] dsp-bar-active"
+                  style={{
+                    animationDuration: DSP_BAR_DURATIONS[i % DSP_BAR_DURATIONS.length],
+                    animationDelay: DSP_BAR_DELAYS[i % DSP_BAR_DELAYS.length],
+                    height: `${h}px`
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </button>
+      </aside>
+
+      {/* Zero-CPU GPU-Composited Equalizer CSS Animations */}
+      <style jsx global>{`
+        @keyframes dsp-bounce {
+          0% { height: 4px; opacity: 0.5; }
+          50% { height: 26px; opacity: 1; }
+          100% { height: 7px; opacity: 0.75; }
+        }
+        .dsp-bar-active {
+          animation-name: dsp-bounce;
+          animation-iteration-count: infinite;
+          animation-direction: alternate;
+          animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+      `}</style>
 
     </main>
   );
