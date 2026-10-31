@@ -3040,104 +3040,7 @@ export function StudioClient() {
             </div>
           </motion.div>
 
-                    {/* COMMERCIAL 3: AKKARI TILING & SURFACE ARCHITECTURE */}
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl relative overflow-hidden"
-          >
-            <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 items-center">
-              
-              {/* Interactive Showcase / Video Preview Container */}
-              <div className="w-full lg:w-7/12" onPointerDown={pauseForVideo}>
-                <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/15 bg-black shadow-[0_0_40px_rgba(0,194,212,0.2)] group">
-                  <div className="relative aspect-video w-full bg-[#050505] flex items-center justify-center overflow-hidden">
-                    {/* Interactive Portal Live Preview Frame */}
-                    <iframe 
-                      src="/akkari.html" 
-                      title="Akkari Tiling Commercial & Interactive Revenue Engine" 
-                      className="w-full h-full border-0 pointer-events-auto"
-                      loading="lazy"
-                    />
-                    <div className="absolute top-3 right-3 z-20 pointer-events-none">
-                      <span className="px-2.5 py-1 rounded-md bg-black/80 border border-[#00C2D4]/50 text-[#00C2D4] font-mono text-[10px] uppercase font-bold shadow-[0_0_12px_rgba(0,194,212,0.4)] flex items-center gap-1.5">
-                        <Zap size={11} className="animate-pulse" /> LIVE INTERACTIVE PORTAL
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-[10px] sm:text-xs font-mono text-white/50">
-                    <span className="flex items-center gap-1.5 sm:gap-2 text-[#00C2D4]">
-                      <MonitorPlay size={13} /> FULL COMMERCIAL PIPELINE
-                    </span>
-                    <span>BILINGUAL AR/EN // TENDER CALCULATOR</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Client Business Breakdown */}
-              <div className="w-full lg:w-5/12 space-y-4 sm:space-y-6">
-                <div>
-                  <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-[#00C2D4] font-bold block mb-1">
-                    Commercial Spot 03 // B2B Luxury Architecture & Tenders
-                  </span>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase tracking-tight text-white">
-                    "Precision Meets Prestige — Commercial Surface Architecture"
-                  </h3>
-                </div>
-
-                <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-white/70">
-                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                      <ShieldCheck size={14} className="text-[#00C2D4]" /> The Business Hook (Closing Enterprise Bids)
-                    </h4>
-                    <p className="leading-relaxed">
-                      High-end commercial contractors can't close $250k+ tenders with plain PDF quotes. We delivered a dual-conversion asset: a cinema-grade commercial film highlighting sub-millimeter laser craft, coupled with a dynamic interactive client proposal engine where project directors customize tiers and calculate ROI in real time.
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
-                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                      <Sliders size={14} className="text-[#FF6600]" /> Optical & Pipeline Science (DaVinci Resolve 20)
-                    </h4>
-                    <p className="leading-relaxed">
-                      Macro optical lens physics with DaVinci Resolve 20 surface tracking. Micro-bevel reflection passes simulate true porcelain glaze physics, and Fairlight 32-bit acoustic mastering highlights diamond wet-saw precision without harsh metallic clatter.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Direct Interactive Call to Action Links */}
-                <div className="flex flex-wrap items-center gap-2.5 pt-2">
-                  <a 
-                    href="/akkari.html" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00C2D4] text-black font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#00C2D4]/90 transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)]"
-                  >
-                    Launch Interactive Portal <ExternalLink size={13} />
-                  </a>
-                  <a 
-                    href="/Akkari_Tiling_Elevated_Revenue_Engine_Proposal.pdf" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/5 border border-white/15 text-white/80 font-mono text-xs font-medium uppercase tracking-wider hover:text-white hover:border-white/30 transition-all"
-                  >
-                    View Executive Proposal (PDF) <ExternalLink size={13} />
-                  </a>
-                </div>
-
-                <div className="pt-1 sm:pt-2 flex flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono text-white/50">
-                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">B2B Tender Engine</span>
-                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">DaVinci 20 Color</span>
-                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Interactive ROI Matrix</span>
-                </div>
-              </div>
-
-            </div>
-          </motion.div>
-
+          
           {/* SECTION HEADER: VERTICAL VIRAL REELS & SOCIAL ARCHITECTURE */}
           <div className="pt-8 sm:pt-14 border-t border-white/10 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
@@ -3300,6 +3203,102 @@ export function StudioClient() {
 
             </div>
           </motion.div>
+
+          {/* VERTICAL SPOT 03: AKKARI TILING COMMERCIAL & REVENUE ENGINE (9:16 MOBILE MASTER) */}
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl relative overflow-hidden"
+          >
+            <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 items-center">
+              
+              {/* Vertical Mobile Player Container */}
+              <div className="w-full lg:w-5/12 flex justify-center" onPointerDown={pauseForVideo}>
+                <div className="relative w-full max-w-[320px] sm:max-w-[340px] rounded-2xl sm:rounded-3xl overflow-hidden border border-white/20 bg-black shadow-[0_0_50px_rgba(0,194,212,0.25)]">
+                  <div className="relative aspect-[9/16] w-full bg-[#050505]">
+                    <video 
+                      src="/akkari_commercial_master_vertical.mp4" 
+                      controls 
+                      playsInline 
+                      preload="metadata"
+                      onPlay={pauseForVideo}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  
+                  <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-[10px] sm:text-xs font-mono text-white/50">
+                    <span className="flex items-center gap-1.5 sm:gap-2 text-[#00C2D4]">
+                      <Smartphone size={13} /> 9:16 MOBILE MASTER
+                    </span>
+                    <span>1080x1920 30FPS REMOTION</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Client Business Breakdown */}
+              <div className="w-full lg:w-7/12 space-y-4 sm:space-y-6">
+                <div>
+                  <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-[#00C2D4] font-bold block mb-1">
+                    Vertical Spot 03 // B2B Luxury Architecture Commercial
+                  </span>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase tracking-tight text-white">
+                    "Precision Meets Prestige — Commercial Surface Architecture"
+                  </h3>
+                </div>
+
+                <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-white/70">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <ShieldCheck size={14} className="text-[#00C2D4]" /> The Business Hook (Closing Enterprise Bids)
+                    </h4>
+                    <p className="leading-relaxed">
+                      High-end commercial contractors can't close $250k+ tenders with plain PDF quotes. We delivered a dual-conversion asset: a 9:16 cinema-grade commercial film highlighting sub-millimeter laser craft, coupled with a dynamic interactive client proposal engine where project directors customize tiers and calculate ROI in real time.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <Sliders size={14} className="text-[#FF6600]" /> Optical & Pipeline Science (DaVinci Resolve 20)
+                    </h4>
+                    <p className="leading-relaxed">
+                      Macro optical lens physics with DaVinci Resolve 20 surface tracking. Micro-bevel reflection passes simulate true porcelain glaze physics, and Fairlight 32-bit acoustic mastering highlights diamond wet-saw precision without harsh metallic clatter.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Direct Interactive Call to Action Links */}
+                <div className="flex flex-wrap items-center gap-2.5 pt-2">
+                  <a 
+                    href="https://auto-bath-detailing-melbourne.vercel.app/akkari.html" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00C2D4] text-black font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#00C2D4]/90 transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)]"
+                  >
+                    Launch Interactive Portal <ExternalLink size={13} />
+                  </a>
+                  <a 
+                    href="https://auto-bath-detailing-melbourne.vercel.app/Akkari_Tiling_Elevated_Revenue_Engine_Proposal.pdf" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/5 border border-white/15 text-white/80 font-mono text-xs font-medium uppercase tracking-wider hover:text-white hover:border-white/30 transition-all"
+                  >
+                    View Executive Proposal (PDF) <ExternalLink size={13} />
+                  </a>
+                </div>
+
+                <div className="pt-1 sm:pt-2 flex flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono text-white/50">
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">9:16 Vertical Reel</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">B2B Tender Engine</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">DaVinci 20 Color</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Interactive ROI Matrix</span>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+
 
         </section>
       )}
