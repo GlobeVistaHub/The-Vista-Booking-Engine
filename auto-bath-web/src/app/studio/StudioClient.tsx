@@ -400,13 +400,13 @@ function AnamorphicOpticalHorizon({
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerLeave}
       onPointerCancel={handlePointerLeave}
-      className="relative my-7 sm:my-9 max-w-2xl mx-auto flex flex-col items-center justify-center select-none group cursor-ew-resize touch-pan-y py-4 px-2"
+      className="relative my-7 sm:my-9 w-full max-w-5xl mx-auto flex flex-col items-center justify-center select-none group cursor-ew-resize touch-pan-y py-4 px-2 overflow-visible"
     >
-      {/* 1. Ambient Volumetric Lens Bloom (Behind Streak - Broad, Silky, Natural, Tracks Pointer) */}
-      <motion.div 
+      {/* 1. Ambient Volumetric Lens Bloom (Behind Streak - Broad, Reactive, Anamorphic) */}
+      <div 
         ref={ambientBloomRef}
-        style={{ x: bloomX }}
-        className="absolute w-3/4 h-12 bg-gradient-to-r from-transparent via-[#00C2D4]/15 to-transparent blur-2xl pointer-events-none -top-6 transition-[opacity] duration-75" 
+        className="absolute w-full h-12 sm:h-16 bg-gradient-to-r from-transparent via-[#00C2D4]/25 via-white/35 to-transparent blur-xl pointer-events-none -top-4 transition-[opacity,transform] duration-75" 
+        style={{ opacity: 0.15, transform: 'scaleY(1)' }}
       />
       <motion.div 
         style={{ x: bloomX }}
@@ -414,20 +414,23 @@ function AnamorphicOpticalHorizon({
       />
 
       {/* 2. Horizontal Anamorphic Flare Streak Beam */}
-      <div className="relative w-full flex items-center justify-center pointer-events-none">
+      <div className="relative w-full flex items-center justify-center pointer-events-none overflow-visible">
         {/* Outer Tapering Flare Horizon */}
         <motion.div 
           ref={outerStreakRef}
           animate={{ opacity: isInteracting ? 0.9 : [0.45, 0.75, 0.45], scaleX: [0.97, 1.03, 0.97] }}
           transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-          className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#00C2D4]/50 via-white/60 to-transparent transition-[opacity] duration-75" 
+          className="w-full h-[1.5px] bg-gradient-to-r from-transparent via-[#00C2D4]/50 via-white/70 to-transparent transition-[opacity] duration-75" 
         />
 
-        {/* High-Intensity Core Laser Beam (Audio-Reactive: pulses width & glow on beat drops) */}
+        {/* High-Intensity Core Laser Beam (Audio-Reactive: explodes 45% -> 100% width on kick drum hits!) */}
         <div
           ref={coreBeamRef}
-          className="absolute h-[1.5px] bg-gradient-to-r from-transparent via-[#00C2D4]/90 via-white to-transparent filter drop-shadow-[0_0_8px_rgba(0,194,212,0.6)] transition-[width,filter,opacity] duration-75"
-          style={{ width: "48%" }}
+          className="absolute h-[3px] sm:h-[4px] rounded-full bg-gradient-to-r from-transparent via-[#00C2D4] via-white to-transparent transition-[width,filter,opacity] duration-75 pointer-events-none"
+          style={{
+            width: "45%",
+            filter: "drop-shadow(0 0 10px rgba(0, 194, 212, 0.8)) drop-shadow(0 0 22px rgba(0, 194, 212, 0.5))"
+          }}
         />
 
         {/* 3. Central Optical Aperture Star & Diamond Glint */}
@@ -444,7 +447,7 @@ function AnamorphicOpticalHorizon({
             {/* 4-Point Cinema Diamond Star Flare */}
             <motion.svg
               viewBox="0 0 24 24"
-              className="w-4 h-4 sm:w-5 sm:h-5 text-white filter drop-shadow-[0_0_8px_rgba(0,194,212,0.8)] pointer-events-none"
+              className="w-4 h-4 sm:w-5 sm:h-5 text-white filter drop-shadow-[0_0_8px_rgba(0,194,212,0.9)] pointer-events-none"
               animate={{ 
                 rotate: [0, 90, 0] 
               }}
@@ -2096,8 +2099,10 @@ export function StudioClient() {
   const horizonOuterStreakRef = useRef<HTMLDivElement | null>(null);
   const horizonAmbientBloomRef = useRef<HTMLDivElement | null>(null);
 
+  // DSP Transient & Peak Tracking Memory
   const peakHeightsRef = useRef<number[]>(new Array(20).fill(4));
   const miniPeakHeightsRef = useRef<number[]>(new Array(5).fill(4));
+  const kickBaselineRef = useRef<number>(140);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -2105,12 +2110,12 @@ export function StudioClient() {
   const dataArrayRef = useRef<Uint8Array | null>(null);
   const rafRef = useRef<number | null>(null);
 
-  // Lazy resilient Audio instance getter (Guarantees client-side audio availability with crossOrigin)
+  // Lazy resilient Audio instance getter (Loop set to false so track finishes cleanly)
   const getAudio = () => {
     if (typeof window === 'undefined') return null;
     if (!audioRef.current) {
       const audio = new Audio('/studio-audio.mp3');
-      audio.loop = true;
+      audio.loop = false; // Allow track to play to completion and fire 'ended'
       audio.preload = 'auto';
       audio.crossOrigin = 'anonymous';
       audioRef.current = audio;
@@ -2146,7 +2151,7 @@ export function StudioClient() {
     }
   };
 
-  // 60 FPS Beat-Synced Direct DOM Animation Loop
+  // 60 FPS Beat-Synced Direct DOM Animation Loop with Dynamic Transient Detection & Pink-Noise Equalization
   const startVisualizerLoop = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
@@ -2157,51 +2162,89 @@ export function StudioClient() {
         analyserRef.current.getByteFrequencyData(dataArrayRef.current as any);
         const data = dataArrayRef.current;
 
-        // 1. Bass kick calculation: Bins 1, 2, 3 (60Hz to 200Hz - SKIPPING BIN 0 DC OFFSET!)
-        const kickVal = ((data[1] || 0) + (data[2] || 0) + (data[3] || 0)) / 3;
-        const kickNorm = Math.max(0, (kickVal - 35) / (255 - 35)); // 0.0 to 1.0
+        // 0. Compute total acoustic energy to detect silence / track ending fadeout
+        let totalSum = 0;
+        for (let k = 1; k < 60; k++) {
+          totalSum += data[k] || 0;
+        }
+        const avgEnergy = totalSum / 59;
 
-        // 2. Snare / Mid-high transient: Bins 10, 16, 24 (1.5kHz to 5kHz)
-        const snapVal = ((data[10] || 0) + (data[16] || 0) + (data[24] || 0)) / 3;
-        const snapNorm = Math.max(0, (snapVal - 25) / (255 - 25));
+        const hBars = headerBarsRef.current;
+        const hCaps = headerPeakCapsRef.current;
+        const peaks = peakHeightsRef.current;
 
-        // 3. OPTION 1: DRIVE THE HERO ANAMORPHIC HORIZON WITH THE BEAT!
+        if (avgEnergy < 6) {
+          // Track is silent or ended: immediately drop all bars to 4px
+          peaks.fill(4);
+          for (let i = 0; i < 20; i++) {
+            if (hBars[i]) hBars[i]!.style.height = '4px';
+            if (hCaps[i]) {
+              hCaps[i]!.style.bottom = '4px';
+              hCaps[i]!.style.opacity = '0.3';
+            }
+          }
+          if (horizonCoreBeamRef.current) {
+            horizonCoreBeamRef.current.style.width = '45%';
+            horizonCoreBeamRef.current.style.filter = 'drop-shadow(0 0 10px rgba(0, 194, 212, 0.8))';
+          }
+          if (horizonDiamondStarRef.current) {
+            horizonDiamondStarRef.current.style.transform = 'scale(1)';
+          }
+          rafRef.current = requestAnimationFrame(draw);
+          return;
+        }
+
+        // 1. Kick Drum Transient Follower (Delta above moving baseline)
+        const rawKick = ((data[1] || 0) + (data[2] || 0) + (data[3] || 0)) / 3;
+        kickBaselineRef.current = kickBaselineRef.current * 0.88 + rawKick * 0.12;
+        const kickDelta = Math.max(0, rawKick - kickBaselineRef.current);
+        const kickPulse = Math.min(1.0, kickDelta / 22); // 0.0 to 1.0 transient punch!
+
+        // 2. Snare / Mid-high transient snap (Bins 12 to 24)
+        const snapRaw = ((data[12] || 0) + (data[18] || 0) + (data[24] || 0)) / 3;
+        const snapNorm = Math.max(0, (snapRaw - 30) / (255 - 30));
+
+        // 3. OPTION 1: HORIZON MASTER LASER BEAM EXPLODES ON KICKS!
         if (horizonCoreBeamRef.current) {
-          const widthPct = Math.round(48 + kickNorm * 48);
+          // Surges from 45% (resting) to 100% (screen-wide burst!)
+          const widthPct = Math.round(45 + kickPulse * 55);
           horizonCoreBeamRef.current.style.width = `${widthPct}%`;
-          const shadowPx = Math.round(8 + kickNorm * 28);
-          const shadowOp = (0.5 + kickNorm * 0.5).toFixed(2);
-          horizonCoreBeamRef.current.style.filter = `drop-shadow(0 0 ${shadowPx}px rgba(0, 194, 212, ${shadowOp}))`;
-          horizonCoreBeamRef.current.style.opacity = (0.6 + kickNorm * 0.4).toFixed(2);
+          // Cyan drop shadow flares up to 45px!
+          const glowPx = Math.round(10 + kickPulse * 35);
+          const glowOp = (0.7 + kickPulse * 0.3).toFixed(2);
+          horizonCoreBeamRef.current.style.filter = `drop-shadow(0 0 ${glowPx}px rgba(0, 194, 212, ${glowOp})) drop-shadow(0 0 ${glowPx * 1.8}px rgba(0, 194, 212, 0.45))`;
+          horizonCoreBeamRef.current.style.opacity = (0.65 + kickPulse * 0.35).toFixed(2);
         }
 
         if (horizonDiamondStarRef.current) {
-          const scale = (1.0 + kickNorm * 0.65 + snapNorm * 0.35).toFixed(2);
-          horizonDiamondStarRef.current.style.transform = `scale(${scale})`;
+          // Central diamond aperture star scales up dynamically!
+          const starScale = (1.0 + kickPulse * 0.75 + snapNorm * 0.45).toFixed(2);
+          horizonDiamondStarRef.current.style.transform = `scale(${starScale})`;
         }
 
         if (horizonHalationRef.current) {
-          const scale = (1.0 + kickNorm * 1.3).toFixed(2);
-          const op = (0.3 + kickNorm * 0.65).toFixed(2);
-          horizonHalationRef.current.style.transform = `scale(${scale})`;
-          horizonHalationRef.current.style.opacity = op;
+          const halationScale = (1.0 + kickPulse * 1.4).toFixed(2);
+          const halationOp = (0.3 + kickPulse * 0.65).toFixed(2);
+          horizonHalationRef.current.style.transform = `scale(${halationScale})`;
+          horizonHalationRef.current.style.opacity = halationOp;
         }
 
         if (horizonOuterStreakRef.current) {
-          horizonOuterStreakRef.current.style.opacity = (0.45 + kickNorm * 0.55).toFixed(2);
+          horizonOuterStreakRef.current.style.opacity = (0.45 + kickPulse * 0.55).toFixed(2);
         }
 
         if (horizonAmbientBloomRef.current) {
-          horizonAmbientBloomRef.current.style.opacity = (0.15 + kickNorm * 0.6).toFixed(2);
+          // Volumetric flare ribbon expands across hero
+          horizonAmbientBloomRef.current.style.opacity = (0.15 + kickPulse * 0.7).toFixed(2);
+          horizonAmbientBloomRef.current.style.transform = `scaleY(${(1.0 + kickPulse * 0.8).toFixed(2)})`;
         }
 
-        // 4. Optical Bloom Halo Glow Pulse on Containers (Balanced & Cinematic)
+        // 4. Optical Bloom Halo Glow Pulse on Containers
         if (headerContainerRef.current) {
-          if (kickNorm > 0.4) {
-            const glowPx = Math.round(12 + kickNorm * 22);
-            const opacity = (0.2 + kickNorm * 0.4).toFixed(2);
-            headerContainerRef.current.style.boxShadow = `0 0 ${glowPx}px rgba(0, 194, 212, ${opacity}), inset 0 0 6px rgba(0, 194, 212, 0.25)`;
-            headerContainerRef.current.style.borderColor = `rgba(0, 194, 212, ${Math.min(0.85, 0.3 + kickNorm * 0.5)})`;
+          if (kickPulse > 0.35) {
+            const glowPx = Math.round(12 + kickPulse * 22);
+            headerContainerRef.current.style.boxShadow = `0 0 ${glowPx}px rgba(0, 194, 212, 0.55), inset 0 0 6px rgba(0, 194, 212, 0.3)`;
+            headerContainerRef.current.style.borderColor = `rgba(0, 194, 212, 0.8)`;
           } else {
             headerContainerRef.current.style.boxShadow = '0 0 10px rgba(0, 194, 212, 0.15)';
             headerContainerRef.current.style.borderColor = 'rgba(255, 255, 255, 0.15)';
@@ -2209,30 +2252,31 @@ export function StudioClient() {
         }
 
         if (pillButtonRef.current) {
-          if (kickNorm > 0.4) {
-            const glowPx = Math.round(20 + kickNorm * 28);
-            const opacity = (0.35 + kickNorm * 0.45).toFixed(2);
-            pillButtonRef.current.style.boxShadow = `0 0 ${glowPx}px rgba(0, 194, 212, ${opacity})`;
+          if (kickPulse > 0.35) {
+            const glowPx = Math.round(20 + kickPulse * 28);
+            pillButtonRef.current.style.boxShadow = `0 0 ${glowPx}px rgba(0, 194, 212, 0.7)`;
           } else {
             pillButtonRef.current.style.boxShadow = '0 0 22px rgba(0, 194, 212, 0.35)';
           }
         }
 
-        // 5. Update 20 Header Bars & Floating Phosphor Peak Caps (Skip Bin 0 to Eliminate DC Offset!)
-        const hBars = headerBarsRef.current;
-        const hCaps = headerPeakCapsRef.current;
-        const peaks = peakHeightsRef.current;
-
+        // 5. Update 20 Header Bars & Floating Peak Caps with Pink-Noise Tilt Compensation
         for (let i = 0; i < 20; i++) {
           const stem = hBars[i];
           const cap = hCaps[i];
 
-          // Map logarithmic curve starting at bin 1 (skip DC bias bin 0!) across musical octaves
-          const bin = Math.min(120, Math.floor(1 + Math.pow(i / 19, 1.55) * 56));
+          // Map logarithmic curve (Bins 1 to 58)
+          const bin = Math.min(120, Math.floor(1 + Math.pow(i / 19, 1.45) * 56));
           const rawVal = data[bin] || 0;
 
-          // Subtract noise floor (18) so quiet frequencies stay down at 4px
-          const norm = Math.max(0, (rawVal - 18) / (255 - 18));
+          // Pink-Noise Spectral Equalization:
+          // Low frequencies naturally have +20dB more energy than highs in mastered tracks.
+          // We apply a tilt curve: attenuate bass (0.48), boost highs (1.30) to create a balanced responsive meter!
+          const tilt = 0.48 + (i / 19) * 0.82;
+          const weightedVal = rawVal * tilt;
+
+          // Dynamic range mapping
+          const norm = Math.max(0, Math.min(1.0, (weightedVal - 22) / (185 - 22)));
           const h = Math.max(4, Math.min(26, 4 + norm * 22));
 
           if (stem) {
@@ -2243,7 +2287,7 @@ export function StudioClient() {
           if (h >= peaks[i]) {
             peaks[i] = h;
           } else {
-            peaks[i] = Math.max(4, peaks[i] - 0.95);
+            peaks[i] = Math.max(4, peaks[i] - 1.1); // Crisp decay
           }
 
           if (cap) {
@@ -2252,17 +2296,18 @@ export function StudioClient() {
           }
         }
 
-        // 6. Update 5 Floating Mini Bars & Peak Caps
+        // 6. Update 5 Floating Mini Bars
         const mBars = miniBarsRef.current;
         const mCaps = miniPeakCapsRef.current;
         const mPeaks = miniPeakHeightsRef.current;
         const miniBins = [1, 3, 7, 15, 28];
+        const miniTilts = [0.5, 0.65, 0.85, 1.1, 1.35];
 
         for (let i = 0; i < 5; i++) {
           const stem = mBars[i];
           const cap = mCaps[i];
-          const val = data[miniBins[i]] || 0;
-          const norm = Math.max(0, (val - 20) / (255 - 20));
+          const val = (data[miniBins[i]] || 0) * miniTilts[i];
+          const norm = Math.max(0, Math.min(1.0, (val - 22) / (180 - 22)));
           const h = Math.max(4, Math.min(18, 4 + norm * 14));
 
           if (stem) {
@@ -2272,7 +2317,7 @@ export function StudioClient() {
           if (h >= mPeaks[i]) {
             mPeaks[i] = h;
           } else {
-            mPeaks[i] = Math.max(4, mPeaks[i] - 0.75);
+            mPeaks[i] = Math.max(4, mPeaks[i] - 0.9);
           }
 
           if (cap) {
@@ -2304,6 +2349,7 @@ export function StudioClient() {
     });
     peakHeightsRef.current.fill(4);
     miniPeakHeightsRef.current.fill(4);
+    kickBaselineRef.current = 140;
 
     miniBarsRef.current.forEach((el) => {
       if (el) el.style.height = '4px';
@@ -2314,9 +2360,9 @@ export function StudioClient() {
 
     // Reset Horizon elements to baseline resting flare
     if (horizonCoreBeamRef.current) {
-      horizonCoreBeamRef.current.style.width = '48%';
-      horizonCoreBeamRef.current.style.filter = 'drop-shadow(0 0 8px rgba(0, 194, 212, 0.6))';
-      horizonCoreBeamRef.current.style.opacity = '0.6';
+      horizonCoreBeamRef.current.style.width = '45%';
+      horizonCoreBeamRef.current.style.filter = 'drop-shadow(0 0 10px rgba(0, 194, 212, 0.8)) drop-shadow(0 0 22px rgba(0, 194, 212, 0.5))';
+      horizonCoreBeamRef.current.style.opacity = '0.65';
     }
     if (horizonDiamondStarRef.current) {
       horizonDiamondStarRef.current.style.transform = 'scale(1)';
@@ -2330,6 +2376,7 @@ export function StudioClient() {
     }
     if (horizonAmbientBloomRef.current) {
       horizonAmbientBloomRef.current.style.opacity = '0.15';
+      horizonAmbientBloomRef.current.style.transform = 'scaleY(1)';
     }
 
     if (headerContainerRef.current) {
@@ -2591,7 +2638,7 @@ export function StudioClient() {
   return (
     <main className="min-h-screen bg-[#050505] text-white selection:bg-[#00C2D4] selection:text-black font-sans relative overflow-x-hidden">
       {/* Persistent Native Audio Element (Direct OS Hardware Output) */}
-      <audio ref={audioRef} src="/studio-audio.mp3" loop preload="auto" crossOrigin="anonymous" />
+      <audio ref={audioRef} src="/studio-audio.mp3" preload="auto" crossOrigin="anonymous" />
       
 
 
