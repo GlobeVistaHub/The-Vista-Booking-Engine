@@ -2533,7 +2533,7 @@ export function StudioClient() {
     };
 
     if (audio) {
-      audio.loop = false;
+      audio.loop = true;
       audio.addEventListener('ended', handleEnded);
       audio.addEventListener('pause', handlePause);
     }
@@ -2715,7 +2715,7 @@ export function StudioClient() {
   return (
     <main className="min-h-screen bg-[#050505] text-white selection:bg-[#00C2D4] selection:text-black font-sans relative overflow-x-hidden">
       {/* Persistent Native Audio Element (Direct OS Hardware Output) */}
-      <audio id="studio-audio-player" ref={audioRef} src="/studio-audio.mp3" preload="auto" playsInline crossOrigin="anonymous" />
+      <audio id="studio-audio-player" ref={audioRef} src="/studio-audio.mp3" preload="auto" playsInline loop crossOrigin="anonymous" />
       
 
 
