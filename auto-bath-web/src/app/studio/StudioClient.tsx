@@ -530,9 +530,18 @@ interface AudioControlsProps {
   isDucked: boolean;
   togglePlay: () => void;
   headerBarsRef: React.MutableRefObject<(HTMLDivElement | null)[]>;
+  headerPeakCapsRef: React.MutableRefObject<(HTMLDivElement | null)[]>;
+  headerContainerRef: React.MutableRefObject<HTMLDivElement | null>;
 }
 
-function HeaderFrequencyVisualizer({ isPlaying, isDucked, togglePlay, headerBarsRef }: AudioControlsProps) {
+function HeaderFrequencyVisualizer({
+  isPlaying,
+  isDucked,
+  togglePlay,
+  headerBarsRef,
+  headerPeakCapsRef,
+  headerContainerRef
+}: AudioControlsProps) {
   return (
     <div className="flex items-center gap-2">
       {/* Interactive Sound Engine Toggle */}
@@ -540,10 +549,10 @@ function HeaderFrequencyVisualizer({ isPlaying, isDucked, togglePlay, headerBars
         onClick={togglePlay}
         className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-300 ${
           isPlaying
-            ? 'bg-[#00C2D4]/20 border-[#00C2D4] text-[#00C2D4] shadow-[0_0_18px_rgba(0,194,212,0.4)]'
+            ? 'bg-[#00C2D4]/20 border-[#00C2D4] text-[#00C2D4] shadow-[0_0_20px_rgba(0,194,212,0.45)]'
             : isDucked
             ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
-            : 'bg-black/60 border-white/15 text-white/70 hover:text-white hover:border-white/30'
+            : 'bg-black/70 border-white/15 text-white/70 hover:text-white hover:border-white/30'
         }`}
         title={isPlaying ? 'Mute Studio Audio' : isDucked ? 'Video Active (Click to force resume)' : 'Start 48kHz DSP Studio Audio'}
       >
@@ -559,31 +568,47 @@ function HeaderFrequencyVisualizer({ isPlaying, isDucked, togglePlay, headerBars
         </span>
       </button>
 
-      {/* Real-time Frequency Spectrum Bars - GPU Accelerated (Zero React Re-renders, Zero Distortion) */}
+      {/* Real-time Mastering Grade Spectrum Analyzer: Multi-Color Gradient Stems + Gravity Peak Caps + Optical Bloom */}
       <div 
+        ref={headerContainerRef}
         onClick={togglePlay}
-        className="hidden sm:flex items-end gap-[3px] h-7 px-2.5 py-1 bg-black/60 border border-white/15 rounded-lg cursor-pointer hover:border-[#00C2D4]/50 transition-all select-none"
-        title="Click to toggle DSP Audio Engine"
+        className="hidden sm:flex items-end gap-[3px] h-7 px-2.5 py-1 bg-black/80 border border-white/15 rounded-lg cursor-pointer transition-all duration-150 select-none shadow-[0_0_12px_rgba(0,194,212,0.15)]"
+        title="Fairlight Mastering Spectrum Analyzer - Click to Toggle"
       >
         {Array.from({ length: 20 }).map((_, i) => (
-          <div
-            key={i}
-            ref={(el) => {
-              if (headerBarsRef.current) headerBarsRef.current[i] = el;
-            }}
-            className={`w-[2.5px] rounded-t-sm transition-[height] duration-75 ${
-              i % 2 === 0
-                ? 'bg-[#00C2D4] shadow-[0_0_8px_rgba(0,194,212,0.8)]'
-                : 'bg-[#FF2E93] shadow-[0_0_8px_rgba(255,46,147,0.8)]'
-            }`}
-            style={{
-              height: '4px',
-            }}
-          />
+          <div key={i} className="relative w-[3px] h-full flex items-end">
+            {/* Multi-Color Mastering Gradient Stem: Cyan -> Amber -> Coral */}
+            <div
+              ref={(el) => {
+                if (headerBarsRef.current) headerBarsRef.current[i] = el;
+              }}
+              className="w-full rounded-t-[1.5px] transition-[height] duration-75"
+              style={{
+                height: '4px',
+                background: 'linear-gradient(to top, #00C2D4 0%, #00C2D4 55%, #FFB800 82%, #FF2E93 100%)',
+                boxShadow: '0 0 6px rgba(0,194,212,0.45)'
+              }}
+            />
+            {/* Floating Phosphor Peak-Cap with Gravity Decay */}
+            <div
+              ref={(el) => {
+                if (headerPeakCapsRef.current) headerPeakCapsRef.current[i] = el;
+              }}
+              className="absolute left-0 w-full h-[1.5px] bg-white rounded-full transition-[bottom] duration-75 pointer-events-none opacity-40 shadow-[0_0_6px_#FFFFFF]"
+              style={{
+                bottom: '4px',
+              }}
+            />
+          </div>
         ))}
-        <span className="text-[10px] font-mono text-white/50 ml-1.5 uppercase hidden xl:inline">
-          {isPlaying ? '48kHz DSP' : '32-Bit Float'}
-        </span>
+
+        {/* Live Broadcast Audio Telemetry Badge */}
+        <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-white/10 hidden xl:flex">
+          <div className={`w-1.5 h-1.5 rounded-full transition-all duration-150 ${isPlaying ? 'bg-[#00C2D4] shadow-[0_0_8px_#00C2D4] animate-pulse' : 'bg-white/20'}`} />
+          <span className="text-[9.5px] font-mono tracking-wider text-white/50 uppercase">
+            {isPlaying ? 'FAIRLIGHT -14 LUFS' : '32-Bit Float'}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -2038,9 +2063,17 @@ export function StudioClient() {
   const isPlayingRef = useRef(false);
   const wasPlayingBeforeVideoRef = useRef(false);
 
-  // Direct DOM Visualizer Refs (Zero React Re-renders, Zero Buffer Starvation)
+  // Direct DOM Visualizer Refs & Peak Hold Memory (Zero React Re-renders, Zero Distortion)
   const headerBarsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const headerPeakCapsRef = useRef<(HTMLDivElement | null)[]>([]);
   const miniBarsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const miniPeakCapsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const headerContainerRef = useRef<HTMLDivElement | null>(null);
+  const pillButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const peakHeightsRef = useRef<number[]>(new Array(20).fill(4));
+  const miniPeakHeightsRef = useRef<number[]>(new Array(5).fill(4));
+
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
@@ -2088,7 +2121,7 @@ export function StudioClient() {
     }
   };
 
-  // 60 FPS Beat-Synced Direct DOM Animation Loop (Runs without triggering React state updates)
+  // 60 FPS Beat-Synced Direct DOM Animation Loop with Gravity Peak-Caps & Bass Optical Bloom
   const startVisualizerLoop = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
@@ -2099,29 +2132,88 @@ export function StudioClient() {
         analyserRef.current.getByteFrequencyData(dataArrayRef.current as any);
         const data = dataArrayRef.current;
 
-        // 1. Real-time FFT mapping to 20 Header Spectrum Bars
-        const hBars = headerBarsRef.current;
-        for (let i = 0; i < 20; i++) {
-          const el = hBars[i];
-          if (el) {
-            // Logarithmic frequency curve: concentrates resolution on bass kicks and snares (0-500Hz)
-            const bin = Math.min(31, Math.floor(Math.pow(i / 20, 1.35) * 28));
-            const val = data[bin] || 0;
-            // Map 0-255 amplitude to 4px - 26px height
-            const h = Math.max(4, Math.min(26, (val / 255) * 26));
-            el.style.height = `${h}px`;
+        // 1. Bass Kick Energy calculation (Bins 0, 1, 2, 3 = 20Hz to 120Hz)
+        const kickEnergy = (data[0] + data[1] + data[2] + data[3]) / 4; // 0 - 255
+        const kickNorm = kickEnergy / 255;
+
+        // 2. Optical Bloom Halo Glow Pulse on Containers (Balanced & Cinematic)
+        if (headerContainerRef.current) {
+          if (kickNorm > 0.42) {
+            const glowPx = Math.round(12 + kickNorm * 22);
+            const opacity = (0.2 + kickNorm * 0.4).toFixed(2);
+            headerContainerRef.current.style.boxShadow = `0 0 ${glowPx}px rgba(0, 194, 212, ${opacity}), inset 0 0 6px rgba(0, 194, 212, 0.25)`;
+            headerContainerRef.current.style.borderColor = `rgba(0, 194, 212, ${Math.min(0.85, 0.3 + kickNorm * 0.5)})`;
+          } else {
+            headerContainerRef.current.style.boxShadow = '0 0 10px rgba(0, 194, 212, 0.15)';
+            headerContainerRef.current.style.borderColor = 'rgba(255, 255, 255, 0.15)';
           }
         }
 
-        // 2. Real-time FFT mapping to 5 Floating Mini Bars
+        if (pillButtonRef.current) {
+          if (kickNorm > 0.42) {
+            const glowPx = Math.round(20 + kickNorm * 28);
+            const opacity = (0.35 + kickNorm * 0.45).toFixed(2);
+            pillButtonRef.current.style.boxShadow = `0 0 ${glowPx}px rgba(0, 194, 212, ${opacity})`;
+          } else {
+            pillButtonRef.current.style.boxShadow = '0 0 22px rgba(0, 194, 212, 0.35)';
+          }
+        }
+
+        // 3. Update 20 Header Bars & Floating Phosphor Peak Caps
+        const hBars = headerBarsRef.current;
+        const hCaps = headerPeakCapsRef.current;
+        const peaks = peakHeightsRef.current;
+
+        for (let i = 0; i < 20; i++) {
+          const stem = hBars[i];
+          const cap = hCaps[i];
+
+          // Logarithmic distribution to emphasize low-end sub-bass & kick drum punches
+          const bin = Math.min(31, Math.floor(Math.pow(i / 20, 1.35) * 28));
+          const val = data[bin] || 0;
+          const h = Math.max(4, Math.min(26, (val / 255) * 26));
+
+          if (stem) {
+            stem.style.height = `${h}px`;
+          }
+
+          // Peak Hold with smooth gravity decay
+          if (h >= peaks[i]) {
+            peaks[i] = h;
+          } else {
+            peaks[i] = Math.max(4, peaks[i] - 0.65); // Gentle gravity descent
+          }
+
+          if (cap) {
+            cap.style.bottom = `${peaks[i]}px`;
+            cap.style.opacity = peaks[i] > 6 ? '1' : '0.4';
+          }
+        }
+
+        // 4. Update 5 Floating Mini Bars & Peak Caps
         const mBars = miniBarsRef.current;
+        const mCaps = miniPeakCapsRef.current;
+        const mPeaks = miniPeakHeightsRef.current;
         const miniBins = [1, 3, 6, 12, 20];
+
         for (let i = 0; i < 5; i++) {
-          const el = mBars[i];
-          if (el) {
-            const val = data[miniBins[i]] || 0;
-            const h = Math.max(4, Math.min(18, (val / 255) * 18));
-            el.style.height = `${h}px`;
+          const stem = mBars[i];
+          const cap = mCaps[i];
+          const val = data[miniBins[i]] || 0;
+          const h = Math.max(4, Math.min(18, (val / 255) * 18));
+
+          if (stem) {
+            stem.style.height = `${h}px`;
+          }
+
+          if (h >= mPeaks[i]) {
+            mPeaks[i] = h;
+          } else {
+            mPeaks[i] = Math.max(4, mPeaks[i] - 0.5);
+          }
+
+          if (cap) {
+            cap.style.bottom = `${mPeaks[i]}px`;
           }
         }
       }
@@ -2137,13 +2229,28 @@ export function StudioClient() {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
-    // Return bars smoothly to idle resting state
     headerBarsRef.current.forEach((el) => {
       if (el) el.style.height = '4px';
+    });
+    headerPeakCapsRef.current.forEach((el) => {
+      if (el) {
+        el.style.bottom = '4px';
+        el.style.opacity = '0.4';
+      }
     });
     miniBarsRef.current.forEach((el) => {
       if (el) el.style.height = '4px';
     });
+    miniPeakCapsRef.current.forEach((el) => {
+      if (el) el.style.bottom = '4px';
+    });
+    if (headerContainerRef.current) {
+      headerContainerRef.current.style.boxShadow = '';
+      headerContainerRef.current.style.borderColor = '';
+    }
+    if (pillButtonRef.current) {
+      pillButtonRef.current.style.boxShadow = '';
+    }
   };
 
   // Toggle Background Audio & Real-time Beat Sync
@@ -2409,7 +2516,7 @@ export function StudioClient() {
 
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center">
-              <HeaderFrequencyVisualizer isPlaying={isPlaying} isDucked={isDucked} togglePlay={togglePlay} headerBarsRef={headerBarsRef} />
+              <HeaderFrequencyVisualizer isPlaying={isPlaying} isDucked={isDucked} togglePlay={togglePlay} headerBarsRef={headerBarsRef} headerPeakCapsRef={headerPeakCapsRef} headerContainerRef={headerContainerRef} />
             </div>
 
             {/* Visit GoodBrains.pro Header Button */}
@@ -3256,12 +3363,13 @@ export function StudioClient() {
       {/* ================= FLOATING DSP AUDIO PILL (MOBILE & DESKTOP) ================= */}
       <aside aria-label="DSP Audio Engine" className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-2">
         <button
+          ref={pillButtonRef}
           onClick={togglePlay}
           className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full border shadow-2xl backdrop-blur-md font-mono text-xs transition-all duration-300 ${
             isPlaying
-              ? 'bg-black/90 border-[#00C2D4] text-[#00C2D4] shadow-[0_0_25px_rgba(0,194,212,0.45)]'
+              ? 'bg-black/95 border-[#00C2D4] text-[#00C2D4] shadow-[0_0_25px_rgba(0,194,212,0.45)]'
               : isDucked
-              ? 'bg-black/90 border-amber-500/50 text-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.3)]'
+              ? 'bg-black/95 border-amber-500/50 text-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.3)]'
               : 'bg-black/85 border-white/20 text-white/80 hover:text-white hover:border-white/40'
           }`}
           title={isPlaying ? 'Mute Studio Score' : isDucked ? 'Video Active (Click to force resume score)' : 'Play 48kHz Studio Score'}
@@ -3274,21 +3382,32 @@ export function StudioClient() {
             <VolumeX size={14} className="text-white/40" />
           )}
           <span className="font-bold tracking-wider text-[11px] sm:text-xs">
-            {isPlaying ? 'DSP LIVE' : isDucked ? 'AUTO-DUCKED • VIDEO ACTIVE' : 'STUDIO SCORE'}
+            {isPlaying ? '48kHz DSP LIVE' : isDucked ? 'AUTO-DUCKED • VIDEO ACTIVE' : 'STUDIO SCORE'}
           </span>
           {isPlaying && (
-            <div className="flex items-end gap-[2px] h-3.5 ml-1">
+            <div className="flex items-end gap-[3px] h-3.5 ml-1">
               {[0, 1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  ref={(el) => {
-                    if (miniBarsRef.current) miniBarsRef.current[i] = el;
-                  }}
-                  className="w-[2px] rounded-full bg-[#00C2D4] transition-[height] duration-75"
-                  style={{
-                    height: '4px'
-                  }}
-                />
+                <div key={i} className="relative w-[2.5px] h-full flex items-end">
+                  <div
+                    ref={(el) => {
+                      if (miniBarsRef.current) miniBarsRef.current[i] = el;
+                    }}
+                    className="w-full rounded-t-sm transition-[height] duration-75"
+                    style={{
+                      height: '4px',
+                      background: 'linear-gradient(to top, #00C2D4 0%, #FFB800 80%, #FF2E93 100%)',
+                    }}
+                  />
+                  <div
+                    ref={(el) => {
+                      if (miniPeakCapsRef.current) miniPeakCapsRef.current[i] = el;
+                    }}
+                    className="absolute left-0 w-full h-[1px] bg-white rounded-full transition-[bottom] duration-75 pointer-events-none opacity-60 shadow-[0_0_4px_#FFF]"
+                    style={{
+                      bottom: '4px'
+                    }}
+                  />
+                </div>
               ))}
             </div>
           )}
