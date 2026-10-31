@@ -108,6 +108,18 @@
       </svg>
     );
 
+    const FilmIcon = () => (
+      <svg className="w-4 h-4 text-brand-blue inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+      </svg>
+    );
+
+    const PlayIcon = () => (
+      <svg className="w-8 h-8 text-brand-blue inline-block shrink-0 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    );
+
     const CalculatorIcon = () => (
       <svg className="w-4 h-4 text-amber-400 inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -469,6 +481,17 @@
           <div className="sticky top-[61px] z-40 bg-brand-slate border-b border-brand-border">
             <div className="max-w-7xl mx-auto px-4 flex overflow-x-auto no-scrollbar gap-2 py-2.5">
               <button
+                onClick={() => setActiveTab('cinema')}
+                className={`px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  activeTab === 'cinema'
+                    ? 'bg-brand-blue text-white shadow-lg glow-blue'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <FilmIcon />
+                <span>{isAr ? '🎬 الفيلم الإعلاني (4K Cinema)' : '🎬 4K Cinema Commercial'}</span>
+              </button>
+              <button
                 onClick={() => setActiveTab('roi')}
                 className={`px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap transition-all ${
                   activeTab === 'roi'
@@ -527,6 +550,60 @@
 
           {/* Main Body Content by Tab */}
           <main className="max-w-7xl mx-auto px-4 py-8 flex-1 w-full">
+
+            {/* TAB 0: CINEMA COMMERCIAL PORTAL */}
+            {activeTab === 'cinema' && (
+              <div className="space-y-8">
+                <div className="glass-panel p-6 md:p-10 rounded-2xl border border-brand-border text-center max-w-4xl mx-auto">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/10 border border-brand-blue/30 text-brand-blue text-xs font-mono font-bold uppercase tracking-wider mb-4">
+                    <span>{isAr ? 'العرض الرسمي الأول على يوتيوب' : 'Official YouTube Broadcast Premiere'}</span>
+                  </div>
+                  
+                  <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight uppercase mb-3">
+                    {isAr ? 'الإعلان التجاري السينمائي المعماري لشركة عكاري' : 'Akkari Tiling Commercial Master'}
+                  </h2>
+                  <p className="text-slate-400 text-sm md:text-base max-w-2xl mx-auto mb-8">
+                    {isAr
+                      ? 'تمت هندسة هذا الإعلان بدقة سينمائية 4K باستخدام علم الألوان لداڤينشي ريزولف 20 لتأكيد الصدارة المعمارية واستقطاب المناقصات الكبرى.'
+                      : 'Engineered with DaVinci Resolve 20 color science, 35mm optical halation, and Fairlight 32-bit acoustic mastering to arrest enterprise tender directors.'}
+                  </p>
+
+                  {/* Cinema Screen Container */}
+                  <div className="relative aspect-[16/9] md:aspect-[21/9] w-full max-w-3xl mx-auto rounded-2xl overflow-hidden border border-brand-border bg-slate-950 flex flex-col items-center justify-center p-6 shadow-2xl">
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-brand-blue shadow-[0_0_40px_rgba(2,132,199,0.3)] mb-4">
+                      <PlayIcon />
+                    </div>
+
+                    <div className="text-brand-amber font-mono text-xs md:text-sm font-bold tracking-widest uppercase mb-1">
+                      {isAr ? 'البث المباشر غداً عند الساعة 3:00 عصراً' : 'Broadcasting Tomorrow @ 3:00 PM'}
+                    </div>
+                    <div className="text-slate-400 text-xs font-mono">
+                      {isAr ? 'سيتم ربط مشغل اليوتيوب الرسمي هنا فور إطلاقه' : 'Official 4K YouTube player embeds directly here upon release'}
+                    </div>
+                  </div>
+
+                  {/* Technical Metadata Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 max-w-3xl mx-auto text-left">
+                    <div className="p-3 bg-slate-900/60 rounded-xl border border-brand-border">
+                      <div className="text-[10px] font-mono text-slate-400 uppercase">{isAr ? 'علم الألوان' : 'Color Science'}</div>
+                      <div className="text-xs font-bold text-white mt-0.5">DaVinci Resolve 20</div>
+                    </div>
+                    <div className="p-3 bg-slate-900/60 rounded-xl border border-brand-border">
+                      <div className="text-[10px] font-mono text-slate-400 uppercase">{isAr ? 'الصوت المحيطي' : 'Master Audio'}</div>
+                      <div className="text-xs font-bold text-white mt-0.5">Fairlight 32-Bit Float</div>
+                    </div>
+                    <div className="p-3 bg-slate-900/60 rounded-xl border border-brand-border">
+                      <div className="text-[10px] font-mono text-slate-400 uppercase">{isAr ? 'العدسة البصرية' : 'Optics'}</div>
+                      <div className="text-xs font-bold text-white mt-0.5">2.39:1 Anamorphic</div>
+                    </div>
+                    <div className="p-3 bg-slate-900/60 rounded-xl border border-brand-border">
+                      <div className="text-[10px] font-mono text-slate-400 uppercase">{isAr ? 'معدل الحفاظ' : 'Retention Arc'}</div>
+                      <div className="text-xs font-bold text-brand-emerald mt-0.5">5-Beat Psychological</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* TAB 1: ROI CALCULATOR */}
             {activeTab === 'roi' && (
@@ -819,7 +896,7 @@
                     <p className="text-slate-400 text-sm mt-1">
                       {isAr 
                         ? 'تحليل هندسي مباشر يوضح أسباب تسرب المناقصات الكبرى من موقع Akkari Tiling الحالي.'
-                        : 'Technical breakdown exposing why commercial tiling tenders leak from Akkari Tiling's existing website.'}
+                        : "Technical breakdown exposing why commercial tiling tenders leak from Akkari Tiling's existing website."}
                     </p>
                   </div>
                   <div className="text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">

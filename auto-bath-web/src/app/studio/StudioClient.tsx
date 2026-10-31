@@ -3215,24 +3215,56 @@ export function StudioClient() {
             <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 items-center">
               
               {/* Vertical Mobile Player Container */}
-              <div className="w-full lg:w-5/12 flex justify-center" onPointerDown={pauseForVideo}>
+              <div className="w-full lg:w-5/12 flex justify-center">
                 <div className="relative w-full max-w-[320px] sm:max-w-[340px] rounded-2xl sm:rounded-3xl overflow-hidden border border-white/20 bg-black shadow-[0_0_50px_rgba(0,194,212,0.25)]">
-                  <div className="relative aspect-[9/16] w-full bg-[#050505]">
-                    <video 
-                      src="/akkari_commercial_master_vertical.mp4" 
-                      controls 
-                      playsInline 
-                      preload="metadata"
-                      onPlay={pauseForVideo}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="relative aspect-[9/16] w-full bg-gradient-to-b from-[#0B1120] via-[#050505] to-[#0A0E17] flex flex-col justify-between p-6 text-center select-none border-b border-white/10">
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#00C2D4]/10 border border-[#00C2D4]/30 text-[#00C2D4] font-mono text-[10px] tracking-widest uppercase font-bold">
+                        <Sparkles size={11} /> 4K Cinema
+                      </span>
+                      <span className="font-mono text-[10px] text-white/40 tracking-wider">
+                        2.39:1 / 9:16
+                      </span>
+                    </div>
+
+                    <div className="space-y-3.5 my-auto">
+                      <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 border border-white/15 flex items-center justify-center text-[#00C2D4] shadow-[0_0_30px_rgba(0,194,212,0.3)]">
+                        <Play size={28} className="translate-x-0.5 text-[#00C2D4]" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-mono tracking-widest text-[#FFB800] uppercase font-bold block mb-1">
+                          YouTube Broadcast Premiere
+                        </span>
+                        <h4 className="text-lg font-black text-white tracking-tight uppercase">
+                          Akkari Commercial Master
+                        </h4>
+                        <p className="text-[11px] text-white/60 font-mono mt-1">
+                          Going Live Tomorrow @ 3:00 PM
+                        </p>
+                      </div>
+                      <div className="pt-2">
+                        <a
+                          href="https://auto-bath-detailing-melbourne.vercel.app/akkari.html"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl bg-[#00C2D4] text-black font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#00C2D4]/90 transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)]"
+                        >
+                          Explore Interactive Portal <ExternalLink size={13} />
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="text-[10px] font-mono text-white/40 border-t border-white/5 pt-3 flex items-center justify-between">
+                      <span>DAVINCI RESOLVE 20</span>
+                      <span>FAIRLIGHT 32-BIT</span>
+                    </div>
                   </div>
                   
                   <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-[10px] sm:text-xs font-mono text-white/50">
                     <span className="flex items-center gap-1.5 sm:gap-2 text-[#00C2D4]">
                       <Smartphone size={13} /> 9:16 MOBILE MASTER
                     </span>
-                    <span>1080x1920 30FPS REMOTION</span>
+                    <span>OFFICIAL RELEASE 3:00 PM</span>
                   </div>
                 </div>
               </div>
