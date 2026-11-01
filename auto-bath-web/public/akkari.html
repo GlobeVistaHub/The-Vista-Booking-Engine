@@ -845,11 +845,13 @@
                                 : 'bg-slate-800/40 border-slate-700 text-slate-400'
                             }`}
                           >
-                            <div className="flex justify-between items-center gap-2">
-                              <span className="text-[11px] sm:text-xs font-black text-emerald-400 whitespace-nowrap">
-                                {isAr ? '★ الباقة الموصى بها للانطلاق' : '★ RECOMMENDED TIER'}
+                            <div className="flex justify-between items-center gap-1.5 sm:gap-2">
+                              <span className="text-[10.5px] sm:text-xs font-bold sm:font-black text-emerald-400 whitespace-nowrap">
+                                {isAr ? '★ الباقة الموصى بها للانطلاق' : (
+                                  <span>★ RECOMMENDED<span className="hidden sm:inline"> TIER</span></span>
+                                )}
                               </span>
-                              <span className="text-xs sm:text-sm font-black text-white shrink-0 font-mono">$5,200 AUD</span>
+                              <span className="text-[11px] sm:text-sm font-black text-white shrink-0 font-mono">$5,200 AUD</span>
                             </div>
                             <div className="text-xs sm:text-sm font-bold text-white mt-1">Commercial Pro (~ 3,500 USD)</div>
                             <div className="text-[10px] sm:text-[11px] text-slate-300 mt-1">
@@ -866,11 +868,11 @@
                                 : 'bg-slate-800/40 border-slate-700 text-slate-400'
                             }`}
                           >
-                            <div className="flex justify-between items-center gap-2">
-                              <span className="text-[11px] sm:text-xs font-bold text-slate-400 whitespace-nowrap">
+                            <div className="flex justify-between items-center gap-1.5 sm:gap-2">
+                              <span className="text-[10.5px] sm:text-xs font-bold text-slate-400 whitespace-nowrap">
                                 {isAr ? 'ترقية لاحقة (Scale-Up)' : 'Future Scale-Up'}
                               </span>
-                              <span className="text-xs sm:text-sm font-black text-white shrink-0 font-mono">$8,800 AUD</span>
+                              <span className="text-[11px] sm:text-sm font-black text-white shrink-0 font-mono">$8,800 AUD</span>
                             </div>
                             <div className="text-xs sm:text-sm font-bold text-white mt-1">Enterprise Engine (~ 5,900 USD)</div>
                             <div className="text-[10px] sm:text-[11px] text-slate-400 mt-1">
