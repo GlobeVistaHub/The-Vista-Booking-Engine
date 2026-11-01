@@ -1463,6 +1463,38 @@
               </div>
             )}
 
+          {/* Executive Digital Productions // Good Brains Studio Branding & Back to Studio Link */}
+          <div className="mt-16 pt-8 border-t border-slate-800/80 text-center flex flex-col items-center justify-center gap-3">
+            <a 
+              href="https://www.goodbrains.pro/studio/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-3.5 px-5 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 hover:bg-slate-800 transition-all shadow-xl hover:shadow-cyan-500/10 cursor-pointer"
+            >
+              <img 
+                src="/goodbrains_logo.png" 
+                alt="Good Brains Studio" 
+                className="h-8 w-auto object-contain transition-transform group-hover:scale-105" 
+              />
+              <div className="text-start">
+                <div className="text-[10px] uppercase font-mono tracking-widest text-cyan-400 font-bold flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  EXECUTIVE DIGITAL PRODUCTIONS
+                </div>
+                <div className="text-xs font-black text-white group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                  <span>Good Brains Studio</span>
+                  <span className="text-slate-600">&bull;</span>
+                  <span className="text-slate-400 font-medium group-hover:text-white transition-colors">
+                    {isAr ? 'العودة لمعرض الاستوديو الرئيسي ←' : 'Return to Studio Showcase →'}
+                  </span>
+                </div>
+              </div>
+            </a>
+            <p className="text-[11px] text-slate-500 font-mono">
+              Next-Gen Creative Technology &bull; High-Retention Cinema Ads &bull; Algorithmic Revenue Engines
+            </p>
+          </div>
+
           </main>
 
           {/* Sticky Bottom Bar */}
@@ -1476,6 +1508,16 @@
                 <span className="text-xs text-slate-400 font-mono">
                   Melbourne, Victoria
                 </span>
+                <a
+                  href="https://www.goodbrains.pro/studio/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hidden lg:flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 font-mono transition-colors border-s border-slate-700 ps-3"
+                  title="Good Brains Studio // Executive Digital Productions"
+                >
+                  <img src="/goodbrains_logo.png" alt="Good Brains" className="h-4 w-auto object-contain" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Executive Digital Productions</span>
+                </a>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold text-emerald-400 hidden md:inline">
