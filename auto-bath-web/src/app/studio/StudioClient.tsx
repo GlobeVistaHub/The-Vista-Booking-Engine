@@ -3632,7 +3632,7 @@ export function StudioClient() {
           </span>
 
           <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-heading font-bold uppercase tracking-tight text-white leading-tight">
-            Ready to <a href="https://www.goodbrains.pro/experience" target="_top" className="text-[#00C2D4] underline decoration-[#00C2D4]/50 hover:decoration-[#00C2D4] hover:text-white transition-all cursor-pointer" title="Launch Spatial 3D Experience">experience</a> the studio?
+            Ready to <a href="https://auto-bath-detailing-melbourne.vercel.app/experience" target="_top" className="text-[#00C2D4] underline decoration-[#00C2D4]/50 hover:decoration-[#00C2D4] hover:text-white transition-all cursor-pointer" title="Launch Spatial 3D Experience">experience</a> the studio?
           </h2>
 
           <p className="text-white/60 text-xs sm:text-base md:text-lg max-w-2xl mx-auto font-sans leading-relaxed">
