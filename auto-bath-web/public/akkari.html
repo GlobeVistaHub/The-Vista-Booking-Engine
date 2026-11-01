@@ -556,7 +556,7 @@
               <div className="space-y-8">
                 <div className="glass-panel p-6 md:p-10 rounded-2xl border border-brand-border text-center max-w-4xl mx-auto">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/10 border border-brand-blue/30 text-brand-blue text-xs font-mono font-bold uppercase tracking-wider mb-4">
-                    <span>{isAr ? 'العرض الرسمي الأول على يوتيوب' : 'Official YouTube Broadcast Premiere'}</span>
+                    <span>{isAr ? 'الفيلم الإعلاني السينمائي الرسمي (Lossless Master)' : 'Official Commercial Cinema Master'}</span>
                   </div>
                   
                   <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight uppercase mb-3">
@@ -568,17 +568,24 @@
                       : 'Engineered with DaVinci Resolve 20 color science, 35mm optical halation, and Fairlight 32-bit acoustic mastering to arrest enterprise tender directors.'}
                   </p>
 
-                  {/* Cinema Screen Container */}
-                  <div className="relative aspect-[16/9] md:aspect-[21/9] w-full max-w-3xl mx-auto rounded-2xl overflow-hidden border border-brand-border bg-slate-950 flex flex-col items-center justify-center p-6 shadow-2xl">
-                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-brand-blue shadow-[0_0_40px_rgba(2,132,199,0.3)] mb-4">
-                      <PlayIcon />
-                    </div>
-
-                    <div className="text-brand-amber font-mono text-xs md:text-sm font-bold tracking-widest uppercase mb-1">
-                      {isAr ? 'البث المباشر غداً عند الساعة 3:00 عصراً' : 'Broadcasting Tomorrow @ 3:00 PM'}
-                    </div>
-                    <div className="text-slate-400 text-xs font-mono">
-                      {isAr ? 'سيتم ربط مشغل اليوتيوب الرسمي هنا فور إطلاقه' : 'Official 4K YouTube player embeds directly here upon release'}
+                  {/* Vertical Master Cinema Player Container */}
+                  <div className="flex justify-center my-6">
+                    <div className="relative w-full max-w-[340px] sm:max-w-[380px] rounded-3xl overflow-hidden border-2 border-brand-blue/40 bg-slate-950 shadow-[0_0_60px_rgba(2,132,199,0.3)]">
+                      <div className="relative aspect-[9/16] w-full bg-slate-950">
+                        <video
+                          src="/akkari_master_cinema.mp4"
+                          controls
+                          playsInline
+                          preload="metadata"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="px-4 py-2.5 bg-slate-900 border-t border-brand-border flex items-center justify-between text-xs font-mono text-slate-400">
+                        <span className="flex items-center gap-1.5 text-brand-blue font-bold">
+                          <span>●</span> 9:16 MASTER
+                        </span>
+                        <span>1080x1920 30FPS REMOTION</span>
+                      </div>
                     </div>
                   </div>
 
