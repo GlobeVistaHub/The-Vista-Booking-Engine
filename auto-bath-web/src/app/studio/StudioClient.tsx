@@ -2288,17 +2288,12 @@ export function StudioClient() {
         const meanEnergy = energySum / 39;
         if (meanEnergy > 10) {
           hasRealFft = true;
-          // Sub-bass kick (bins 1 to 3, 40Hz - 160Hz) - Sharp transient onset detector
+          // Sub-bass kick (bins 1 to 3, 40Hz - 160Hz)
           const rawKick = ((data[1] || 0) + (data[2] || 0)) / 2;
-          if (rawKick > kickBaselineRef.current + 16) {
-            fftKick = Math.min(1.0, (rawKick - (kickBaselineRef.current + 16)) / 35);
+          if (rawKick > kickBaselineRef.current + 15) {
+            fftKick = Math.min(1.0, (rawKick - kickBaselineRef.current) / 40);
           }
-          // Asymmetric tracking: quick release downward when quiet, slow ceiling clamp to never saturate
-          if (rawKick < kickBaselineRef.current) {
-            kickBaselineRef.current = kickBaselineRef.current * 0.90 + rawKick * 0.10;
-          } else {
-            kickBaselineRef.current = Math.min(150, kickBaselineRef.current * 0.98 + rawKick * 0.02);
-          }
+          kickBaselineRef.current = kickBaselineRef.current * 0.94 + rawKick * 0.06;
 
           // Snare / mid transients (bins 10 to 18)
           const rawSnare = ((data[12] || 0) + (data[16] || 0)) / 2;
@@ -2354,7 +2349,7 @@ export function StudioClient() {
         horizonAmbientBloomRef.current.style.transform = `scaleY(${(1.0 + masterKick * 1.3).toFixed(2)})`;
       }
 
-      // Container Optical Glow (Desktop & Mobile) - Snappy punch on beats, instant return to rest
+      // Container Optical Glow (Desktop & Mobile)
       const updateContainerGlow = (container: HTMLDivElement | null) => {
         if (!container) return;
         if (masterKick > 0.35) {
