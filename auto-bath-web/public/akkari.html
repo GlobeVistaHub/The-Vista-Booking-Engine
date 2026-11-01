@@ -82,6 +82,64 @@
       scrollbar-width: none;
     }
   </style>
+  <!-- Structured Data JSON-LD Schemas -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "GeneralContractor",
+        "@id": "https://akkaritiling.com.au/#contractor",
+        "name": "Akkari Tiling",
+        "url": "https://akkaritiling.com.au",
+        "telephone": "+61400764508",
+        "priceRange": "$$$$",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Melbourne",
+          "addressRegion": "VIC",
+          "addressCountry": "AU"
+        },
+        "description": "Premier luxury commercial tiling contractor in Melbourne, Victoria. Specialising in institutional developments, hotel fitouts (Marriott), and luxury retail (Gucci Chadstone). Certified VBA registration and AS 3740 compliance.",
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Commercial Surface & Tiling Systems",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Commercial Pro Architectural Tiling Package"
+              },
+              "price": "5200",
+              "priceCurrency": "AUD"
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Enterprise Commercial Revenue Engine & Tender Portal"
+              },
+              "price": "8800",
+              "priceCurrency": "AUD"
+            }
+          ]
+        }
+      },
+      {
+        "@type": "VideoObject",
+        "@id": "https://akkaritiling.com.au/#commercial-film",
+        "name": "Akkari Tiling — Transforming Luxury Architectural Surfaces | 4K Commercial Cinema Ad",
+        "description": "Official 4K cinema commercial for Akkari Tiling Melbourne. Produced with DaVinci Resolve 20 color science, 35mm optical halation, and Fairlight 32-bit audio.",
+        "thumbnailUrl": ["https://img.youtube.com/vi/r2Sj6q4Mq_s/maxresdefault.jpg"],
+        "uploadDate": "2026-11-01T00:00:00+00:00",
+        "duration": "PT42S",
+        "embedUrl": "https://www.youtube-nocookie.com/embed/r2Sj6q4Mq_s",
+        "contentUrl": "https://youtube.com/shorts/r2Sj6q4Mq_s"
+      }
+    ]
+  }
+  </script>
 </head>
 <body class="bg-[#0B1120] text-slate-100 min-h-screen">
   <div id="root"></div>
