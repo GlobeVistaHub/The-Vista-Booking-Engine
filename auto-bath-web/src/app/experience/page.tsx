@@ -242,10 +242,21 @@ export default function ExperiencePage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,#030308_95%)]" />
       </div>
 
-      {/* HUD */}
-      <div className="fixed top-4 left-4 md:top-8 md:left-8 z-50 select-none pointer-events-none">
-        <p className="text-[9px] md:text-[10px] tracking-[6px] font-black uppercase text-amber-500 mb-1">STAGE</p>
-        <span ref={hudRef} className="font-mono text-lg md:text-2xl font-black text-white/90">01  Overview</span>
+      {/* HUD & Studio Navigation */}
+      <div className="fixed top-4 left-4 md:top-8 md:left-8 z-50 select-none">
+        <a 
+          href="https://www.goodbrains.pro/studio/" 
+          target="_top"
+          className="group inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-500/15 text-white transition-all duration-300 shadow-[0_0_20px_rgba(0,194,212,0.2)] mb-3 cursor-pointer"
+          title="Return to Good Brains Studio"
+        >
+          <span className="w-2 h-2 rounded-full bg-cyan-400 group-hover:animate-ping" />
+          <span className="font-mono text-[10px] md:text-xs font-bold uppercase tracking-wider text-cyan-300 group-hover:text-white transition-colors flex items-center gap-1.5">
+            ← Studio Showcase
+          </span>
+        </a>
+        <p className="text-[9px] md:text-[10px] tracking-[6px] font-black uppercase text-amber-500 mb-1 pointer-events-none">STAGE</p>
+        <span ref={hudRef} className="font-mono text-lg md:text-2xl font-black text-white/90 pointer-events-none">01  Overview</span>
       </div>
 
       {/* Badge */}
@@ -426,14 +437,23 @@ export default function ExperiencePage() {
               <h1 className="text-5xl font-black tracking-[8px] text-white">THE VISTA</h1>
               <p className="text-sm tracking-[6px] font-light text-amber-400 mt-2">BY GlobeVistaHub</p>
             </div>
-            <a
-              href="https://the-vista-booking-engine-vb2y.vercel.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 bg-gradient-to-r from-amber-500 to-amber-600 border border-amber-400 hover:border-white px-10 py-4 rounded-full text-sm font-black tracking-[4px] uppercase text-black hover:text-white transition-all shadow-[0_0_40px_rgba(255,200,50,0.3)]"
-            >
-              LAUNCH PLATFORM
-            </a>
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center mt-2">
+              <a
+                href="https://the-vista-booking-engine-vb2y.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-amber-600 border border-amber-400 hover:border-white px-7 py-3.5 rounded-full text-xs font-black tracking-[3px] uppercase text-black hover:text-white transition-all shadow-[0_0_30px_rgba(255,200,50,0.3)] text-center"
+              >
+                LAUNCH PLATFORM
+              </a>
+              <a
+                href="https://www.goodbrains.pro/studio/"
+                target="_top"
+                className="w-full sm:w-auto bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-400/50 hover:border-cyan-300 text-cyan-300 hover:text-white px-7 py-3.5 rounded-full text-xs font-black tracking-[3px] uppercase transition-all shadow-[0_0_30px_rgba(0,194,212,0.25)] flex items-center justify-center gap-2 group text-center"
+              >
+                <span>← RETURN TO STUDIO</span>
+              </a>
+            </div>
             <span className="text-[11px] text-white/25 tracking-widest uppercase">www.globevistahub.com</span>
           </div>
         </SpatialCard>
