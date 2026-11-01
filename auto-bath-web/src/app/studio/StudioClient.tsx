@@ -596,7 +596,7 @@ function HeaderFrequencyVisualizer({
         ref={headerContainerRef}
         onClick={togglePlay}
         onTouchStart={() => {}}
-        className="flex items-end gap-[2px] sm:gap-[3px] h-6 sm:h-7 px-1.5 sm:px-2.5 py-1 bg-black/80 border border-white/15 rounded-lg cursor-pointer transition-all duration-150 select-none shadow-[0_0_12px_rgba(0,194,212,0.15)] active:scale-95 active:border-[#00C2D4]/50 shrink-0"
+        className="flex items-end gap-[2px] sm:gap-[3px] h-6 sm:h-7 px-1.5 sm:px-2.5 py-1 bg-black/80 border border-white/15 rounded-lg cursor-pointer transition-[transform] duration-150 select-none shadow-[0_0_12px_rgba(0,194,212,0.15)] active:scale-95 active:border-[#00C2D4]/50 shrink-0"
         title="Fairlight Mastering Spectrum Analyzer - Click to Toggle"
       >
         {Array.from({ length: 20 }).map((_, i) => (
@@ -2349,15 +2349,21 @@ export function StudioClient() {
         horizonAmbientBloomRef.current.style.transform = `scaleY(${(1.0 + masterKick * 1.3).toFixed(2)})`;
       }
 
-      // Container Optical Glow (Desktop & Mobile) - Container alone tuned to 0.28 threshold
+      // Container Optical Glow (Desktop & Mobile) - Responsive beat flash with dark neutral rest
       const updateContainerGlow = (container: HTMLDivElement | null) => {
         if (!container) return;
-        if (masterKick > 0.28) {
-          const glow = Math.round(12 + masterKick * 20);
-          container.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, 0.6), inset 0 0 6px rgba(0, 194, 212, 0.3)`;
-          container.style.borderColor = 'rgba(0, 194, 212, 0.85)';
+        // cPulse: 0 at rest between beats, spiking up to 1.0 on every kick transient
+        const cPulse = Math.max(0, Math.min(1.0, (masterKick - 0.12) / 0.58));
+        if (cPulse > 0.05) {
+          const glow = Math.round(10 + cPulse * 18);
+          const outerAlpha = (0.20 + cPulse * 0.65).toFixed(2);
+          const innerAlpha = (cPulse * 0.35).toFixed(2);
+          const borderCyan = (0.28 + cPulse * 0.65).toFixed(2);
+          container.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, ${outerAlpha}), inset 0 0 6px rgba(0, 194, 212, ${innerAlpha})`;
+          container.style.borderColor = `rgba(0, 194, 212, ${borderCyan})`;
         } else {
-          container.style.boxShadow = '0 0 10px rgba(0, 194, 212, 0.15)';
+          // Dark neutral rest state between beats: NEVER stays cyan
+          container.style.boxShadow = '0 0 8px rgba(0, 194, 212, 0.08)';
           container.style.borderColor = 'rgba(255, 255, 255, 0.15)';
         }
       };
@@ -2366,11 +2372,13 @@ export function StudioClient() {
       updateContainerGlow(mobileContainerRef.current);
 
       if (pillButtonRef.current) {
-        if (masterKick > 0.28) {
-          const glow = Math.round(18 + masterKick * 24);
-          pillButtonRef.current.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, 0.75)`;
+        const cPulse = Math.max(0, Math.min(1.0, (masterKick - 0.12) / 0.58));
+        if (cPulse > 0.05) {
+          const glow = Math.round(16 + cPulse * 22);
+          const glowAlpha = (0.40 + cPulse * 0.45).toFixed(2);
+          pillButtonRef.current.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, ${glowAlpha})`;
         } else {
-          pillButtonRef.current.style.boxShadow = '0 0 20px rgba(0, 194, 212, 0.35)';
+          pillButtonRef.current.style.boxShadow = '0 0 15px rgba(0, 194, 212, 0.20)';
         }
       }
 
