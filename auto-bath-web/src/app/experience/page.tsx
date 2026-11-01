@@ -255,17 +255,17 @@ export default function ExperiencePage() {
             ← Studio Showcase
           </span>
         </a>
-        <p className="text-[9px] md:text-[10px] tracking-[6px] font-black uppercase text-amber-500 mb-1 pointer-events-none">STAGE</p>
-        <span ref={hudRef} className="font-mono text-lg md:text-2xl font-black text-white/90 pointer-events-none">01  Overview</span>
+        <p className="text-[9px] md:text-[10px] tracking-[6px] font-black uppercase text-amber-500 mb-1 pointer-events-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">STAGE</p>
+        <span ref={hudRef} className="font-mono text-lg md:text-2xl font-black text-white pointer-events-none drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">01  Overview</span>
       </div>
 
       {/* Badge */}
       <div 
         onClick={toggleAudio}
-        className="fixed top-4 right-4 md:top-8 md:right-8 z-50 flex items-center gap-2 md:gap-3 bg-black/40 backdrop-blur-md border border-white/10 px-3 md:px-4 py-1.5 md:py-2 rounded-full cursor-pointer hover:bg-white/10 transition-colors select-none max-w-[150px] sm:max-w-none"
+        className="fixed top-4 right-4 md:top-8 md:right-8 z-50 flex items-center gap-2 md:gap-3 bg-black/40 backdrop-blur-md border border-white/10 px-3 md:px-4 py-1.5 md:py-2 rounded-full cursor-pointer hover:bg-white/10 transition-colors select-none max-w-[150px] sm:max-w-none shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
       >
         <span className={`w-2 h-2 flex-shrink-0 rounded-full ${isMuted ? "bg-white/40" : "bg-amber-500 animate-pulse"}`} />
-        <span className={`text-[9px] md:text-[10px] tracking-widest font-bold uppercase truncate ${isMuted ? "text-white/40" : "text-white/80"}`}>
+        <span className={`text-[9px] md:text-[10px] tracking-widest font-bold uppercase truncate drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] ${isMuted ? "text-white/60" : "text-white/95"}`}>
           {isMuted ? "UNMUTE" : <><span className="hidden sm:inline">COMMERCIAL </span>ACTIVE</>}
         </span>
       </div>
@@ -279,21 +279,21 @@ export default function ExperiencePage() {
           style={{ willChange: "transform, opacity" }}
           className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-30 select-none pointer-events-none"
         >
-          <div className="inline-flex items-center gap-3 border border-amber-500/30 bg-amber-500/5 px-6 py-2 rounded-full mb-8">
-            <span className="text-xs font-black tracking-[4px] text-amber-400 uppercase">✦ Spatial Portfolio Series</span>
+          <div className="inline-flex items-center gap-3 border border-amber-500/40 bg-amber-500/10 px-6 py-2 rounded-full mb-8 shadow-[0_4px_24px_rgba(0,0,0,0.7)] backdrop-blur-sm">
+            <span className="text-xs font-black tracking-[4px] text-amber-400 uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">✦ Spatial Portfolio Series</span>
           </div>
-          <h1 className="text-[clamp(56px,11vw,120px)] font-black tracking-[-4px] text-white leading-none">THE VISTA</h1>
+          <h1 className="text-[clamp(56px,11vw,120px)] font-black tracking-[-4px] text-white leading-none drop-shadow-[0_6px_28px_rgba(0,0,0,0.95)] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">THE VISTA</h1>
           <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 text-amber-400/90 font-light uppercase">
-            <span className="text-base sm:text-lg tracking-[8px] sm:tracking-[10px] font-bold text-amber-400">BY GOODBRAINS.PRO</span>
-            <span className="hidden sm:inline text-white/30 text-xs">&bull;</span>
-            <span className="text-xs sm:text-sm tracking-[3px] text-white/50 font-mono">(FORMERLY GLOBEVISTAHUB)</span>
+            <span className="text-base sm:text-lg tracking-[8px] sm:tracking-[10px] font-bold text-amber-400 drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">BY GOODBRAINS.PRO</span>
+            <span className="hidden sm:inline text-white/50 text-xs drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">&bull;</span>
+            <span className="text-xs sm:text-sm tracking-[3px] text-white/80 font-mono drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">(FORMERLY GLOBEVISTAHUB)</span>
           </div>
-          <p className="text-base text-white/40 max-w-lg mt-6 leading-relaxed font-light">
+          <p className="text-base sm:text-lg text-white/85 max-w-lg mt-6 leading-relaxed font-normal drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
             Scroll to explore the world&apos;s most premium luxury booking engine — built for Upwork&apos;s top 1%.
           </p>
           <div className="mt-14 flex flex-col items-center gap-2 animate-bounce">
-            <span className="text-[9px] font-black tracking-[5px] text-white/30 uppercase">Scroll to unfold</span>
-            <svg className="w-5 h-5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <span className="text-[9px] font-black tracking-[5px] text-white/75 uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">Scroll to unfold</span>
+            <svg className="w-5 h-5 text-white/80 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
