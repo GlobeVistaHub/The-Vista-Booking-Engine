@@ -283,7 +283,11 @@ export default function ExperiencePage() {
             <span className="text-xs font-black tracking-[4px] text-amber-400 uppercase">✦ Spatial Portfolio Series</span>
           </div>
           <h1 className="text-[clamp(56px,11vw,120px)] font-black tracking-[-4px] text-white leading-none">THE VISTA</h1>
-          <p className="text-lg font-light text-amber-400/90 tracking-[10px] uppercase mt-4">BY GLOBEVISTAHUB</p>
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 text-amber-400/90 font-light uppercase">
+            <span className="text-base sm:text-lg tracking-[8px] sm:tracking-[10px] font-bold text-amber-400">BY GOODBRAINS.PRO</span>
+            <span className="hidden sm:inline text-white/30 text-xs">&bull;</span>
+            <span className="text-xs sm:text-sm tracking-[3px] text-white/50 font-mono">(FORMERLY GLOBEVISTAHUB)</span>
+          </div>
           <p className="text-base text-white/40 max-w-lg mt-6 leading-relaxed font-light">
             Scroll to explore the world&apos;s most premium luxury booking engine — built for Upwork&apos;s top 1%.
           </p>
@@ -434,8 +438,12 @@ export default function ExperiencePage() {
               <img src="/video-assets/vista-logo.png" alt="Vista Logo" className="w-24 h-auto rounded-[20px] border-2 border-amber-500/40 shadow-[0_0_30px_rgba(255,200,50,0.3)] relative z-10" />
             </div>
             <div>
-              <h1 className="text-5xl font-black tracking-[8px] text-white">THE VISTA</h1>
-              <p className="text-sm tracking-[6px] font-light text-amber-400 mt-2">BY GlobeVistaHub</p>
+              <h1 className="text-4xl sm:text-5xl font-black tracking-[8px] text-white">THE VISTA</h1>
+              <div className="mt-2 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 text-amber-400 font-light uppercase">
+                <span className="text-xs sm:text-sm tracking-[4px] font-bold text-amber-400">BY GOODBRAINS.PRO</span>
+                <span className="hidden sm:inline text-white/30 text-[10px]">&bull;</span>
+                <span className="text-[10px] tracking-[2px] text-white/50 font-mono">(FORMERLY GLOBEVISTAHUB)</span>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center mt-2">
               <a
@@ -454,7 +462,15 @@ export default function ExperiencePage() {
                 <span>← RETURN TO STUDIO</span>
               </a>
             </div>
-            <span className="text-[11px] text-white/25 tracking-widest uppercase">www.globevistahub.com</span>
+            <a
+              href="https://www.goodbrains.pro"
+              target="_top"
+              className="text-[11px] text-white/40 hover:text-cyan-300 transition-colors tracking-widest uppercase font-mono flex items-center justify-center gap-2 cursor-pointer mt-1"
+            >
+              <span className="text-amber-400/90 font-bold">WWW.GOODBRAINS.PRO</span>
+              <span className="text-white/20">&bull;</span>
+              <span className="text-white/30 text-[10px]">GLOBEVISTAHUB.COM</span>
+            </a>
           </div>
         </SpatialCard>
 
