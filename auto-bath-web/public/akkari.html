@@ -46,6 +46,17 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
+    video {
+      object-fit: contain !important;
+    }
+    video:fullscreen {
+      object-fit: contain !important;
+      background-color: #000000 !important;
+    }
+    video:-webkit-full-screen {
+      object-fit: contain !important;
+      background-color: #000000 !important;
+    }
     body {
       background-color: #0B1120;
       color: #F8FAFC;
@@ -640,7 +651,7 @@
                           controls
                           playsInline
                           preload="metadata"
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain bg-black"
                         />
                       </div>
                       <div className="px-4 py-2.5 bg-slate-900 border-t border-brand-border flex items-center justify-between text-xs font-mono text-slate-400">
@@ -729,42 +740,42 @@
                         <label className="text-sm font-bold text-slate-200 block mb-3">
                           {isAr ? 'تصنيف المنشأة ومستوى الفخامة:' : 'Facility Tier & Commercial Grade:'}
                         </label>
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                           <button
                             type="button"
                             onClick={() => setProjectType('hotel')}
-                            className={`p-3 rounded-xl text-center border transition-all ${
+                            className={`p-3 rounded-xl flex sm:flex-col items-center justify-between sm:justify-center border transition-all text-left sm:text-center ${
                               projectType === 'hotel'
                                 ? 'bg-brand-blue/20 border-brand-blue text-white shadow-md'
                                 : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:text-white'
                             }`}
                           >
                             <div className="text-xs font-bold">{isAr ? 'فندق أو منتجع فاخر' : 'Luxury Hotel / Resort'}</div>
-                            <div className="text-[10px] text-slate-400 mt-1">$185 AUD / {isAr ? 'م²' : 'sqm'}</div>
+                            <div className="text-[11px] sm:text-[10px] text-slate-300 sm:text-slate-400 sm:mt-1 font-mono font-semibold">$185 AUD / {isAr ? 'م²' : 'sqm'}</div>
                           </button>
                           <button
                             type="button"
                             onClick={() => setProjectType('commercial')}
-                            className={`p-3 rounded-xl text-center border transition-all ${
+                            className={`p-3 rounded-xl flex sm:flex-col items-center justify-between sm:justify-center border transition-all text-left sm:text-center ${
                               projectType === 'commercial'
                                 ? 'bg-brand-blue/20 border-brand-blue text-white shadow-md'
                                 : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:text-white'
                             }`}
                           >
                             <div className="text-xs font-bold">{isAr ? 'مول أو برج مكاتب' : 'Mall / Commercial Tower'}</div>
-                            <div className="text-[10px] text-slate-400 mt-1">$160 AUD / {isAr ? 'م²' : 'sqm'}</div>
+                            <div className="text-[11px] sm:text-[10px] text-slate-300 sm:text-slate-400 sm:mt-1 font-mono font-semibold">$160 AUD / {isAr ? 'م²' : 'sqm'}</div>
                           </button>
                           <button
                             type="button"
                             onClick={() => setProjectType('residential')}
-                            className={`p-3 rounded-xl text-center border transition-all ${
+                            className={`p-3 rounded-xl flex sm:flex-col items-center justify-between sm:justify-center border transition-all text-left sm:text-center ${
                               projectType === 'residential'
                                 ? 'bg-brand-blue/20 border-brand-blue text-white shadow-md'
                                 : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:text-white'
                             }`}
                           >
                             <div className="text-xs font-bold">{isAr ? 'مجمع سكني راقٍ' : 'Residential Complex'}</div>
-                            <div className="text-[10px] text-slate-400 mt-1">$130 AUD / {isAr ? 'م²' : 'sqm'}</div>
+                            <div className="text-[11px] sm:text-[10px] text-slate-300 sm:text-slate-400 sm:mt-1 font-mono font-semibold">$130 AUD / {isAr ? 'م²' : 'sqm'}</div>
                           </button>
                         </div>
                       </div>
@@ -821,7 +832,7 @@
                         <label className="text-sm font-bold text-slate-200 block mb-3">
                           {isAr ? 'اختر باقة التطوير لحساب مضاعف العائد (ROI):' : 'Select Package Tier to Calculate ROI Multiplier:'}
                         </label>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                           
                           {/* Commercial Pro (RECOMMENDED) */}
                           <div
@@ -832,11 +843,11 @@
                                 : 'bg-slate-800/40 border-slate-700 text-slate-400'
                             }`}
                           >
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2">
                               <span className="text-xs font-black text-emerald-400">
                                 {isAr ? '★ الباقة الموصى بها للانطلاق' : '★ RECOMMENDED TIER'}
                               </span>
-                              <span className="text-sm font-black text-white">$5,200 AUD</span>
+                              <span className="text-sm font-black text-white shrink-0 font-mono">$5,200 AUD</span>
                             </div>
                             <div className="text-sm font-bold text-white mt-1">Commercial Pro (~ 3,500 USD)</div>
                             <div className="text-[11px] text-slate-300 mt-1">
@@ -853,11 +864,11 @@
                                 : 'bg-slate-800/40 border-slate-700 text-slate-400'
                             }`}
                           >
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center gap-2">
                               <span className="text-xs font-bold text-slate-400">
                                 {isAr ? 'ترقية لاحقة (Scale-Up)' : 'Future Scale-Up'}
                               </span>
-                              <span className="text-sm font-black text-white">$8,800 AUD</span>
+                              <span className="text-sm font-black text-white shrink-0 font-mono">$8,800 AUD</span>
                             </div>
                             <div className="text-sm font-bold text-white mt-1">Enterprise Engine (~ 5,900 USD)</div>
                             <div className="text-[11px] text-slate-400 mt-1">

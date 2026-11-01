@@ -569,7 +569,7 @@ function HeaderFrequencyVisualizer({
       {/* Interactive Sound Engine Toggle */}
       <button
         onClick={togglePlay}
-        className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-300 ${
+        className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-300 shrink-0 ${
           isPlaying
             ? 'bg-[#00C2D4]/20 border-[#00C2D4] text-[#00C2D4] shadow-[0_0_20px_rgba(0,194,212,0.45)]'
             : isDucked
@@ -579,32 +579,35 @@ function HeaderFrequencyVisualizer({
         title={isPlaying ? 'Mute Studio Audio' : isDucked ? 'Video Active (Click to force resume)' : 'Start 48kHz DSP Studio Audio'}
       >
         {isPlaying ? (
-          <Volume2 size={13} className="text-[#00C2D4] animate-pulse" />
+          <Volume2 size={12} className="text-[#00C2D4] animate-pulse shrink-0" />
         ) : isDucked ? (
-          <VolumeX size={13} className="text-amber-400" />
+          <VolumeX size={12} className="text-amber-400 shrink-0" />
         ) : (
-          <VolumeX size={13} className="text-white/40" />
+          <VolumeX size={12} className="text-white/40 shrink-0" />
         )}
-        <span className="font-bold tracking-wider text-[10px] sm:text-[11px]">
-          {isPlaying ? 'DSP LIVE' : isDucked ? 'AUTO-DUCKED' : 'STUDIO SCORE'}
+        <span className="font-bold tracking-wider text-[9px] sm:text-[11px] whitespace-nowrap">
+          {isPlaying ? 'DSP LIVE' : isDucked ? 'DUCKED' : 'DSP'}
         </span>
       </button>
 
-      {/* Real-time Mastering Grade Spectrum Analyzer: Multi-Color Gradient Stems + Gravity Peak Caps + Optical Bloom */}
+      {/* Real-time Mastering Grade Spectrum Analyzer: Visible on Mobile (8 bars) & Full Desktop (20 bars) */}
       <div 
         ref={headerContainerRef}
         onClick={togglePlay}
-        className="hidden sm:flex items-end gap-[3px] h-7 px-2.5 py-1 bg-black/80 border border-white/15 rounded-lg cursor-pointer transition-all duration-150 select-none shadow-[0_0_12px_rgba(0,194,212,0.15)]"
+        className="flex items-end gap-[2px] sm:gap-[3px] h-6 sm:h-7 px-1.5 sm:px-2.5 py-1 bg-black/80 border border-white/15 rounded-lg cursor-pointer transition-all duration-150 select-none shadow-[0_0_12px_rgba(0,194,212,0.15)] shrink-0"
         title="Fairlight Mastering Spectrum Analyzer - Click to Toggle"
       >
         {Array.from({ length: 20 }).map((_, i) => (
-          <div key={i} className="relative w-[3px] h-full flex items-end">
+          <div 
+            key={i} 
+            className={`relative w-[2px] sm:w-[3px] h-full flex items-end ${i >= 8 ? 'hidden sm:flex' : 'flex'}`}
+          >
             {/* Multi-Color Mastering Gradient Stem: Cyan -> Amber -> Coral */}
             <div
               ref={(el) => {
                 if (headerBarsRef.current) headerBarsRef.current[i] = el;
               }}
-              className="w-full rounded-t-[1.5px] transition-[height] duration-75"
+              className="w-full rounded-t-[1px] sm:rounded-t-[1.5px] transition-[height] duration-75"
               style={{
                 height: '4px',
                 background: 'linear-gradient(to top, #00C2D4 0%, #00C2D4 55%, #FFB800 82%, #FF2E93 100%)',
@@ -2724,26 +2727,26 @@ export function StudioClient() {
       <div className="fixed bottom-0 right-1/4 w-[650px] h-[650px] bg-[#FF6600]/5 rounded-full blur-[190px] pointer-events-none -z-10" />
 
       {/* Navigation Header */}
-      <nav className="border-b border-white/10 bg-[#050505]/85 backdrop-blur-2xl sticky top-0 z-50 px-4 sm:px-6 py-3 sm:py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2.5 sm:gap-3">
+      <nav className="border-b border-white/10 bg-[#050505]/90 backdrop-blur-2xl sticky top-0 z-50 px-2.5 sm:px-6 py-2 sm:py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-1.5 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
             <img 
               src="/goodbrains-logo.png" 
               alt="Good Brains Studio"
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-contain shrink-0 filter drop-shadow-[0_0_12px_rgba(255,180,0,0.5)] border border-amber-500/30"
+              className="w-7 h-7 sm:w-10 sm:h-10 rounded-full object-contain shrink-0 filter drop-shadow-[0_0_12px_rgba(255,180,0,0.5)] border border-amber-500/30"
             />
-            <div>
-              <span className="font-mono text-xs sm:text-sm tracking-widest uppercase font-bold text-white block">
+            <div className="min-w-0">
+              <span className="font-mono text-[11px] sm:text-sm tracking-wide sm:tracking-widest uppercase font-bold text-white whitespace-nowrap block">
                 GOOD BRAINS <span className="text-[#00C2D4]">STUDIO</span>
               </span>
-              <span className="text-[9px] sm:text-[10px] font-mono text-white/40 uppercase tracking-widest hidden xs:block">
+              <span className="text-[9px] sm:text-[10px] font-mono text-white/40 uppercase tracking-widest hidden md:block">
                 CINEMATIC AI & FAIRLIGHT AUDIO PIPELINE
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="flex items-center">
+          <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+            <div className="flex items-center shrink-0">
               <HeaderFrequencyVisualizer isPlaying={isPlaying} isDucked={isDucked} togglePlay={togglePlay} headerBarsRef={headerBarsRef} headerPeakCapsRef={headerPeakCapsRef} headerContainerRef={headerContainerRef} />
             </div>
 
@@ -2752,7 +2755,7 @@ export function StudioClient() {
               href="https://www.goodbrains.pro"
               target="_top"
               rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 hover:text-white transition-all"
+              className="hidden md:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 hover:text-white transition-all"
             >
               GoodBrains.pro <ExternalLink size={12} />
             </a>
@@ -2760,9 +2763,9 @@ export function StudioClient() {
             <Link 
               href="https://www.upwork.com/freelancers/~01c65e863ec5fb99c7"
               target="_blank"
-              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider bg-[#00C2D4] text-black hover:bg-white transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)] whitespace-nowrap"
+              className="inline-flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider bg-[#00C2D4] text-black hover:bg-white transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)] whitespace-nowrap shrink-0"
             >
-              Hire on Upwork <ArrowRight size={13} />
+              <span className="hidden xs:inline">Hire on </span>Upwork <ArrowRight size={12} />
             </Link>
           </div>
         </div>
@@ -3690,8 +3693,8 @@ export function StudioClient() {
       </motion.section>
 
 
-      {/* ================= FLOATING DSP AUDIO PILL (MOBILE & DESKTOP) ================= */}
-      <aside aria-label="DSP Audio Engine" className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-2">
+      {/* ================= FLOATING DSP AUDIO PILL (DESKTOP DOCK - HIDDEN ON MOBILE TO PREVENT TEXT OVERLAY) ================= */}
+      <aside aria-label="DSP Audio Engine" className="hidden sm:flex fixed bottom-6 right-6 z-50 items-center gap-2">
         <button
           ref={pillButtonRef}
           onClick={togglePlay}

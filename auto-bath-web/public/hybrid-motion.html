@@ -51,6 +51,17 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
+    video {
+      object-fit: contain !important;
+    }
+    video:fullscreen {
+      object-fit: contain !important;
+      background-color: #000000 !important;
+    }
+    video:-webkit-full-screen {
+      object-fit: contain !important;
+      background-color: #000000 !important;
+    }
     body {
       background-color: #070B16;
       color: #F8FAFC;
@@ -445,7 +456,7 @@
                           key={`vertical_${videoLanguage}`}
                           controls
                           playsInline
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain bg-black"
                           src={
                             videoLanguage === 'en'
                               ? 'harfen_master_vertical_en_55s.mp4'
@@ -465,7 +476,7 @@
                           key={`horizontal_${videoLanguage}`}
                           controls
                           playsInline
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain bg-black"
                           src={
                             videoLanguage === 'en'
                               ? 'harfen_master_horizontal_en_55s.mp4'
