@@ -565,7 +565,7 @@ function HeaderFrequencyVisualizer({
   headerContainerRef
 }: AudioControlsProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
       {/* Interactive Sound Engine Toggle */}
       <button
         onClick={togglePlay}
@@ -600,7 +600,7 @@ function HeaderFrequencyVisualizer({
         {Array.from({ length: 20 }).map((_, i) => (
           <div 
             key={i} 
-            className={`relative w-[2px] sm:w-[3px] h-full flex items-end ${i >= 8 ? 'hidden sm:flex' : 'flex'}`}
+            className={`relative w-[2px] sm:w-[3px] h-full flex items-end ${i >= 12 ? 'hidden sm:flex' : 'flex'}`}
           >
             {/* Multi-Color Mastering Gradient Stem: Cyan -> Amber -> Coral */}
             <div
@@ -2727,16 +2727,18 @@ export function StudioClient() {
       <div className="fixed bottom-0 right-1/4 w-[650px] h-[650px] bg-[#FF6600]/5 rounded-full blur-[190px] pointer-events-none -z-10" />
 
       {/* Navigation Header */}
-      <nav className="border-b border-white/10 bg-[#050505]/90 backdrop-blur-2xl sticky top-0 z-50 px-2.5 sm:px-6 py-2 sm:py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-1.5 sm:gap-4">
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
+      <nav className="border-b border-white/10 bg-[#050505]/95 backdrop-blur-2xl sticky top-0 z-50 px-3 sm:px-6 py-2 sm:py-3.5">
+        <div className="max-w-7xl mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-y-2 gap-x-2">
+          
+          {/* Row 1 Left: Brand Identity */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <img 
               src="/goodbrains-logo.png" 
               alt="Good Brains Studio"
-              className="w-7 h-7 sm:w-10 sm:h-10 rounded-full object-contain shrink-0 filter drop-shadow-[0_0_12px_rgba(255,180,0,0.5)] border border-amber-500/30"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-contain shrink-0 filter drop-shadow-[0_0_12px_rgba(255,180,0,0.5)] border border-amber-500/30"
             />
-            <div className="min-w-0">
-              <span className="font-mono text-[11px] sm:text-sm tracking-wide sm:tracking-widest uppercase font-bold text-white whitespace-nowrap block">
+            <div>
+              <span className="font-mono text-xs sm:text-sm tracking-wide sm:tracking-widest uppercase font-bold text-white whitespace-nowrap block">
                 GOOD BRAINS <span className="text-[#00C2D4]">STUDIO</span>
               </span>
               <span className="text-[9px] sm:text-[10px] font-mono text-white/40 uppercase tracking-widest hidden md:block">
@@ -2745,12 +2747,29 @@ export function StudioClient() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
-            <div className="flex items-center shrink-0">
-              <HeaderFrequencyVisualizer isPlaying={isPlaying} isDucked={isDucked} togglePlay={togglePlay} headerBarsRef={headerBarsRef} headerPeakCapsRef={headerPeakCapsRef} headerContainerRef={headerContainerRef} />
-            </div>
+          {/* Row 1 Right (Mobile): Hire on Upwork - Full and Unchopped! */}
+          <div className="flex sm:hidden items-center shrink-0">
+            <Link 
+              href="https://www.upwork.com/freelancers/~01c65e863ec5fb99c7"
+              target="_blank"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-[#00C2D4] text-black hover:bg-white transition-all shadow-[0_0_15px_rgba(0,194,212,0.4)] whitespace-nowrap shrink-0"
+            >
+              Hire on Upwork <ArrowRight size={12} />
+            </Link>
+          </div>
 
-            {/* Visit GoodBrains.pro Header Button */}
+          {/* Audio Console: On Mobile it steps down to Row 2 (order-3 w-full)! On Desktop it stays in Row 1 (sm:order-2 sm:w-auto)! */}
+          <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-2 sm:gap-4 order-3 sm:order-2 pt-1.5 sm:pt-0 border-t border-white/5 sm:border-0">
+            <HeaderFrequencyVisualizer 
+              isPlaying={isPlaying} 
+              isDucked={isDucked} 
+              togglePlay={togglePlay} 
+              headerBarsRef={headerBarsRef} 
+              headerPeakCapsRef={headerPeakCapsRef} 
+              headerContainerRef={headerContainerRef} 
+            />
+
+            {/* Visit GoodBrains.pro Header Button (Desktop) */}
             <a 
               href="https://www.goodbrains.pro"
               target="_top"
@@ -2760,14 +2779,16 @@ export function StudioClient() {
               GoodBrains.pro <ExternalLink size={12} />
             </a>
 
+            {/* Desktop Upwork CTA */}
             <Link 
               href="https://www.upwork.com/freelancers/~01c65e863ec5fb99c7"
               target="_blank"
-              className="inline-flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider bg-[#00C2D4] text-black hover:bg-white transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)] whitespace-nowrap shrink-0"
+              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-[#00C2D4] text-black hover:bg-white transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)] whitespace-nowrap shrink-0"
             >
-              <span className="hidden xs:inline">Hire on </span>Upwork <ArrowRight size={12} />
+              Hire on Upwork <ArrowRight size={13} />
             </Link>
           </div>
+
         </div>
       </nav>
 
