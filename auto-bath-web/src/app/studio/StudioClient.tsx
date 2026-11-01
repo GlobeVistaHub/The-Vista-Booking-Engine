@@ -2233,6 +2233,10 @@ export function StudioClient() {
       headerContainerRef.current.style.boxShadow = '';
       headerContainerRef.current.style.borderColor = '';
     }
+    if (mobileContainerRef.current) {
+      mobileContainerRef.current.style.boxShadow = '';
+      mobileContainerRef.current.style.borderColor = '';
+    }
     if (pillButtonRef.current) {
       pillButtonRef.current.style.boxShadow = '';
     }
@@ -2345,17 +2349,21 @@ export function StudioClient() {
         horizonAmbientBloomRef.current.style.transform = `scaleY(${(1.0 + masterKick * 1.3).toFixed(2)})`;
       }
 
-      // Container Optical Glow
-      if (headerContainerRef.current) {
+      // Container Optical Glow (Desktop & Mobile)
+      const updateContainerGlow = (container: HTMLDivElement | null) => {
+        if (!container) return;
         if (masterKick > 0.35) {
           const glow = Math.round(12 + masterKick * 20);
-          headerContainerRef.current.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, 0.6), inset 0 0 6px rgba(0, 194, 212, 0.3)`;
-          headerContainerRef.current.style.borderColor = 'rgba(0, 194, 212, 0.85)';
+          container.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, 0.6), inset 0 0 6px rgba(0, 194, 212, 0.3)`;
+          container.style.borderColor = 'rgba(0, 194, 212, 0.85)';
         } else {
-          headerContainerRef.current.style.boxShadow = '0 0 10px rgba(0, 194, 212, 0.15)';
-          headerContainerRef.current.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+          container.style.boxShadow = '0 0 10px rgba(0, 194, 212, 0.15)';
+          container.style.borderColor = 'rgba(255, 255, 255, 0.15)';
         }
-      }
+      };
+
+      updateContainerGlow(headerContainerRef.current);
+      updateContainerGlow(mobileContainerRef.current);
 
       if (pillButtonRef.current) {
         if (masterKick > 0.35) {
