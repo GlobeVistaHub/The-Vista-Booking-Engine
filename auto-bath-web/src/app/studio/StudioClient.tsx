@@ -2349,10 +2349,10 @@ export function StudioClient() {
         horizonAmbientBloomRef.current.style.transform = `scaleY(${(1.0 + masterKick * 1.3).toFixed(2)})`;
       }
 
-      // Container Optical Glow (Desktop & Mobile)
+      // Container Optical Glow (Desktop & Mobile) - Container alone tuned to 0.28 threshold
       const updateContainerGlow = (container: HTMLDivElement | null) => {
         if (!container) return;
-        if (masterKick > 0.35) {
+        if (masterKick > 0.28) {
           const glow = Math.round(12 + masterKick * 20);
           container.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, 0.6), inset 0 0 6px rgba(0, 194, 212, 0.3)`;
           container.style.borderColor = 'rgba(0, 194, 212, 0.85)';
@@ -2366,7 +2366,7 @@ export function StudioClient() {
       updateContainerGlow(mobileContainerRef.current);
 
       if (pillButtonRef.current) {
-        if (masterKick > 0.35) {
+        if (masterKick > 0.28) {
           const glow = Math.round(18 + masterKick * 24);
           pillButtonRef.current.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, 0.75)`;
         } else {
