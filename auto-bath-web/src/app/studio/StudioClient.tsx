@@ -2758,14 +2758,14 @@ export function StudioClient() {
           {/* Row 1: Brand on Left, Upwork CTA on Right (Guaranteed Single Row on All Devices) */}
           <div className="flex items-center justify-between w-full sm:w-auto">
             {/* Brand Identity */}
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
               <img 
                 src="/goodbrains-logo.png" 
                 alt="Good Brains Studio"
                 className="w-7 h-7 sm:w-10 sm:h-10 rounded-full object-contain shrink-0 filter drop-shadow-[0_0_12px_rgba(255,180,0,0.5)] border border-amber-500/30"
               />
               <div>
-                <span className="font-mono text-xs sm:text-sm tracking-wide sm:tracking-widest uppercase font-bold text-white whitespace-nowrap block">
+                <span className="font-mono text-[11px] sm:text-sm tracking-tight sm:tracking-widest uppercase font-bold text-white whitespace-nowrap block">
                   GOOD BRAINS <span className="text-[#00C2D4]">STUDIO</span>
                 </span>
                 <span className="text-[9px] sm:text-[10px] font-mono text-white/40 uppercase tracking-widest hidden md:block">
@@ -2779,9 +2779,9 @@ export function StudioClient() {
               <Link 
                 href="https://www.upwork.com/freelancers/~01c65e863ec5fb99c7"
                 target="_blank"
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider bg-[#00C2D4] text-black hover:bg-white transition-all shadow-[0_0_15px_rgba(0,194,212,0.4)] whitespace-nowrap shrink-0"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-tight bg-[#00C2D4] text-black hover:bg-white transition-all shadow-[0_0_12px_rgba(0,194,212,0.35)] whitespace-nowrap shrink-0"
               >
-                Hire on Upwork <ArrowRight size={11} />
+                Hire on Upwork <ArrowRight size={10} />
               </Link>
             </div>
           </div>
