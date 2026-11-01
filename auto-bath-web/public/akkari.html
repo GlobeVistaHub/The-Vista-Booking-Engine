@@ -830,7 +830,7 @@
                       </div>
 
                       {/* Package Selector */}
-                      <div className="bg-slate-900/90 p-5 rounded-xl border border-slate-800">
+                      <div className="bg-slate-900/90 p-3.5 sm:p-5 rounded-xl border border-slate-800">
                         <label className="text-sm font-bold text-slate-200 block mb-3">
                           {isAr ? 'اختر باقة التطوير لحساب مضاعف العائد (ROI):' : 'Select Package Tier to Calculate ROI Multiplier:'}
                         </label>
@@ -839,20 +839,20 @@
                           {/* Commercial Pro (RECOMMENDED) */}
                           <div
                             onClick={() => setSelectedPackage('pro')}
-                            className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                            className={`p-3.5 sm:p-4 rounded-xl border cursor-pointer transition-all ${
                               selectedPackage === 'pro'
                                 ? 'bg-gradient-to-br from-emerald-950/40 to-slate-900 border-emerald-500 shadow-lg glow-emerald'
                                 : 'bg-slate-800/40 border-slate-700 text-slate-400'
                             }`}
                           >
                             <div className="flex justify-between items-center gap-2">
-                              <span className="text-xs font-black text-emerald-400 whitespace-nowrap">
+                              <span className="text-[11px] sm:text-xs font-black text-emerald-400 whitespace-nowrap">
                                 {isAr ? '★ الباقة الموصى بها للانطلاق' : '★ RECOMMENDED TIER'}
                               </span>
-                              <span className="text-sm font-black text-white shrink-0 font-mono">$5,200 AUD</span>
+                              <span className="text-xs sm:text-sm font-black text-white shrink-0 font-mono">$5,200 AUD</span>
                             </div>
-                            <div className="text-sm font-bold text-white mt-1">Commercial Pro (~ 3,500 USD)</div>
-                            <div className="text-[11px] text-slate-300 mt-1">
+                            <div className="text-xs sm:text-sm font-bold text-white mt-1">Commercial Pro (~ 3,500 USD)</div>
+                            <div className="text-[10px] sm:text-[11px] text-slate-300 mt-1">
                               {isAr ? 'معمارية معيارية قابلة للترقية المباشرة لـ Enterprise' : 'Modular stack: fully expandable to Enterprise grade'}
                             </div>
                           </div>
@@ -860,20 +860,20 @@
                           {/* Enterprise Tier */}
                           <div
                             onClick={() => setSelectedPackage('enterprise')}
-                            className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                            className={`p-3.5 sm:p-4 rounded-xl border cursor-pointer transition-all ${
                               selectedPackage === 'enterprise'
                                 ? 'bg-gradient-to-br from-brand-blue/30 to-brand-slate border-brand-blue glow-blue'
                                 : 'bg-slate-800/40 border-slate-700 text-slate-400'
                             }`}
                           >
                             <div className="flex justify-between items-center gap-2">
-                              <span className="text-xs font-bold text-slate-400 whitespace-nowrap">
+                              <span className="text-[11px] sm:text-xs font-bold text-slate-400 whitespace-nowrap">
                                 {isAr ? 'ترقية لاحقة (Scale-Up)' : 'Future Scale-Up'}
                               </span>
-                              <span className="text-sm font-black text-white shrink-0 font-mono">$8,800 AUD</span>
+                              <span className="text-xs sm:text-sm font-black text-white shrink-0 font-mono">$8,800 AUD</span>
                             </div>
-                            <div className="text-sm font-bold text-white mt-1">Enterprise Engine (~ 5,900 USD)</div>
-                            <div className="text-[11px] text-slate-400 mt-1">
+                            <div className="text-xs sm:text-sm font-bold text-white mt-1">Enterprise Engine (~ 5,900 USD)</div>
+                            <div className="text-[10px] sm:text-[11px] text-slate-400 mt-1">
                               {isAr ? 'حاسبة تندر + رفع أوتوكاد + ربط CRM' : 'Includes tender calculator & CAD portal'}
                             </div>
                           </div>
