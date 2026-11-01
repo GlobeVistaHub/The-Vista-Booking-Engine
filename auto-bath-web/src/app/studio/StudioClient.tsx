@@ -3278,7 +3278,7 @@ export function StudioClient() {
                     Launch Interactive Portal <ExternalLink size={13} />
                   </a>
                   <a 
-                    href="https://auto-bath-detailing-melbourne.vercel.app/Akkari_Tiling_Evaluation_%26_Strategic_Proposal_EN.pdf" 
+                    href="https://www.goodbrains.pro/wp-content/uploads/2026/11/Akkari_Tiling_Proposal_EN.pdf" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/5 border border-white/15 text-white/80 font-mono text-xs font-medium uppercase tracking-wider hover:text-white hover:border-white/30 transition-all"
