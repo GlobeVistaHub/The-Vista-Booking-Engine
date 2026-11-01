@@ -152,11 +152,16 @@
   }
   </script>
 </head>
-<body class="bg-[#0B1120] text-slate-100 min-h-screen">
+<body class="bg-[#0B1120] text-slate-100 min-h-screen" ontouchstart="">
   <div id="root"></div>
 
   <script type="text/babel">
     const { useState, useMemo, useEffect } = React;
+
+    // Safari iOS / WebKit touch hover & active state activation trick
+    if (typeof document !== 'undefined') {
+      document.addEventListener('touchstart', function() {}, { passive: true });
+    }
 
     // SVG Icons
     const CheckCircle = () => (
@@ -475,13 +480,13 @@
                 <div className="flex items-center bg-slate-900 border border-slate-700 rounded-lg p-0.5 text-xs font-bold">
                   <button
                     onClick={() => setLang('ar')}
-                    className={`px-2.5 py-1 rounded-md transition-all ${isAr ? 'bg-brand-blue text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                    className={`px-2.5 py-1 rounded-md transition-all active:scale-95 ${isAr ? 'bg-brand-blue text-white shadow' : 'text-slate-400 hover:text-white active:text-white'}`}
                   >
                     العربية
                   </button>
                   <button
                     onClick={() => setLang('en')}
-                    className={`px-2.5 py-1 rounded-md transition-all ${!isAr ? 'bg-brand-blue text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                    className={`px-2.5 py-1 rounded-md transition-all active:scale-95 ${!isAr ? 'bg-brand-blue text-white shadow' : 'text-slate-400 hover:text-white active:text-white'}`}
                   >
                     English
                   </button>
@@ -491,7 +496,7 @@
                   href={getWhatsAppUrl(selectedPackage)}
                   target="_blank"
                   rel="noreferrer"
-                  className="bg-brand-emerald hover:bg-emerald-600 text-slate-950 font-black px-4 py-2 rounded-lg text-xs md:text-sm transition-all shadow-md flex items-center gap-1.5"
+                  className="bg-brand-emerald hover:bg-emerald-600 active:bg-emerald-500 active:scale-95 text-slate-950 font-black px-4 py-2 rounded-lg text-xs md:text-sm transition-all shadow-md active:shadow-lg flex items-center gap-1.5"
                 >
                   <span>{isAr ? 'اعتماد المحرك التجاري' : 'Confirm Revenue Engine'}</span>
                   <WhatsAppIcon />
@@ -1490,7 +1495,7 @@
               href="https://www.goodbrains.pro/studio/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3.5 px-5 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 hover:bg-slate-800 transition-all shadow-xl hover:shadow-cyan-500/10 cursor-pointer"
+              className="group inline-flex items-center gap-3.5 px-5 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 active:border-cyan-400 hover:bg-slate-800 active:bg-slate-750 active:scale-98 transition-all shadow-xl hover:shadow-cyan-500/10 active:shadow-cyan-500/20 cursor-pointer"
             >
               <img 
                 src="/goodbrains_logo.png" 
@@ -1550,7 +1555,7 @@
                   href={getWhatsAppUrl(selectedPackage)}
                   target="_blank"
                   rel="noreferrer"
-                  className="bg-brand-emerald hover:bg-emerald-600 text-slate-950 font-black px-4 py-2 rounded-lg text-xs md:text-sm transition-all shadow-md flex items-center gap-1.5"
+                  className="bg-brand-emerald hover:bg-emerald-600 active:bg-emerald-500 active:scale-95 text-slate-950 font-black px-4 py-2 rounded-lg text-xs md:text-sm transition-all shadow-md active:shadow-lg flex items-center gap-1.5"
                 >
                   <span>{isAr ? 'مراسلة عبر واتساب للتفعيل' : 'Message on WhatsApp to Activate'}</span>
                   <WhatsAppIcon />

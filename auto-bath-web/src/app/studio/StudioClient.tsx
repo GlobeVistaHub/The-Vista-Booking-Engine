@@ -569,7 +569,8 @@ function HeaderFrequencyVisualizer({
       {/* Interactive Sound Engine Toggle */}
       <button
         onClick={togglePlay}
-        className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-300 shrink-0 ${
+        onTouchStart={() => {}}
+        className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border text-xs font-mono transition-all duration-300 shrink-0 active:scale-95 active:brightness-125 ${
           isPlaying
             ? 'bg-[#00C2D4]/20 border-[#00C2D4] text-[#00C2D4] shadow-[0_0_20px_rgba(0,194,212,0.45)]'
             : isDucked
@@ -594,7 +595,8 @@ function HeaderFrequencyVisualizer({
       <div 
         ref={headerContainerRef}
         onClick={togglePlay}
-        className="flex items-end gap-[2px] sm:gap-[3px] h-6 sm:h-7 px-1.5 sm:px-2.5 py-1 bg-black/80 border border-white/15 rounded-lg cursor-pointer transition-all duration-150 select-none shadow-[0_0_12px_rgba(0,194,212,0.15)] shrink-0"
+        onTouchStart={() => {}}
+        className="flex items-end gap-[2px] sm:gap-[3px] h-6 sm:h-7 px-1.5 sm:px-2.5 py-1 bg-black/80 border border-white/15 rounded-lg cursor-pointer transition-all duration-150 select-none shadow-[0_0_12px_rgba(0,194,212,0.15)] active:scale-95 active:border-[#00C2D4]/50 shrink-0"
         title="Fairlight Mastering Spectrum Analyzer - Click to Toggle"
       >
         {Array.from({ length: 20 }).map((_, i) => (
@@ -2642,6 +2644,15 @@ export function StudioClient() {
     };
   }, []);
 
+  // iOS Safari & Mobile WebKit touch active & hover listener trick (Auto-Bath standard)
+  useEffect(() => {
+    const enableTouchHover = () => {};
+    window.addEventListener("touchstart", enableTouchHover, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", enableTouchHover);
+    };
+  }, []);
+
   const [activeTab, setActiveTab] = useState<"reel" | "fusion" | "fairlight" | "matrix">("reel");
   const [logoError, setLogoError] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -2779,7 +2790,8 @@ export function StudioClient() {
               <Link 
                 href="https://www.upwork.com/freelancers/~01c65e863ec5fb99c7"
                 target="_blank"
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-tight bg-[#00C2D4] text-black hover:bg-white transition-all shadow-[0_0_12px_rgba(0,194,212,0.35)] whitespace-nowrap shrink-0"
+                onTouchStart={() => {}}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-tight bg-[#00C2D4] text-black hover:bg-white active:bg-white hover:scale-105 active:scale-95 transition-all shadow-[0_0_12px_rgba(0,194,212,0.35)] active:shadow-[0_0_20px_rgba(0,194,212,0.7)] whitespace-nowrap shrink-0"
               >
                 Hire on Upwork <ArrowRight size={10} />
               </Link>
@@ -2814,7 +2826,8 @@ export function StudioClient() {
               href="https://www.goodbrains.pro"
               target="_top"
               rel="noopener noreferrer"
-              className="hidden md:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 hover:text-white transition-all"
+              onTouchStart={() => {}}
+              className="hidden md:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 active:bg-white/15 hover:text-white active:text-white active:scale-95 transition-all"
             >
               GoodBrains.pro <ExternalLink size={12} />
             </a>
@@ -2823,7 +2836,8 @@ export function StudioClient() {
             <Link 
               href="https://www.upwork.com/freelancers/~01c65e863ec5fb99c7"
               target="_blank"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-[#00C2D4] text-black hover:bg-white transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)] whitespace-nowrap shrink-0"
+              onTouchStart={() => {}}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-[#00C2D4] text-black hover:bg-white active:bg-white hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(0,194,212,0.4)] active:shadow-[0_0_25px_rgba(0,194,212,0.7)] whitespace-nowrap shrink-0"
             >
               Hire on Upwork <ArrowRight size={13} />
             </Link>
@@ -2912,30 +2926,33 @@ export function StudioClient() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 p-1.5 bg-[#111]/90 border border-white/10 rounded-xl sm:rounded-2xl max-w-2xl mx-auto backdrop-blur-xl shadow-2xl">
           <button 
             onClick={() => setActiveTab("reel")}
-            className={`py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+            onTouchStart={() => {}}
+            className={`py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 active:brightness-110 ${
               activeTab === "reel" 
                 ? "bg-[#00C2D4] text-black shadow-[0_0_25px_rgba(0,194,212,0.5)]" 
-                : "text-white/60 hover:text-white"
+                : "text-white/60 hover:text-white active:text-white active:bg-white/10"
             }`}
           >
             Commercial Reel
           </button>
           <button 
             onClick={() => setActiveTab("fusion")}
-            className={`py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+            onTouchStart={() => {}}
+            className={`py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 active:brightness-110 ${
               activeTab === "fusion" 
                 ? "bg-[#00C2D4] text-black shadow-[0_0_25px_rgba(0,194,212,0.5)]" 
-                : "text-white/60 hover:text-white"
+                : "text-white/60 hover:text-white active:text-white active:bg-white/10"
             }`}
           >
             Fusion Graph
           </button>
           <button 
             onClick={() => setActiveTab("fairlight")}
-            className={`py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+            onTouchStart={() => {}}
+            className={`py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95 active:brightness-110 ${
               activeTab === "fairlight" 
                 ? "bg-[#00C2D4] text-black shadow-[0_0_25px_rgba(0,194,212,0.5)]" 
-                : "text-white/60 hover:text-white"
+                : "text-white/60 hover:text-white active:text-white active:bg-white/10"
             }`}
           >
             <Volume2 size={13} />
@@ -2943,10 +2960,11 @@ export function StudioClient() {
           </button>
           <button 
             onClick={() => setActiveTab("matrix")}
-            className={`py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+            onTouchStart={() => {}}
+            className={`py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-95 active:brightness-110 ${
               activeTab === "matrix" 
                 ? "bg-[#00C2D4] text-black shadow-[0_0_25px_rgba(0,194,212,0.5)]" 
-                : "text-white/60 hover:text-white"
+                : "text-white/60 hover:text-white active:text-white active:bg-white/10"
             }`}
           >
             ROI Matrix
@@ -3711,7 +3729,8 @@ export function StudioClient() {
               href="https://www.goodbrains.pro"
               target="_top"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 sm:gap-3 bg-white text-[#050505] px-8 sm:px-10 py-3.5 sm:py-4.5 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm hover:bg-[#00C2D4] hover:shadow-[0_0_50px_rgba(0,194,212,0.6)] active:scale-95 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.25)] min-h-[48px]"
+              onTouchStart={() => {}}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 sm:gap-3 bg-white text-[#050505] px-8 sm:px-10 py-3.5 sm:py-4.5 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm hover:bg-[#00C2D4] active:bg-[#00C2D4] hover:shadow-[0_0_50px_rgba(0,194,212,0.6)] active:shadow-[0_0_50px_rgba(0,194,212,0.7)] active:scale-95 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.25)] min-h-[48px]"
             >
               Visit GoodBrains.pro <ExternalLink size={15} />
             </a>
@@ -3721,7 +3740,8 @@ export function StudioClient() {
               href="https://www.upwork.com/freelancers/~01c65e863ec5fb99c7"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 sm:gap-3 bg-white/5 border border-white/20 text-white px-8 sm:px-9 py-3.5 sm:py-4.5 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm hover:bg-white/10 hover:border-white/40 active:scale-95 transition-all duration-300 min-h-[48px]"
+              onTouchStart={() => {}}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 sm:gap-3 bg-white/5 border border-white/20 text-white px-8 sm:px-9 py-3.5 sm:py-4.5 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm hover:bg-white/10 active:bg-white/15 hover:border-white/40 active:border-white/50 active:scale-95 active:shadow-[0_0_25px_rgba(255,255,255,0.4)] transition-all duration-300 min-h-[48px]"
             >
               Hire Sherif on Upwork <ArrowRight size={15} />
             </a>
@@ -3730,7 +3750,8 @@ export function StudioClient() {
             <a
               href="https://www.goodbrains.pro/hybrid-motion"
               target="_top"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#FF2E93]/15 hover:bg-[#FF2E93]/25 border border-[#FF2E93]/40 text-[#FF2E93] hover:text-white px-7 sm:px-8 py-3.5 sm:py-4.5 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm hover:shadow-[0_0_35px_rgba(255,46,147,0.4)] transition-all min-h-[48px]"
+              onTouchStart={() => {}}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#FF2E93]/15 hover:bg-[#FF2E93]/25 active:bg-[#FF2E93]/35 border border-[#FF2E93]/40 text-[#FF2E93] hover:text-white active:text-white px-7 sm:px-8 py-3.5 sm:py-4.5 rounded-full font-bold uppercase tracking-widest text-xs sm:text-sm hover:shadow-[0_0_35px_rgba(255,46,147,0.4)] active:shadow-[0_0_40px_rgba(255,46,147,0.6)] active:scale-95 transition-all min-h-[48px]"
             >
               <Zap size={15} className="text-[#FF2E93]" />
               <span>Hybrid Motion Engine</span>
@@ -3739,7 +3760,8 @@ export function StudioClient() {
             {/* VIEW SAAS ARCHITECTURE */}
             <Link
               href="/showcase"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-white/50 hover:text-white px-5 sm:px-6 py-3 sm:py-4.5 font-mono text-xs uppercase tracking-wider transition-all min-h-[48px]"
+              onTouchStart={() => {}}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-white/50 hover:text-white active:text-white active:scale-95 px-5 sm:px-6 py-3 sm:py-4.5 font-mono text-xs uppercase tracking-wider transition-all min-h-[48px]"
             >
               View SaaS Architecture
             </Link>
@@ -3759,7 +3781,8 @@ export function StudioClient() {
         <button
           ref={pillButtonRef}
           onClick={togglePlay}
-          className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full border shadow-2xl backdrop-blur-md font-mono text-xs transition-all duration-300 ${
+          onTouchStart={() => {}}
+          className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full border shadow-2xl backdrop-blur-md font-mono text-xs transition-all duration-300 active:scale-95 ${
             isPlaying
               ? 'bg-black/95 border-[#00C2D4] text-[#00C2D4] shadow-[0_0_25px_rgba(0,194,212,0.45)]'
               : isDucked
