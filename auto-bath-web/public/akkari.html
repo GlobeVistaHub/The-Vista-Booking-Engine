@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -145,7 +145,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useMemo } = React;
+    const { useState, useMemo, useEffect } = React;
 
     // SVG Icons
     const CheckCircle = () => (
@@ -198,8 +198,13 @@
 
     function App() {
       // Language State: 'ar' (RTL) | 'en' (LTR)
-      const [lang, setLang] = useState('ar');
+      const [lang, setLang] = useState('en');
       const isAr = lang === 'ar';
+
+      useEffect(() => {
+        document.documentElement.lang = lang;
+        document.documentElement.dir = isAr ? 'rtl' : 'ltr';
+      }, [lang]);
 
       const [activeTab, setActiveTab] = useState('roi');
       const [selectedFlaw, setSelectedFlaw] = useState(0);
@@ -535,73 +540,73 @@
             </div>
           </section>
 
-          {/* Navigation Tabs */}
-          <div className="sticky top-[61px] z-40 bg-brand-slate border-b border-brand-border">
-            <div className="max-w-7xl mx-auto px-4 pr-16 flex overflow-x-auto no-scrollbar gap-2 py-2.5">
+          {/* Navigation Tabs (Responsive: Equal 6-col grid on desktop, smooth scroll on mobile) */}
+          <div className="sticky top-[61px] z-40 bg-brand-slate border-b border-brand-border shadow-md">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex items-center overflow-x-auto lg:overflow-x-visible no-scrollbar lg:grid lg:grid-cols-6 gap-1.5 sm:gap-2">
               <button
                 onClick={() => setActiveTab('cinema')}
-                className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
+                className={`px-2.5 sm:px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
                   activeTab === 'cinema'
                     ? 'bg-brand-blue text-white shadow-lg glow-blue'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}
               >
                 <FilmIcon />
-                <span>{isAr ? '🎬 الفيلم الإعلاني (4K Cinema)' : '🎬 4K Cinema Commercial'}</span>
+                <span>{isAr ? '🎬 الفيلم الإعلاني' : '🎬 4K Cinema'}</span>
               </button>
               <button
                 onClick={() => setActiveTab('roi')}
-                className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
+                className={`px-2.5 sm:px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
                   activeTab === 'roi'
                     ? 'bg-brand-blue text-white shadow-lg glow-blue'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}
               >
                 <CalculatorIcon />
-                <span>{isAr ? 'حاسبة العائد الاستثماري (ROI Simulator)' : 'Tender ROI Simulator'}</span>
+                <span>{isAr ? 'حاسبة العائد' : 'ROI Simulator'}</span>
               </button>
               <button
                 onClick={() => setActiveTab('flaws')}
-                className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
+                className={`px-2.5 sm:px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
                   activeTab === 'flaws'
                     ? 'bg-brand-blue text-white shadow-lg glow-blue'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}
               >
                 <AlertTriangle />
-                <span>{isAr ? 'تشريح الثغرات الست الحالية' : 'The 6 Pipeline Flaws'}</span>
+                <span>{isAr ? 'الثغرات الست' : 'The 6 Flaws'}</span>
               </button>
               <button
                 onClick={() => setActiveTab('pillars')}
-                className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
+                className={`px-2.5 sm:px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
                   activeTab === 'pillars'
                     ? 'bg-brand-blue text-white shadow-lg glow-blue'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}
               >
                 <CheckCircle />
-                <span>{isAr ? 'الركائز الهندسية الخمس للمحرك' : '5 Architecture Pillars'}</span>
+                <span>{isAr ? 'الركائز الخمس' : '5 Architecture Pillars'}</span>
               </button>
               <button
                 onClick={() => setActiveTab('comparison')}
-                className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
+                className={`px-2.5 sm:px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
                   activeTab === 'comparison'
                     ? 'bg-brand-blue text-white shadow-lg glow-blue'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}
               >
                 <ShieldCheck />
-                <span>{isAr ? 'مقارنة الأداء التقني المباشر' : 'Head-to-Head Comparison'}</span>
+                <span>{isAr ? 'مقارنة الأداء' : 'Comparison Matrix'}</span>
               </button>
               <button
                 onClick={() => setActiveTab('packages')}
-                className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
+                className={`px-2.5 sm:px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
                   activeTab === 'packages'
                     ? 'bg-emerald-500 text-slate-950 font-black shadow-lg glow-emerald'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}
               >
-                <span>{isAr ? '★ باقات الاستثمار والترسية' : '★ Investment Packages'}</span>
+                <span>{isAr ? '★ باقات الاستثمار' : '★ Investment Packages'}</span>
               </button>
             </div>
           </div>
