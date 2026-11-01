@@ -2288,12 +2288,10 @@ export function StudioClient() {
         const meanEnergy = energySum / 39;
         if (meanEnergy > 10) {
           hasRealFft = true;
-          // Sub-bass kick (bins 1 to 3, 40Hz - 160Hz)
-          const rawKick = ((data[1] || 0) + (data[2] || 0)) / 2;
-          if (rawKick > kickBaselineRef.current + 15) {
-            fftKick = Math.min(1.0, (rawKick - kickBaselineRef.current) / 40);
-          }
-          kickBaselineRef.current = kickBaselineRef.current * 0.94 + rawKick * 0.06;
+          // Sub-bass kick & low-end impact (bins 1 to 4, 30Hz - 180Hz) - zero fatigue, infinite dynamic punch
+          const rawKick = ((data[1] || 0) + (data[2] || 0) + (data[3] || 0)) / 3;
+          fftKick = Math.max(0, Math.min(1.0, (rawKick - 65) / 125));
+          kickBaselineRef.current = Math.max(80, Math.min(145, kickBaselineRef.current * 0.96 + rawKick * 0.04));
 
           // Snare / mid transients (bins 10 to 18)
           const rawSnare = ((data[12] || 0) + (data[16] || 0)) / 2;
@@ -2349,13 +2347,14 @@ export function StudioClient() {
         horizonAmbientBloomRef.current.style.transform = `scaleY(${(1.0 + masterKick * 1.3).toFixed(2)})`;
       }
 
-      // Container Optical Glow (Desktop & Mobile)
+      // Container Optical Glow (Desktop & Mobile) - Always dynamic & persistent across the entire track
       const updateContainerGlow = (container: HTMLDivElement | null) => {
         if (!container) return;
-        if (masterKick > 0.35) {
-          const glow = Math.round(12 + masterKick * 20);
-          container.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, 0.6), inset 0 0 6px rgba(0, 194, 212, 0.3)`;
-          container.style.borderColor = 'rgba(0, 194, 212, 0.85)';
+        if (masterKick > 0.22) {
+          const glow = Math.round(10 + masterKick * 26);
+          const borderAlpha = (0.35 + masterKick * 0.55).toFixed(2);
+          container.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, 0.65), inset 0 0 6px rgba(0, 194, 212, 0.35)`;
+          container.style.borderColor = `rgba(0, 194, 212, ${borderAlpha})`;
         } else {
           container.style.boxShadow = '0 0 10px rgba(0, 194, 212, 0.15)';
           container.style.borderColor = 'rgba(255, 255, 255, 0.15)';
@@ -2366,8 +2365,8 @@ export function StudioClient() {
       updateContainerGlow(mobileContainerRef.current);
 
       if (pillButtonRef.current) {
-        if (masterKick > 0.35) {
-          const glow = Math.round(18 + masterKick * 24);
+        if (masterKick > 0.22) {
+          const glow = Math.round(16 + masterKick * 26);
           pillButtonRef.current.style.boxShadow = `0 0 ${glow}px rgba(0, 194, 212, 0.75)`;
         } else {
           pillButtonRef.current.style.boxShadow = '0 0 20px rgba(0, 194, 212, 0.35)';
