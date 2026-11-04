@@ -69,5 +69,7 @@ src_old/
 # Allow 4K Showcase Masters for GoodBrains Studio
 !auto-bath-web/public/harfen_master_*.mp4
 !auto-bath-web/public/akkari_*.mp4
+!auto-bath-web/public/clay_*.mp4
+!auto-bath-web/public/clay-review/videos/*.mp4
 !public/harfen_master_*.mp4
 !video-editor-reel/harfen_master_*.mp4
