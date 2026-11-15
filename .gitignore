@@ -73,3 +73,12 @@ src_old/
 !auto-bath-web/public/clay-review/videos/*.mp4
 !public/harfen_master_*.mp4
 !video-editor-reel/harfen_master_*.mp4
+
+__pycache__/
+*.pyc
+
+# Confidential & Proprietary Guides
+*.pdf
+*ALIGNERR*
+STUDIO_MASTER_INDEX.md
+
