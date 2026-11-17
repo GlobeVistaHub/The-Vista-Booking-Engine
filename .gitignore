@@ -85,5 +85,30 @@ scripts/crucible_*.py
 scripts/generate_crucible.py
 scripts/compile_crucible_pdf.py
 
+# IDE & Local Workspace Folders
+.vscode/
+brain/
+leads/
+articles/
+strategy/
+tile-commercial/
+Einestein_Project/
+
+# Studio Tests, Audio Tests & Binary Media Previews
+preview_*.png
+test_*.png
+test_*.html
+test_*.mp3
+card_crop_*.png
+crop_*.png
+*.zip
+*.wav
+*.mp3
+*.mp4
+*.m4a
+*.jpg
+*.jpeg
+
+
 
 
