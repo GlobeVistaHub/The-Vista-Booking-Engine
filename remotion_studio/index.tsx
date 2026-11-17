@@ -28,7 +28,6 @@ import { Episode4OutroTail } from "./youtube/Episode4/Episode4OutroTail";
 import { Episode5Scene1 } from "./youtube/Episode5/Scene1";
 import { Episode5Scene1Vertical } from "./youtube/Episode5/Scene1Vertical";
 import { Teaser2Horizontal } from "./youtube/Episode5/Teaser2Horizontal";
-import { EinsteinDiagonalSplit } from "./scenes/EinsteinDiagonalSplit";
 import { GoodBrainsCommercial, GB_COMMERCIAL_DURATION } from "./commercial/GoodBrainsCommercial";
 import { GoodBrainsCommercialVertical, GB_VERTICAL_DURATION } from "./commercial/GoodBrainsCommercial_Vertical";
 import { GoodBrainsHook } from "./commercial/GoodBrainsHook";
@@ -361,45 +360,7 @@ export const RemotionRoot: React.FC = () => {
         height={1920}
         defaultProps={{}}
       />
-      {/* --- EINSTEIN KINETIC DIAGONAL SPLIT SCREEN (RICH HUD / TELEMETRY) --- */}
-      <Composition
-        id="EinsteinDiagonalSplit"
-        component={EinsteinDiagonalSplit}
-        durationInFrames={120}
-        fps={30}
-        width={1080}
-        height={1920}
-        defaultProps={{
-          mode: "rich",
-          splitAngle: 72,
-        }}
-      />
-      {/* --- EINSTEIN KINETIC DIAGONAL SPLIT SCREEN (CLEAN / MINIMAL) --- */}
-      <Composition
-        id="EinsteinDiagonalSplitMinimal"
-        component={EinsteinDiagonalSplit}
-        durationInFrames={120}
-        fps={30}
-        width={1080}
-        height={1920}
-        defaultProps={{
-          mode: "minimal",
-          splitAngle: 70,
-        }}
-      />
-      {/* --- EINSTEIN KINETIC DIAGONAL SPLIT SCREEN (HORIZONTAL 16:9) --- */}
-      <Composition
-        id="EinsteinDiagonalSplitHorizontal"
-        component={EinsteinDiagonalSplit}
-        durationInFrames={120}
-        fps={30}
-        width={1920}
-        height={1080}
-        defaultProps={{
-          mode: "rich",
-          splitAngle: 68,
-        }}
-      />
+
     </>
   );
 };
