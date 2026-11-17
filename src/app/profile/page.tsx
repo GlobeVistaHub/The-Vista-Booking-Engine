@@ -174,10 +174,18 @@ export default function ProfilePage() {
     }, 800);
   };
 
-  const isWithinTwoHours = (createdAt?: string | null) => {
+  // ============================================================================
+  // ARCHITECTURAL DECISION & INVENTORY SECURITY NOTE:
+  // ----------------------------------------------------------------------------
+  // VIP Hold Badge: Displays 'RESERVED' status for 15 minutes while payment is 
+  // pending or interrupted, perfectly synchronized with backend CART_HOLD_MINUTES.
+  // ============================================================================
+  const CART_HOLD_MS = 15 * 60 * 1000; // 15 minutes in ms (900,000 ms)
+  const isWithinHoldWindow = (createdAt?: string | null) => {
     if (!createdAt) return false;
-    return (new Date().getTime() - new Date(createdAt).getTime()) < 7200000; // 2 hours in ms
+    return (new Date().getTime() - new Date(createdAt).getTime()) < CART_HOLD_MS;
   };
+  const isWithinTwoHours = isWithinHoldWindow; // Backward compatibility alias
 
   const today = new Date();
   const upcomingBookings = allBookings.filter(b => {

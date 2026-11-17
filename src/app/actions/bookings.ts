@@ -22,16 +22,25 @@ export async function getPublicOccupancyServer() {
       console.error("[Ghost-Bridge] Confirmed fetch error:", confError.message);
     }
 
-    // 2. Fetch INTERRUPTED / FAILED and PENDING bookings (Blocked for 2 hours only)
-    // This blocks calendar dates for anyone who reached checkout OR had a payment fail.
-    const twoHoursAgo = new Date();
-    twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
+    // ============================================================================
+    // ARCHITECTURAL DECISION & INVENTORY SECURITY NOTE:
+    // ----------------------------------------------------------------------------
+    // Originally conceived as a generous 2-hour guest grace period (VIP Hold).
+    // 
+    // Production Hardening:
+    // Reduced to a 15-minute Cart Hold (with IP rate-limiting) to eliminate 
+    // Denial-of-Inventory (cart-hoarding) vectors where automated bots could 
+    // perpetually lock calendar dates without payment.
+    // Aligns with global travel and ticketing standards (e.g., Ticketmaster / Airlines).
+    // ============================================================================
+    const CART_HOLD_MINUTES = 15;
+    const holdThreshold = new Date(Date.now() - CART_HOLD_MINUTES * 60 * 1000);
 
     const { data: interruptedData, error: intError } = await supabaseAdmin
       .from('bookings')
       .select('property_id, check_in, check_out, status')
       .or('status.eq.interrupted,status.eq.pending,payment_status.eq.failed')
-      .gte('created_at', twoHoursAgo.toISOString());
+      .gte('created_at', holdThreshold.toISOString());
 
     if (intError) {
       console.error("[Ghost-Bridge] Interrupted fetch error:", intError.message);
