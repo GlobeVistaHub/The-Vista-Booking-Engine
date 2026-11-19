@@ -3396,6 +3396,96 @@ export function StudioClient() {
             </div>
           </motion.div>
 
+          {/* ================= SPOT 04: BELONG (CULTURAL INTELLIGENCE & NARRATIVE COMMERCIAL) ================= */}
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl relative overflow-hidden mt-8 sm:mt-12"
+          >
+            <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 items-center">
+              
+              {/* Vertical Mobile Player Container */}
+              <div className="w-full lg:w-5/12 flex justify-center" onPointerDown={pauseForVideo}>
+                <div className="relative w-full max-w-[320px] sm:max-w-[340px] rounded-2xl sm:rounded-3xl overflow-hidden border border-white/20 bg-black shadow-[0_0_50px_rgba(255,102,0,0.25)]">
+                  <div className="relative aspect-[9/16] w-full bg-[#050505]">
+                    <iframe 
+                      src="https://www.youtube-nocookie.com/embed/ADtXSEZal-Q?rel=0&modestbranding=1&enablejsapi=1" 
+                      title="Belong — Stop Traveling Like a Tourist | Cultural Intelligence & Narrative Commercial" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                      className="absolute inset-0 w-full h-full border-0"
+                    />
+                  </div>
+                  
+                  <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-[10px] sm:text-xs font-mono text-white/50">
+                    <span className="flex items-center gap-1.5 sm:gap-2 text-[#FF6600]">
+                      <Smartphone size={13} /> 9:16 MOBILE MASTER
+                    </span>
+                    <span>YOUTUBE SHORTS // 4K 60FPS</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Client Business Breakdown */}
+              <div className="w-full lg:w-7/12 space-y-4 sm:space-y-6">
+                <div>
+                  <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-[#FF6600] font-bold block mb-1">
+                    Vertical Spot 04 // Cultural Intelligence & Dynamic Narrative Commercial
+                  </span>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase tracking-tight text-white">
+                    "Belong — Stop Traveling Like a Tourist"
+                  </h3>
+                </div>
+
+                <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-white/70">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <ShieldCheck size={14} className="text-[#FF6600]" /> The Psychological Hook (Overcoming Tourist Sensory Overload)
+                    </h4>
+                    <p className="leading-relaxed">
+                      Modern travel media is saturated with generic, superficial reels. We engineered a high-velocity 58-second commercial narrative contrasting chaotic tourist burnout (crowded Shibuya crossings, airport luggage fatigue) with quiet, grounded cultural presence, built specifically to introduce the published book <em>"How to Travel Like You Belong There"</em>.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <Sliders size={14} className="text-[#00C2D4]" /> Directorial Craft & Pipeline Science (Multi-Stream Compositing)
+                    </h4>
+                    <p className="leading-relaxed">
+                      Dynamic multi-panel split-screen architecture compositing 4K vertical footage with rounded-corner masks, high-contrast neon-to-amber color grading, and organic acoustic rhythm synchronized by ear across dialogue, music beds, and typography.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Direct Interactive Call to Action Links */}
+                <div className="flex flex-wrap items-center gap-2.5 pt-2">
+                  <a 
+                    href="https://youtube.com/shorts/ADtXSEZal-Q" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FF6600] text-black font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#FF6600]/90 transition-all shadow-[0_0_20px_rgba(255,102,0,0.4)]"
+                  >
+                    Watch on YouTube Shorts <ExternalLink size={13} />
+                  </a>
+                  <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/5 border border-white/15 text-white/80 font-mono text-xs font-medium uppercase tracking-wider">
+                    Published IP // Sherif Seif Eldin
+                  </span>
+                </div>
+
+                <div className="pt-1 sm:pt-2 flex flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono text-white/50">
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">9:16 Vertical Reel</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Dynamic Split-Screen</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">DaVinci Color Science</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Acoustic Sync</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Cultural Intelligence</span>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+
 
         </section>
       )}

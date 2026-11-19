@@ -106,6 +106,22 @@ const jsonLd = {
     },
     {
       "@type": "VideoObject",
+      "@id": "https://www.goodbrains.pro/studio/#video-belong",
+      "name": "Belong — Stop Traveling Like a Tourist | Cultural Intelligence & Narrative Commercial",
+      "description": "58-second commercial narrative engineered by Sherif Seif Eldin with DaVinci Resolve color science, dynamic multi-panel split-screen compositing, and acoustic-reactive typographic pacing.",
+      "thumbnailUrl": [
+        "https://img.youtube.com/vi/ADtXSEZal-Q/maxresdefault.jpg"
+      ],
+      "uploadDate": "2026-11-19T00:00:00+00:00",
+      "duration": "PT58S",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/ADtXSEZal-Q",
+      "contentUrl": "https://youtube.com/shorts/ADtXSEZal-Q",
+      "publisher": {
+        "@id": "https://www.goodbrains.pro/#organization"
+      }
+    },
+    {
+      "@type": "VideoObject",
       "@id": "https://www.goodbrains.pro/studio/#video-ai-workflows",
       "name": "Autonomous AI Workflows — The Assistant Era is Dead",
       "description": "Dynamic 9:16 vertical commercial reframed for viral retention on TikTok, Reels, and YouTube Shorts.",
