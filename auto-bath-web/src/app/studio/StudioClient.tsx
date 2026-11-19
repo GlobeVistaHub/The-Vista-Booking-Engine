@@ -3486,6 +3486,106 @@ export function StudioClient() {
             </div>
           </motion.div>
 
+          {/* ================= SPOT 05: CLAY COMMERCIAL SUITE (3D BROADCAST MASTERPIECE) ================= */}
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl relative overflow-hidden mt-8 sm:mt-12"
+          >
+            <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 items-center">
+              
+              {/* Vertical Mobile Player Container */}
+              <div className="w-full lg:w-5/12 flex justify-center" onPointerDown={pauseForVideo}>
+                <div className="relative w-full max-w-[320px] sm:max-w-[340px] rounded-2xl sm:rounded-3xl overflow-hidden border border-emerald-500/30 bg-black shadow-[0_0_50px_rgba(16,185,129,0.25)]">
+                  <div className="relative aspect-[9/16] w-full bg-[#050505]">
+                    <video 
+                      controls 
+                      autoPlay 
+                      muted 
+                      loop 
+                      playsInline 
+                      preload="metadata" 
+                      className="absolute inset-0 w-full h-full object-cover"
+                    >
+                      <source src="/clay_flagship_33s_masterpiece.mp4" type="video/mp4" />
+                      <source src="/videos/clay_flagship_33s_masterpiece.mp4" type="video/mp4" />
+                      Your browser does not support HTML5 video.
+                    </video>
+                  </div>
+                  
+                  <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#050505] border-t border-white/10 flex items-center justify-between text-[10px] sm:text-xs font-mono text-white/50">
+                    <span className="flex items-center gap-1.5 sm:gap-2 text-[#10B981]">
+                      <Smartphone size={13} /> 9:16 BROADCAST MASTER
+                    </span>
+                    <span>34.0S // 7 BEATS // 30 FPS</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Client Business Breakdown */}
+              <div className="w-full lg:w-7/12 space-y-4 sm:space-y-6">
+                <div>
+                  <span className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-[#10B981] font-bold block mb-1">
+                    Vertical Spot 05 // 3D Claymation & Programmatic Motion Suite
+                  </span>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase tracking-tight text-white">
+                    "Clay Commercial Suite — Flagship Broadcast Masterpiece"
+                  </h3>
+                </div>
+
+                <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-white/70">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <ShieldCheck size={14} className="text-[#10B981]" /> The Enterprise B2B Hook (Attention Architecture)
+                    </h4>
+                    <p className="leading-relaxed">
+                      Engineered for B2B SaaS lead enrichment platform Clay.com. Translates dense data waterfall ingestion (Apollo, Clearbit, LinkedIn) into tactile 3D porcelain and clay physics, commanding immediate human attention across a complete 7-beat retention arc.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
+                    <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <Sliders size={14} className="text-[#EE5D3B]" /> Directorial Craft & Optical Choreography (Three.js & Remotion)
+                    </h4>
+                    <p className="leading-relaxed">
+                      Continuous 3D optical camera flight, stepped claymation stop-motion physics, and frame-accurate kinetic karaoke subtitles tied directly to acoustic voiceover energy envelopes with zero edge clipping.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Direct Interactive Call to Action Links */}
+                <div className="flex flex-wrap items-center gap-2.5 pt-2">
+                  <a 
+                    href="https://www.goodbrains.pro/clay-review/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#10B981] text-black font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#10B981]/90 transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                  >
+                    Launch Interactive Review Portal <ExternalLink size={13} />
+                  </a>
+                  <a 
+                    href="/clay_flagship_33s_masterpiece.mp4" 
+                    download="clay_flagship_33s_masterpiece.mp4"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/5 border border-white/15 text-white/80 font-mono text-xs font-medium uppercase tracking-wider hover:text-white hover:border-white/30 transition-all"
+                  >
+                    Download Master MP4 <ExternalLink size={13} />
+                  </a>
+                </div>
+
+                <div className="pt-1 sm:pt-2 flex flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-mono text-white/50">
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">3D Claymation</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Remotion & Three.js</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">7-Beat Retention Arc</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">Acoustic Karaoke Subtitles</span>
+                  <span className="px-2.5 sm:px-3 py-1 bg-[#111] rounded border border-white/10">B2B SaaS Commercial</span>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+
 
         </section>
       )}

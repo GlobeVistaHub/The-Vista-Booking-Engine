@@ -122,6 +122,21 @@ const jsonLd = {
     },
     {
       "@type": "VideoObject",
+      "@id": "https://www.goodbrains.pro/studio/#video-clay",
+      "name": "Clay Commercial Suite — Flagship Broadcast Masterpiece | GoodBrains Studio",
+      "description": "34-second flagship 3D broadcast commercial with continuous optical flight, custom sound design, and acoustic waveform subtitles for Clay.com.",
+      "thumbnailUrl": [
+        "https://www.goodbrains.pro/clay-review/thumbnails/clay_master_og.jpg"
+      ],
+      "uploadDate": "2026-11-05T00:00:00+00:00",
+      "duration": "PT34S",
+      "contentUrl": "https://www.goodbrains.pro/clay_flagship_33s_masterpiece.mp4",
+      "publisher": {
+        "@id": "https://www.goodbrains.pro/#organization"
+      }
+    },
+    {
+      "@type": "VideoObject",
       "@id": "https://www.goodbrains.pro/studio/#video-ai-workflows",
       "name": "Autonomous AI Workflows — The Assistant Era is Dead",
       "description": "Dynamic 9:16 vertical commercial reframed for viral retention on TikTok, Reels, and YouTube Shorts.",
