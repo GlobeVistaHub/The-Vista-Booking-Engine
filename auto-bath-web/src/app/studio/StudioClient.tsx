@@ -3404,7 +3404,7 @@ export function StudioClient() {
             transition={{ duration: 0.7 }}
             className="bg-[#0A0A0A] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl relative overflow-hidden mt-8 sm:mt-12"
           >
-            <div className="flex flex-col lg:flex-row gap-6 sm:gap-10 items-center">
+            <div className="flex flex-col lg:flex-row-reverse gap-6 sm:gap-10 items-center">
               
               {/* Vertical Mobile Player Container */}
               <div className="w-full lg:w-5/12 flex justify-center" onPointerDown={pauseForVideo}>
